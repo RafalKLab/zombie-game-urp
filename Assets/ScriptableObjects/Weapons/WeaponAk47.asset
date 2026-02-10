@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6276e8aa5ee9a6e4c866241d1d217ace, type: 3}
+  m_Name: WeaponAk47
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
+  weaponType: 1
+  magazineCapacity: 30
+  reloadTime: 3
+  reloadClip: {fileID: 8300000, guid: b2f81bb8123eff94e80fb22d9691f05c, type: 3}
+  reloadVolume: 1
+  damage: 35
+  range: 100
+  shootCooldown: 0.12
+  maxPenetrations: 1
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 320
+  prefab: {fileID: 2298662017938403109, guid: 6ffb8f310e3ff9649bda5321af5a79ad, type: 3}
+  shotClip: {fileID: 8300000, guid: e6fa8bee795bf364bb10c0d8ac0413a0, type: 3}
+  shotVolume: 1
