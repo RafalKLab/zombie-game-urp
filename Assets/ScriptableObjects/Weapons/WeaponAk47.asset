@@ -19,6 +19,10 @@ MonoBehaviour:
   reloadVolume: 1
   damage: 35
   range: 100
+  effectiveRange: 70
+  accuracy: 0.95
+  maxSpreadAngle: 5
+  accuracyOutEffectiveRange: 0.3
   shootCooldown: 0.12
   maxPenetrations: 1
   layerMask:

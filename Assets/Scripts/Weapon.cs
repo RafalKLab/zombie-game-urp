@@ -26,7 +26,7 @@ public class Weapon : MonoBehaviour
 
     public void PlayShot(ShotResult shot)
     {
-        PlayAudio();
+        PlayShotAudio();
 
         if (tracerPrefab != null)
         {
@@ -35,13 +35,9 @@ public class Weapon : MonoBehaviour
         }
     }
 
-    private void PlayAudio()
+    public void PlayCooldown()
     {
-        if (audioSource == null) return;
-        if (weaponTypeSO == null) return;
-        if (weaponTypeSO.shotClip == null) return;
-
-        audioSource.PlayOneShot(weaponTypeSO.shotClip, weaponTypeSO.shotVolume);
+        PlayCooldownAudio();
     }
 
     public void PlayReload()
@@ -49,6 +45,15 @@ public class Weapon : MonoBehaviour
         PlayReloadAudio();
     }
 
+    private void PlayShotAudio()
+    {
+        if (audioSource == null) return;
+        if (weaponTypeSO == null) return;
+        if (weaponTypeSO.shotClip == null) return;
+
+        audioSource.PlayOneShot(weaponTypeSO.shotClip, weaponTypeSO.shotVolume);
+    }
+    
     private void PlayReloadAudio()
     {
         if (audioSource == null) return;
@@ -57,4 +62,14 @@ public class Weapon : MonoBehaviour
 
         audioSource.PlayOneShot(weaponTypeSO.reloadClip, weaponTypeSO.reloadVolume);
     }
+
+    private void PlayCooldownAudio()
+    {
+        if (audioSource == null) return;
+        if (weaponTypeSO == null) return;
+        if (weaponTypeSO.shotCooldownClip == null) return;
+
+        audioSource.PlayOneShot(weaponTypeSO.shotCooldownClip, weaponTypeSO.shotCooldownVolume);
+    }
+
 }

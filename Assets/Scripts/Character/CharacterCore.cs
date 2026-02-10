@@ -41,11 +41,6 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     private float nextRepositionTime;
     private int repositionTries;
 
-    // Get closer when not in weapon range
-    private float approachInterval = 0.5f;
-    private float nextApproachTime;
-
-
     // Cached components
     private NavMeshAgent agent;
     private Health health;
@@ -287,17 +282,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         // mamy LOS -> reset timera
         ResetRepositionState();
 
-        // When not in weapon range
         Vector3 targetPos = aiTarget.GetAimPoint().position;
-        if (!IsTargetInWeaponRange(targetPos))
-        {
-            ApproachTarget(targetPos);
-            return;
-        }
-        else
-        {
-            nextApproachTime = 0f;
-        }
 
         if (!agent.isStopped)
         {
@@ -332,11 +317,26 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         if (muzzle == null) return;
 
         Vector3 origin = muzzle.position;
-        Vector3 direction = (targetPos - origin).normalized;
+        Vector3 baseDirection = (targetPos - origin).normalized;
+
+        bool inEffective = IsTargetInWeaponEffectiveRange(targetPos, origin);
+
+        float finalAccuracy = inEffective
+            ? weaponTypeSO.accuracy
+            : weaponTypeSO.accuracyOutEffectiveRange;
+
+        // pozniej: finalAccuracy *= shooterSkill;
+
+        float spread = Mathf.Lerp(weaponTypeSO.maxSpreadAngle, 0f, finalAccuracy);
+
+        Vector3 direction = AimSpreadService.ApplyConeSpread(baseDirection, spread);
+
 
         ShotResult shot = hitscanShooterService.Shoot(origin, direction, weaponTypeSO, transform.root, aiTarget);
 
         weapon.PlayShot(shot);
+        weapon.PlayCooldown();
+
 
         if (shot.ActiveTargetKilled)
             ClearAttackTarget();
@@ -455,23 +455,13 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         agent.SetDestination(aiTarget.transform.position);
     }
 
-    private bool IsTargetInWeaponRange(Vector3 targetPos)
+    private bool IsTargetInWeaponEffectiveRange(Vector3 targetPos, Vector3 origin)
     {
         if (weaponTypeSO == null) return false;
 
-        float range = weaponTypeSO.range;
-        float sqrDist = (targetPos - transform.position).sqrMagnitude;
+        float range = weaponTypeSO.effectiveRange;
+        float sqrDist = (targetPos - origin).sqrMagnitude;
         return sqrDist <= range * range;
-    }
-    private void ApproachTarget(Vector3 targetPos)
-    {
-        if (Time.time < nextApproachTime)
-            return;
-
-        nextApproachTime = Time.time + approachInterval;
-
-        agent.isStopped = false;
-        agent.SetDestination(aiTarget.transform.position);
     }
 
     private void ResetRepositionState()

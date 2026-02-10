@@ -15,15 +15,19 @@ MonoBehaviour:
   weaponType: 0
   magazineCapacity: 12
   reloadTime: 2
-  reloadClip: {fileID: 8300000, guid: 1fe1ddd52ad6df140a09c7149f8cab5f, type: 3}
+  reloadClip: {fileID: 8300000, guid: 75ccc6d7513c9bf44a1d3517897e700f, type: 3}
   reloadVolume: 1
   damage: 25
   range: 50
+  effectiveRange: 20
+  accuracy: 0.95
+  maxSpreadAngle: 5
+  accuracyOutEffectiveRange: 0.6
   shootCooldown: 0.5
   maxPenetrations: 1
   layerMask:
     serializedVersion: 2
     m_Bits: 320
-  prefab: {fileID: 5893503856000262422, guid: 868ce48dab998704faaeee71943c4ca7, type: 3}
+  prefab: {fileID: 2298662017938403109, guid: 9ba6f8c7188c57640b091d2101fe0d19, type: 3}
   shotClip: {fileID: 8300000, guid: 699cdf62c86df22498b1de1125cb9e50, type: 3}
   shotVolume: 1

@@ -17,9 +17,22 @@ public class WeaponTypeSO : ScriptableObject
     [Header("Combat")]
     [Min(0f)] public float damage = 10f;
     [Min(0f)] public float range = 20f;
+    [Min(0f)] public float effectiveRange = 20f;
+
+    [Range(0f, 1f)]
+    public float accuracy = 0.9f;
+
+    [Min(0f)]
+    public float maxSpreadAngle = 10f;
+
+    [Range(0f, 1f)] public float accuracyOutEffectiveRange = 0.4f;
 
     [Tooltip("Seconds between shots")]
     [Min(0f)] public float shootCooldown = 0.2f;
+
+    [Header("Shot cooldown audio")]
+    public AudioClip shotCooldownClip;
+    [Range(0f, 1f)] public float shotCooldownVolume = 1f;
 
     [Tooltip("How many valid targets can be damaged by a single shot (penetration)")]
     [Min(1)] public int maxPenetrations = 1;

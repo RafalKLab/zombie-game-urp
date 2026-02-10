@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyTypeSO
   prefab: {fileID: 6985511564715820613, guid: eeff672163bdeb34fb26a955524ccf03, type: 3}
   enemyTypeName: BasicZombie
-  maxHealth: 10000
+  maxHealth: 100
   wanderSpeed: 2
   wanderRadius: 5
   idleTimeMin: 0.5

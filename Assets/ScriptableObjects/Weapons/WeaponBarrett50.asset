@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6276e8aa5ee9a6e4c866241d1d217ace, type: 3}
+  m_Name: WeaponBarrett50
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
+  weaponType: 1
+  magazineCapacity: 5
+  reloadTime: 6.5
+  reloadClip: {fileID: 8300000, guid: 5f3d4113277a54c4181095ece758e518, type: 3}
+  reloadVolume: 1
+  damage: 300
+  range: 200
+  effectiveRange: 150
+  accuracy: 0.99
+  maxSpreadAngle: 3
+  accuracyOutEffectiveRange: 0.75
+  shootCooldown: 2
+  shotCooldownClip: {fileID: 8300000, guid: 94b18b8e76ed3ca42a210964d7c26705, type: 3}
+  shotCooldownVolume: 1
+  maxPenetrations: 5
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 320
+  prefab: {fileID: 2298662017938403109, guid: 54fb817bd9b9a8e4d8edcf5563dcfe72, type: 3}
+  shotClip: {fileID: 8300000, guid: 90eaef20e8db9e0428824d331b76a629, type: 3}
+  shotVolume: 1

@@ -36,7 +36,7 @@ public class Health : MonoBehaviour
 
         currentHealth -= damage;
 
-        //Debug.Log($"Dostalismy w morde, hp= {currentHealth}");
+        Debug.Log($"Dostalismy w morde, hp= {currentHealth}");
 
         if (currentHealth < 0f) currentHealth = 0f;
 
