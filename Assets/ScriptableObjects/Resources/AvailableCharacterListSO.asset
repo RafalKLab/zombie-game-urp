@@ -14,5 +14,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AvailableCharacterListSO
   list:
   - {fileID: 11400000, guid: d9019d2f3bd338047a254a94324c468b, type: 2}
-  - {fileID: 11400000, guid: d9019d2f3bd338047a254a94324c468b, type: 2}
-  - {fileID: 11400000, guid: d9019d2f3bd338047a254a94324c468b, type: 2}

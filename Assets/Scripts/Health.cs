@@ -20,7 +20,6 @@ public class Health : MonoBehaviour
     private float currentHealth;
     private bool isDead;
 
-
     public void Initialize(float newMaxHealth)
     {
         maxHealth = newMaxHealth;
@@ -36,7 +35,7 @@ public class Health : MonoBehaviour
 
         currentHealth -= damage;
 
-        Debug.Log($"Dostalismy w morde, hp= {currentHealth}");
+        //Debug.Log($"Dostalismy w morde, hp= {currentHealth}");
 
         if (currentHealth < 0f) currentHealth = 0f;
 

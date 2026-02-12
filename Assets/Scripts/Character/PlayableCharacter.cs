@@ -17,6 +17,8 @@ public class PlayableCharacter : MonoBehaviour, ICharacterController
     
     private CharacterCore characterCore;
 
+    private float deathDelay = 1f;
+
     private void Awake()
     {
         characterCore = GetComponent<CharacterCore>();
@@ -36,7 +38,7 @@ public class PlayableCharacter : MonoBehaviour, ICharacterController
     private void CharacterCore_OnDied(object sender, System.EventArgs e)
     {
         OnKilled?.Invoke(this, EventArgs.Empty);
-        Destroy(gameObject);
+        StartCoroutine(HandleDeath());
     }
 
     public void MoveTo(Vector3 target)
@@ -73,5 +75,12 @@ public class PlayableCharacter : MonoBehaviour, ICharacterController
     public Transform GetCameraLookAtPoint()
     {
         return cameraLookAtPoint;
+    }
+
+    private IEnumerator HandleDeath()
+    {
+        yield return new WaitForSeconds(deathDelay);
+
+        Destroy(gameObject);
     }
 }

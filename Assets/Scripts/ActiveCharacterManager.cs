@@ -17,6 +17,7 @@ public class ActiveCharacterManager : MonoBehaviour
     private const int FOLLOW_CAMERA_PRIORITY_DEFAULT = 5;
 
     [SerializeField] private CinemachineCamera followCamera;
+    [SerializeField] private CinemachineCamera overviewCamera;
     [SerializeField] private CinemachineBrain cinemachineBrain;
 
     private PlayableCharacter activePlayableCharacter;
@@ -57,6 +58,7 @@ public class ActiveCharacterManager : MonoBehaviour
         activePlayableCharacter = null;
         followCamera.Target.TrackingTarget = null;
 
+        overviewCamera.gameObject.SetActive(true);
         followCamera.Priority = FOLLOW_CAMERA_PRIORITY_DEFAULT;
 
         InvokeOnActiveCharacterChangedEvent(playableCharacter);
@@ -69,6 +71,7 @@ public class ActiveCharacterManager : MonoBehaviour
 
     private System.Collections.IEnumerator SwitchCameraTargetRoutine(PlayableCharacter playableCharacter)
     {
+        overviewCamera.gameObject.SetActive(false);
         followCamera.Priority = FOLLOW_CAMERA_PRIORITY_DEFAULT;
         activePlayableCharacter = null;
 
@@ -83,5 +86,10 @@ public class ActiveCharacterManager : MonoBehaviour
         followCamera.Target.TrackingTarget = playableCharacter.GetCameraLookAtPoint();
 
         followCamera.Priority = FOLLOW_CAMERA_PRIORITY_ACTIVE;
+    }
+
+    public bool HasActiveCharacter()
+    {
+        return activePlayableCharacter != null;
     }
 }

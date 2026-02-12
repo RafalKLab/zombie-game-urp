@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -34,6 +35,7 @@ public class EnemyAi : MonoBehaviour
     private Health chaseTargetHealth;
 
     private Health health;
+    private float deathDelay = 0.1f;
 
     private enum State {
         Wander,
@@ -331,6 +333,13 @@ public class EnemyAi : MonoBehaviour
 
     private void Health_OnDied(object sender, System.EventArgs e)
     {
+        StartCoroutine(HandleDeath());
+    }
+
+    private IEnumerator HandleDeath()
+    {
+        yield return new WaitForSeconds(deathDelay);
+
         Destroy(gameObject);
     }
 }
