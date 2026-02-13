@@ -18,7 +18,8 @@ public class EnemyTypeSO : ScriptableObject
     public float detectRadius;
 
     [Header("Attack")]
-    public float attackRange;
-    public float attackCooldown;
     public float attackDamage;
+    public float attackRange;
+    public float attackRangeBonus;
+    public float attackCooldown;
 }

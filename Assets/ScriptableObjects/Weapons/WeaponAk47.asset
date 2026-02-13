@@ -24,10 +24,13 @@ MonoBehaviour:
   maxSpreadAngle: 5
   accuracyOutEffectiveRange: 0.3
   shootCooldown: 0.12
+  shotCooldownClip: {fileID: 0}
+  shotCooldownVolume: 1
   maxPenetrations: 1
   layerMask:
     serializedVersion: 2
     m_Bits: 320
   prefab: {fileID: 2298662017938403109, guid: 6ffb8f310e3ff9649bda5321af5a79ad, type: 3}
+  tracerTypeSO: {fileID: 11400000, guid: 39a813ec0f76fb54a9c131b6ca30f975, type: 2}
   shotClip: {fileID: 8300000, guid: e6fa8bee795bf364bb10c0d8ac0413a0, type: 3}
   shotVolume: 1

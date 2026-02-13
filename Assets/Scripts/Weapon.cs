@@ -6,9 +6,6 @@ public class Weapon : MonoBehaviour
 {
     [SerializeField] private WeaponTypeSO weaponTypeSO;
     [SerializeField] private Transform muzzle;
-
-    [SerializeField] private TracerProjectile tracerPrefab;
-
     private AudioSource audioSource;
 
     private void Start()
@@ -27,12 +24,7 @@ public class Weapon : MonoBehaviour
     public void PlayShot(ShotResult shot)
     {
         PlayShotAudio();
-
-        if (tracerPrefab != null)
-        {
-            var tracerInstance = Instantiate(tracerPrefab);
-            tracerInstance.Init(muzzle.position, shot.EndPoint);
-        }
+        ShowTracer(shot);
     }
 
     public void PlayCooldown()
@@ -72,4 +64,12 @@ public class Weapon : MonoBehaviour
         audioSource.PlayOneShot(weaponTypeSO.shotCooldownClip, weaponTypeSO.shotCooldownVolume);
     }
 
+    private void ShowTracer(ShotResult shot)
+    {
+        if (weaponTypeSO == null) return;
+        if (weaponTypeSO.tracerTypeSO == null) return;
+
+        TracerProjectile tracerInstance = Instantiate(weaponTypeSO.tracerTypeSO.tracerProjectile);
+        tracerInstance.Init(muzzle.position, shot.EndPoint, weaponTypeSO.tracerTypeSO);
+    }
 }

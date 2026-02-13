@@ -5,11 +5,8 @@ public sealed class TracerProjectile : MonoBehaviour
 {
     [Header("Refs")]
     [SerializeField] private TrailRenderer trail;
-
+    
     [Header("Flight (VFX)")]
-    [Tooltip("VFX speed, not gameplay bullet speed.")]
-    [SerializeField] private float speed = 140f;
-
     [Tooltip("Ensures the tracer is visible for at least a few frames (trail + bloom need time).")]
     [SerializeField] private float minTravelTime = 0.05f;
 
@@ -21,9 +18,12 @@ public sealed class TracerProjectile : MonoBehaviour
     [SerializeField] private float despawnAfterArrive = 0.25f;
 
     private Coroutine _moveRoutine;
+    private TracerTypeSO tracerTypeSO;
 
-    public void Init(Vector3 start, Vector3 end)
+    public void Init(Vector3 start, Vector3 end, TracerTypeSO tracerTypeSO)
     {
+        this.tracerTypeSO = tracerTypeSO;
+
         transform.position = start;
 
         if (trail != null)
@@ -51,7 +51,7 @@ public sealed class TracerProjectile : MonoBehaviour
         }
 
         // Key change: enforce minimum travel time so the tracer exists for several frames
-        float travelTime = dist / Mathf.Max(0.01f, speed);
+        float travelTime = dist / Mathf.Max(0.01f, tracerTypeSO.tracerSpeed);
         travelTime = Mathf.Max(travelTime, minTravelTime);
 
         float elapsed = 0f;

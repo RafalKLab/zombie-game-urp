@@ -1,18 +1,16 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
+[RequireComponent(typeof(ZombieAnimatorFacade))]
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(AiTarget))]
-public class EnemyAi : MonoBehaviour
+public class ZombieAi : MonoBehaviour
 {
-    // contains 
-    //public Transform prefab;
-    //public string enemyTypeName;
-    //public float wanderSpeed;
-    //public float detectRadius;
     [SerializeField] EnemyTypeSO enemyTypeSO;
     [SerializeField] private LayerMask targetableMask;
+    [SerializeField] private ZombieAnimatorFacade zombieAnimatorFacade;
 
     private Faction entityFaction;
 
@@ -37,6 +35,11 @@ public class EnemyAi : MonoBehaviour
     private Health health;
     private float deathDelay = 0.1f;
 
+    private bool isAttacking;
+    private bool isDeathAnimationPlayed = false;
+    private float deathTimer = 0f;
+    private float deathTimerMax = 10f;
+
     private enum State {
         Wander,
         Chase,
@@ -57,26 +60,43 @@ public class EnemyAi : MonoBehaviour
         attackCooldownTimer = 0f;
     }
 
+    private void OnEnable()
+    {
+        health.OnDied += Health_OnDied;
+
+        zombieAnimatorFacade.AttackHit += ZombieAnimatorFacade_AttackHit;
+        zombieAnimatorFacade.AttackEnd += ZombieAnimatorFacade_AttackEnd;
+    }
+
+    private void OnDisable()
+    {
+        health.OnDied -= Health_OnDied;
+
+        zombieAnimatorFacade.AttackHit -= ZombieAnimatorFacade_AttackHit;
+        zombieAnimatorFacade.AttackEnd -= ZombieAnimatorFacade_AttackEnd;
+    }
+
+
     private void Update()
     {
-        //switch (activeState)
-        //{
-        //    default:
-        //    case State.Wander:
-        //        HandleWanderState();
-        //        break;
-        //    case State.Chase:
-        //        HandleChaseState();
-        //        break;
-        //    case State.Dead:
-        //        HandleDeadState();
-        //        break;
-        //}
+        switch (activeState)
+        {
+            default:
+            case State.Wander:
+                HandleWanderState();
+                break;
+            case State.Chase:
+                HandleChaseState();
+                break;
+            case State.Dead:
+                HandleDeadState();
+                break;
+        }
 
-        //if (attackCooldownTimer > 0f)
-        //{
-        //    attackCooldownTimer -= Time.deltaTime;
-        //}
+        if (attackCooldownTimer > 0f)
+        {
+            attackCooldownTimer -= Time.deltaTime;
+        }
     }
 
     private void HandleWanderState()
@@ -84,7 +104,7 @@ public class EnemyAi : MonoBehaviour
         // try to detect
         if (detectionTimer <= 0)
         {
-            Collider[] hits = Physics.OverlapSphere(transform.position, enemyTypeSO.detectRadius, targetableMask);
+            Collider[] hits = GetHitsSortedByDistance(transform.position, enemyTypeSO.detectRadius, targetableMask);
 
             foreach (Collider hit in hits)
             {
@@ -136,10 +156,10 @@ public class EnemyAi : MonoBehaviour
 
         if (!agent.hasPath || agent.remainingDistance <= agent.stoppingDistance + 0.1f)
         {
-            if (Random.value < 0.4f)
+            if (UnityEngine.Random.value < 0.4f)
             {
                 isIdling = true;
-                idleTimer = Random.Range(enemyTypeSO.idleTimeMin, enemyTypeSO.idleTimeMax);
+                idleTimer = UnityEngine.Random.Range(enemyTypeSO.idleTimeMin, enemyTypeSO.idleTimeMax);
                 agent.ResetPath();
                 agent.isStopped = true;
 
@@ -180,14 +200,21 @@ public class EnemyAi : MonoBehaviour
             return;
         }
 
+        if (isAttacking)
+        {
+            agent.isStopped = true;
+            agent.ResetPath();
+            return;
+        }
+
         if (IsTargetInAttackRange(sqrTargetDistance))
         {
             agent.isStopped = true;
             agent.ResetPath();
 
-            if (IsAttackCooldownReady() && chaseTargetHealth != null)
+            if (IsAttackCooldownReady() && chaseTargetHealth != null && !isAttacking)
             {
-                
+
                 // check before attack
                 if (chaseTargetHealth.IsDead)
                 {
@@ -196,17 +223,7 @@ public class EnemyAi : MonoBehaviour
                     return;
                 }
 
-                chaseTargetHealth.TakeDamage(enemyTypeSO.attackDamage);
-
-                // check after attack
-                if (chaseTargetHealth.IsDead)
-                {
-                    SetStateWander();
-
-                    return;
-                }
-
-                attackCooldownTimer = enemyTypeSO.attackCooldown;
+                StartAttack();
             }
 
             // dont chase because we are in attack range
@@ -232,7 +249,18 @@ public class EnemyAi : MonoBehaviour
 
     private void HandleDeadState()
     {
+        if (!isDeathAnimationPlayed)
+        {
+            zombieAnimatorFacade.PlayDeath();
+            isDeathAnimationPlayed = true;
+        }
 
+        if (deathTimer >= deathTimerMax)
+        {
+            Destroy(gameObject);
+        }
+
+        deathTimer += Time.deltaTime;
     }
 
     private bool TryGetRandomPointOnNavMesh(Vector3 center, float radius, out Vector3 result)
@@ -240,7 +268,7 @@ public class EnemyAi : MonoBehaviour
         // try more times to not get invalid position
         for (int i = 0; i < 10; i++)
         {
-            Vector3 random = center + Random.insideUnitSphere * radius;
+            Vector3 random = center + UnityEngine.Random.insideUnitSphere * radius;
             if (NavMesh.SamplePosition(random, out NavMeshHit hit, 2f, NavMesh.AllAreas))
             {
                 result = hit.position;
@@ -271,6 +299,7 @@ public class EnemyAi : MonoBehaviour
 
     private void SetStateWander()
     {
+        CancelAttack();
         isIdling = false;
         agent.isStopped = false;
 
@@ -290,6 +319,17 @@ public class EnemyAi : MonoBehaviour
         agent.SetDestination(chaseTarget.position);
         chaseDistanceCheckTimer = chaseDistanceCheckCooldown;
         activeState = State.Chase;
+    }
+
+    private void SetStateDead()
+    {
+        CancelAttack();
+        isIdling = false;
+        agent.isStopped = false;
+        agent.ResetPath();
+        chaseTarget = null;
+        chaseTargetHealth = null;
+        activeState = State.Dead;
     }
 
     private bool TryGetTargetSqrDistance(out float sqrTargetDistance)
@@ -321,19 +361,9 @@ public class EnemyAi : MonoBehaviour
         return attackCooldownTimer <= 0;
     }
 
-    private void OnEnable()
-    {
-        health.OnDied += Health_OnDied;
-    }
-
-    private void OnDisable()
-    {
-        health.OnDied -= Health_OnDied;
-    }
-
     private void Health_OnDied(object sender, System.EventArgs e)
     {
-        StartCoroutine(HandleDeath());
+        SetStateDead();
     }
 
     private IEnumerator HandleDeath()
@@ -341,5 +371,77 @@ public class EnemyAi : MonoBehaviour
         yield return new WaitForSeconds(deathDelay);
 
         Destroy(gameObject);
+    }
+
+    private void StartAttack()
+    {
+
+        if (chaseTargetHealth == null) return;
+
+        if (chaseTargetHealth.IsDead)
+        {
+            SetStateWander();
+            return;
+        }
+
+        isAttacking = true;
+        agent.isStopped = true;
+
+        zombieAnimatorFacade.PlayAttack();
+    }
+
+    private void ZombieAnimatorFacade_AttackHit()
+    {
+        if (!isAttacking) return;
+
+        if (chaseTargetHealth != null && !chaseTargetHealth.IsDead)
+        {
+            float hitRange = enemyTypeSO.attackRange + enemyTypeSO.attackRangeBonus;
+            float hitSqr = hitRange * hitRange;
+
+            if (TryGetTargetSqrDistance(out float sqrDist) && sqrDist <= hitSqr)
+            {
+                chaseTargetHealth.TakeDamage(enemyTypeSO.attackDamage);
+            }
+        }
+    }
+
+    private void ZombieAnimatorFacade_AttackEnd()
+    {
+        if (!isAttacking) return;
+        EndAttack();
+    }
+
+    private void EndAttack()
+    {
+        isAttacking = false;
+        agent.isStopped = false;
+
+        attackCooldownTimer = enemyTypeSO.attackCooldown;
+
+        if (chaseTargetHealth == null || chaseTargetHealth.IsDead)
+            SetStateWander();
+    }
+
+    private void CancelAttack()
+    {
+        isAttacking = false;
+
+        if (agent != null)
+            agent.isStopped = false;
+    }
+
+    private Collider[] GetHitsSortedByDistance(Vector3 origin, float radius, LayerMask mask)
+    {
+        var hits = Physics.OverlapSphere(origin, radius, mask);
+
+        Array.Sort(hits, (a, b) =>
+        {
+            float da = (a.transform.position - origin).sqrMagnitude;
+            float db = (b.transform.position - origin).sqrMagnitude;
+            return da.CompareTo(db);
+        });
+
+        return hits;
     }
 }

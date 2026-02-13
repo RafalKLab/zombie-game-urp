@@ -19,15 +19,18 @@ MonoBehaviour:
   reloadVolume: 1
   damage: 25
   range: 50
-  effectiveRange: 20
+  effectiveRange: 25
   accuracy: 0.95
   maxSpreadAngle: 5
   accuracyOutEffectiveRange: 0.6
   shootCooldown: 0.5
+  shotCooldownClip: {fileID: 0}
+  shotCooldownVolume: 1
   maxPenetrations: 1
   layerMask:
     serializedVersion: 2
     m_Bits: 320
   prefab: {fileID: 2298662017938403109, guid: 9ba6f8c7188c57640b091d2101fe0d19, type: 3}
+  tracerTypeSO: {fileID: 11400000, guid: 3f2bcd82823ae1f48ad2b52ec1ed3e3a, type: 2}
   shotClip: {fileID: 8300000, guid: 699cdf62c86df22498b1de1125cb9e50, type: 3}
   shotVolume: 1

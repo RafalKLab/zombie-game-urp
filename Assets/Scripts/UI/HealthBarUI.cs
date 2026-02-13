@@ -30,10 +30,9 @@ public class HealthBarUI : MonoBehaviour
 
     private void UpdateVisual(float normalizedHealth)
     {
-        if (normalizedHealth < 1)
-        {
-            gameObject.SetActive(true);
-        }
+        bool show = normalizedHealth > 0f && normalizedHealth < 1f;
+        gameObject.SetActive(show);
+
 
         healthBar.fillAmount = normalizedHealth;
 

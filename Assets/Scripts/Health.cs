@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 public class Health : MonoBehaviour
@@ -27,23 +28,49 @@ public class Health : MonoBehaviour
         isDead = false;
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(float damage, float eventDelay = 0f)
     {
         if (isDead) return;
 
         damage = Mathf.Max(0f, damage);
 
         currentHealth -= damage;
-
-        //Debug.Log($"Dostalismy w morde, hp= {currentHealth}");
-
         if (currentHealth < 0f) currentHealth = 0f;
 
-        OnDamaged?.Invoke(this, new OnDamagedEventArgs { currentHealthNormalized = currentHealth / maxHealth });
-
+        bool justDied = false;
         if (currentHealth <= 0f)
         {
             isDead = true;
+            justDied = true;
+        }
+
+        if (eventDelay <= 0f)
+        {
+            OnDamaged?.Invoke(this, new OnDamagedEventArgs
+            {
+                currentHealthNormalized = currentHealth / maxHealth
+            });
+
+            if (justDied)
+            {
+                OnDied?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        else
+        {
+            StartCoroutine(InvokeEventsWithDelay(eventDelay, justDied));
+        }
+    }
+
+
+    private IEnumerator InvokeEventsWithDelay(float delay, bool died)
+    {
+        yield return new WaitForSeconds(delay);
+
+        OnDamaged?.Invoke(this, new OnDamagedEventArgs { currentHealthNormalized = currentHealth / maxHealth });
+
+        if (died)
+        {
             OnDied?.Invoke(this, EventArgs.Empty);
         }
     }

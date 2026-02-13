@@ -402,7 +402,6 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         }
         isReloading = false;
     }
-
     private bool HasLineOfSightToTarget(AiTarget target)
     {
         if (target == null) return false;

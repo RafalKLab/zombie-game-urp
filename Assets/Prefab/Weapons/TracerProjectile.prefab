@@ -165,7 +165,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TracerProjectile
   trail: {fileID: 6152236499971604041}
-  speed: 400
+  tracerTypeSO: {fileID: 0}
   minTravelTime: 0.05
   maxLifeTime: 0.5
   despawnAfterArrive: 0.15

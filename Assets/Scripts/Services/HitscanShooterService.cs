@@ -68,7 +68,12 @@ public sealed class HitscanShooterService
 
             bool isActive = (target == activeTarget);
 
-            health.TakeDamage(weaponType.damage);
+            float speed = weaponType.tracerTypeSO.tracerSpeed;
+            float distance = hit.distance;
+            float delay = (speed > 0f) ? (distance / speed) : 0f;
+
+            health.TakeDamage(weaponType.damage, delay);
+
             penetrationsDone++;
 
             if (isActive && health.IsDead)

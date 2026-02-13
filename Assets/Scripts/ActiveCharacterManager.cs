@@ -71,6 +71,8 @@ public class ActiveCharacterManager : MonoBehaviour
 
     private System.Collections.IEnumerator SwitchCameraTargetRoutine(PlayableCharacter playableCharacter)
     {
+        followCamera.Target.TrackingTarget = playableCharacter.GetCameraLookAtPoint();
+
         overviewCamera.gameObject.SetActive(false);
         followCamera.Priority = FOLLOW_CAMERA_PRIORITY_DEFAULT;
         activePlayableCharacter = null;
@@ -83,7 +85,7 @@ public class ActiveCharacterManager : MonoBehaviour
             yield return null; // fallback
 
         activePlayableCharacter = playableCharacter;
-        followCamera.Target.TrackingTarget = playableCharacter.GetCameraLookAtPoint();
+        
 
         followCamera.Priority = FOLLOW_CAMERA_PRIORITY_ACTIVE;
     }

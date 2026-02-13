@@ -16,4 +16,4 @@ MonoBehaviour:
   playableCharacterName: PlayerGreen
   walkSpeed: 4
   runSpeed: 9
-  maxHealth: 200
+  maxHealth: 100

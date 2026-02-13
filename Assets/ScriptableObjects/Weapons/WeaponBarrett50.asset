@@ -31,5 +31,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 320
   prefab: {fileID: 2298662017938403109, guid: 54fb817bd9b9a8e4d8edcf5563dcfe72, type: 3}
+  tracerTypeSO: {fileID: 11400000, guid: c550507ee8dd32e41aff0e9b9904c6ef, type: 2}
   shotClip: {fileID: 8300000, guid: 90eaef20e8db9e0428824d331b76a629, type: 3}
   shotVolume: 1

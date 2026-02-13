@@ -85,7 +85,6 @@ public class OverviewCameraController : MonoBehaviour
     }
     public void OnZoom(InputAction.CallbackContext callbackContext)
     {
-        Debug.Log(callbackContext.ReadValue<float>());
         zoomInput = callbackContext.ReadValue<float>();
     }
 }
