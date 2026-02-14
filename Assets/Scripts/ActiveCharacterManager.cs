@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -17,16 +18,23 @@ public class ActiveCharacterManager : MonoBehaviour
     private const int FOLLOW_CAMERA_PRIORITY_DEFAULT = 5;
 
     [SerializeField] private CinemachineCamera followCamera;
+    [SerializeField] private Transform followCameraTarget;
+    [SerializeField] private TopFollowCameraController topFollowCameraController;
     [SerializeField] private CinemachineCamera overviewCamera;
     [SerializeField] private CinemachineBrain cinemachineBrain;
 
     private PlayableCharacter activePlayableCharacter;
-    
+    private CinemachineFollow followCameraFollow;
+
+    private float desiredZoomOutDistance = 25f;
+
     private void Awake()
     {
         Instance = this;
 
         CharacterDeathManager.Instance.OnCharacterKilled += CharacterDeathManager_OnCharacterKilled;
+
+        followCameraFollow = followCamera.GetComponent<CinemachineFollow>();
     }
 
     private void CharacterDeathManager_OnCharacterKilled(object sender, CharacterDeathManager.CharacterKilledEventArgs e)
@@ -44,6 +52,8 @@ public class ActiveCharacterManager : MonoBehaviour
 
     public void SetActivePlayableCharacter(PlayableCharacter playableCharacter)
     {
+        if (activePlayableCharacter != null) return;
+
         StopAllCoroutines();
         StartCoroutine(SwitchCameraTargetRoutine(playableCharacter));
 
@@ -56,7 +66,7 @@ public class ActiveCharacterManager : MonoBehaviour
             return;
 
         activePlayableCharacter = null;
-        followCamera.Target.TrackingTarget = null;
+        topFollowCameraController.RevokeControl();
 
         overviewCamera.gameObject.SetActive(true);
         followCamera.Priority = FOLLOW_CAMERA_PRIORITY_DEFAULT;
@@ -69,25 +79,23 @@ public class ActiveCharacterManager : MonoBehaviour
         OnActiveCharacterChanged?.Invoke(this, new OnActiveCharacterChangedEventArgs { playableCharacter = playableCharacter });
     }
 
-    private System.Collections.IEnumerator SwitchCameraTargetRoutine(PlayableCharacter playableCharacter)
+    private IEnumerator SwitchCameraTargetRoutine(PlayableCharacter playableCharacter)
     {
-        followCamera.Target.TrackingTarget = playableCharacter.GetCameraLookAtPoint();
+        if (playableCharacter == null) yield break;
+        if (followCameraTarget == null) yield break;
 
-        overviewCamera.gameObject.SetActive(false);
-        followCamera.Priority = FOLLOW_CAMERA_PRIORITY_DEFAULT;
-        activePlayableCharacter = null;
+        followCameraTarget.position = playableCharacter.GetCameraLookAtPoint().position;
+        followCamera.Priority = FOLLOW_CAMERA_PRIORITY_ACTIVE;
 
+        // Allow camera blending
         yield return null;
-
-        if (cinemachineBrain != null)
-            yield return new WaitUntil(() => !cinemachineBrain.IsBlending);
-        else
-            yield return null; // fallback
+        while (cinemachineBrain != null && cinemachineBrain.IsBlending)
+        {
+            yield return null;
+        }
 
         activePlayableCharacter = playableCharacter;
-        
-
-        followCamera.Priority = FOLLOW_CAMERA_PRIORITY_ACTIVE;
+        topFollowCameraController.AllowControl();
     }
 
     public bool HasActiveCharacter()

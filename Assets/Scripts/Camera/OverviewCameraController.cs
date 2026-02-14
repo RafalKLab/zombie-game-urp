@@ -5,11 +5,10 @@ using UnityEngine.InputSystem;
 public class OverviewCameraController : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private ActiveCharacterManager activeCharacterManager;
-
     [SerializeField] private CinemachineCamera overviewCamera;
     [SerializeField] private CinemachineFollow overviewCameraFollow;
     [SerializeField] private Transform target;
+    [SerializeField] private Transform topFollowCameraTarget;
 
     [Header("Settings")]
     [SerializeField] private float cameraMovementSpeed = 8f;
@@ -17,6 +16,7 @@ public class OverviewCameraController : MonoBehaviour
     [SerializeField] private float rotationSpeed = 120f;
 
     [SerializeField] private float zoomSpeed = 0.02f;
+    [SerializeField] private float zoomSmooth = 8f;
     [SerializeField] private float minDistance = 6f;
     [SerializeField] private float maxDistance = 35f;
 
@@ -25,6 +25,12 @@ public class OverviewCameraController : MonoBehaviour
     private float rotateInput;
     private bool isSprinting;
     private float zoomInput;
+    private float desiredDistance;
+
+    private void Start()
+    {
+        desiredDistance = overviewCameraFollow.FollowOffset.y;
+    }
 
     private void Update()
     {
@@ -48,26 +54,23 @@ public class OverviewCameraController : MonoBehaviour
         target.position += move * speed * Time.deltaTime;
 
         target.Rotate(Vector3.up, rotateInput * rotationSpeed * Time.deltaTime, Space.World);
+        topFollowCameraTarget.rotation = target.rotation;
     }
 
     private void LateUpdate()
     {
-        if (target == null) return;
-        if (!overviewCamera.IsLive) return;
+        if (target == null || !overviewCamera.IsLive) return;
 
-        if (zoomInput != 0f)
+        if (Mathf.Abs(zoomInput) > 0.0001f)
         {
-            Vector3 offset = overviewCameraFollow.FollowOffset;
-
-            offset.y -= zoomInput * zoomSpeed;
-            offset.y = Mathf.Clamp(offset.y, minDistance, maxDistance);
-
-            overviewCameraFollow.FollowOffset = offset;
-
-            zoomInput = 0f;
+            desiredDistance -= zoomInput * zoomSpeed;
+            desiredDistance = Mathf.Clamp(desiredDistance, minDistance, maxDistance);
         }
-    }
 
+        Vector3 offset = overviewCameraFollow.FollowOffset;
+        offset.y = Mathf.Lerp(offset.y, desiredDistance, zoomSmooth * Time.deltaTime);
+        overviewCameraFollow.FollowOffset = offset;
+    }
 
     public void OnMove(InputAction.CallbackContext callbackContext)
     {
