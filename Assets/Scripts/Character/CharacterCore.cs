@@ -55,6 +55,9 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     private HitscanShooterService hitscanShooterService;
     private CharacterWeaponHandler characterWeaponHandler;
 
+    // Animator
+    private CharacterAnimatorFacade characterAnimatorFacade;
+
     // Movement
     public enum MoveMode { Walk, Run }
 
@@ -69,6 +72,8 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     public float RunSpeed => characterSO.runSpeed;
 
     public float WalkSpeed => characterSO.walkSpeed;
+
+    float rotateTowardsTargetSpeed = 200f;
 
     private void Awake()
     {
@@ -88,6 +93,8 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         characterWeaponHandler = new CharacterWeaponHandler(this, weaponSocket, PistolSocketIdle, RifleSocketIdle);
 
         characterWeaponHandler.InstantiateWeapon(weaponTypeSO);
+
+        characterAnimatorFacade = GetComponent<CharacterAnimatorFacade>();
     }
 
     private void Update()
@@ -120,6 +127,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         ClearAttackTarget();
 
         characterWeaponHandler.HolsterWeapon();
+        characterAnimatorFacade?.DisableAim();
 
         float now = Time.time;
         bool isDoubleClick = (now - lastMoveClickTime) <= runClickWindow;
@@ -140,6 +148,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         agent.isStopped = true;
         agent.ResetPath();
         characterWeaponHandler.PrepareWeapon();
+        characterAnimatorFacade?.EnableAim(weaponTypeSO);
 
         ResetRepositionState();
     }
@@ -244,8 +253,6 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
     private void RotateTowardsTarget(Vector3 targetPos)
     {
-        float rotateSpeed = 400f;
-
         Vector3 lookDir = targetPos - transform.position;
         lookDir.y = 0f;
 
@@ -257,11 +264,11 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         transform.rotation = Quaternion.RotateTowards(
             transform.rotation,
             targetRotation,
-            rotateSpeed * Time.deltaTime
+            rotateTowardsTargetSpeed * Time.deltaTime
         );
     }
 
-    bool IsFacingTarget(Vector3 targetPos, float maxAngleDeg = 7f)
+    bool IsFacingTarget(Vector3 targetPos, float maxAngleDeg = 1f)
     {
         Vector3 toTarget = targetPos - transform.position;
         toTarget.y = 0f;

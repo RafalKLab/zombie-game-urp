@@ -8,6 +8,9 @@ using UnityEngine.AI;
 [RequireComponent(typeof(AiTarget))]
 public class ZombieAi : MonoBehaviour
 {
+    [Header("Debug")]
+    [SerializeField] bool debugFreeze = false;
+
     [SerializeField] EnemyTypeSO enemyTypeSO;
     [SerializeField] private LayerMask targetableMask;
     [SerializeField] private ZombieAnimatorFacade zombieAnimatorFacade;
@@ -79,6 +82,8 @@ public class ZombieAi : MonoBehaviour
 
     private void Update()
     {
+        if (debugFreeze) return;
+
         switch (activeState)
         {
             default:

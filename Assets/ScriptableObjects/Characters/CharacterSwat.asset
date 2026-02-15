@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayableCharacterSO
   prefab: {fileID: 6985511564715820613, guid: 026becf3b90b9ef4d9398339f3bcadd0, type: 3}
   playableCharacterName: CharacterSwat
-  walkSpeed: 4
-  runSpeed: 9
+  walkSpeed: 2
+  runSpeed: 4.5
   maxHealth: 300
