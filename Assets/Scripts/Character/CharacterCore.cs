@@ -20,13 +20,9 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     [SerializeField] private WeaponTypeSO weaponTypeSO;
 
     [Header("Weapon Positions")]
-    //[SerializeField] private Transform pistolAimHand;
-    [SerializeField] private Transform pistolPositionAim;
-    [SerializeField] private Transform pistolPositionIdle;
-
-    //[SerializeField] private Transform rifleAimHand;
-    [SerializeField] private Transform riflePositionAim;
-    [SerializeField] private Transform riflePositionIdle;
+    [SerializeField] private Transform weaponSocket;
+    [SerializeField] private Transform PistolSocketIdle;
+    [SerializeField] private Transform RifleSocketIdle;
 
     [Header("Line of sight")]
     [SerializeField] private Transform eyesPoint;
@@ -159,10 +155,10 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         {
             default:
             case WeaponType.Pistol:
-                weaponPoistion = pistolPositionIdle;
+                weaponPoistion = PistolSocketIdle;
                 break;
             case WeaponType.Rifle:
-                weaponPoistion = riflePositionIdle;
+                weaponPoistion = RifleSocketIdle;
                 break;
         }
 
@@ -195,6 +191,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     public void PrepareWeapon()
     {
         if (weaponTypeSO == null) return;
+        if (weaponSocket == null) return;
         if (isWeaponPrepared) return;
 
         weapon = weaponTransform.GetComponent<Weapon>();
@@ -208,17 +205,22 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         {
             default:
             case WeaponType.Pistol:
-                //pistolAimHand.gameObject.SetActive(true);
-                weaponTransform.SetParent(pistolPositionAim, worldPositionStays: false);
+                weaponTransform.SetParent(weaponSocket, worldPositionStays: false);
                 weaponTransform.localPosition = Vector3.zero;
                 weaponTransform.localRotation = Quaternion.identity;
                 break;
             case WeaponType.Rifle:
-                //rifleAimHand.gameObject.SetActive(true);
-                weaponTransform.SetParent(riflePositionAim, worldPositionStays: false);
+                weaponTransform.SetParent(weaponSocket, worldPositionStays: false);
                 weaponTransform.localPosition = Vector3.zero;
                 weaponTransform.localRotation = Quaternion.identity;
                 break;
+        }
+
+        WeaponPositionInHand weaponPositionInHand = weaponTransform.GetComponentInChildren<WeaponPositionInHand>();
+        if (weaponPositionInHand != null)
+        {
+            weaponTransform.localPosition += weaponPositionInHand.transform.localPosition;
+            weaponTransform.localRotation = Quaternion.Inverse(weaponPositionInHand.transform.localRotation);
         }
 
         weaponCooldown = 0f;
@@ -235,19 +237,16 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         {
             default:
             case WeaponType.Pistol:
-                //pistolAimHand.gameObject.SetActive(false);
-                weaponTransform.SetParent(pistolPositionIdle, worldPositionStays: false);
+                weaponTransform.SetParent(PistolSocketIdle, worldPositionStays: false);
                 weaponTransform.localPosition = Vector3.zero;
                 weaponTransform.localRotation = Quaternion.identity;
                 break;
             case WeaponType.Rifle:
-                //rifleAimHand.gameObject.SetActive(false);
-                weaponTransform.SetParent(riflePositionIdle, worldPositionStays: false);
+                weaponTransform.SetParent(RifleSocketIdle, worldPositionStays: false);
                 weaponTransform.localPosition = Vector3.zero;
                 weaponTransform.localRotation = Quaternion.identity;
                 break;
         }
-
 
         isWeaponPrepared = false;
     }

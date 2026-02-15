@@ -24,17 +24,12 @@ public class ActiveCharacterManager : MonoBehaviour
     [SerializeField] private CinemachineBrain cinemachineBrain;
 
     private PlayableCharacter activePlayableCharacter;
-    private CinemachineFollow followCameraFollow;
-
-    private float desiredZoomOutDistance = 25f;
 
     private void Awake()
     {
         Instance = this;
 
         CharacterDeathManager.Instance.OnCharacterKilled += CharacterDeathManager_OnCharacterKilled;
-
-        followCameraFollow = followCamera.GetComponent<CinemachineFollow>();
     }
 
     private void CharacterDeathManager_OnCharacterKilled(object sender, CharacterDeathManager.CharacterKilledEventArgs e)
