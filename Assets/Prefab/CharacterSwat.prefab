@@ -284,7 +284,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterCore
   characterSO: {fileID: 11400000, guid: 55da81d58cb699c41aec1664a3b937ea, type: 2}
   cameraLookAtPoint: {fileID: 4298324805336489829}
-  weaponTypeSO: {fileID: 11400000, guid: 910cf57229a1d074da9f4b74ed442921, type: 2}
+  weaponTypeSO: {fileID: 11400000, guid: 25e7c5961397cca488bdb51ce68f7a7f, type: 2}
   weaponSocket: {fileID: 8979981976102786670}
   PistolSocketIdle: {fileID: 2600828184786755445}
   RifleSocketIdle: {fileID: 4940211595112884401}

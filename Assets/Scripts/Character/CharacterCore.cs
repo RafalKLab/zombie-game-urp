@@ -41,17 +41,6 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     private NavMeshAgent agent;
     private Health health;
 
-    // Weapon runtime
-    private Transform weaponTransform;
-    private Weapon weapon;
-    private float weaponCooldown;
-    private bool isWeaponPrepared;
-
-    // Ammo
-    private int currentMagazineAmmo;
-    private bool isReloading;
-    private Coroutine reloadRoutine;
-
     // Targeting / combat state
     private AiTarget aiTarget;
 
@@ -62,8 +51,9 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     // Layers
     private int envLayer;
 
-    // Services
+    // Services / Helpers
     private HitscanShooterService hitscanShooterService;
+    private CharacterWeaponHandler characterWeaponHandler;
 
     // Movement
     public enum MoveMode { Walk, Run }
@@ -90,20 +80,21 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
         health.Initialize(characterSO.maxHealth);
 
-        InstantiateWeapon();
         raycastHits = new RaycastHit[raycastBufferSize];
 
         envLayer = LayerMask.NameToLayer("Environment");
 
         hitscanShooterService = new HitscanShooterService(raycastBufferSize, envLayer);
+        characterWeaponHandler = new CharacterWeaponHandler(this, weaponSocket, PistolSocketIdle, RifleSocketIdle);
+
+        characterWeaponHandler.InstantiateWeapon(weaponTypeSO);
     }
 
     private void Update()
     {
         AutoRevertRunToWalkIfStopped();
 
-        if (weaponCooldown > 0f)
-            weaponCooldown -= Time.deltaTime;
+        characterWeaponHandler.TickWeaponCooldown(Time.deltaTime);
 
         if (aiTarget != null) TryToShoot();
     }
@@ -120,7 +111,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
     private void Health_OnDied(object sender, System.EventArgs e)
     {
-        CancelReload();
+        characterWeaponHandler.CancelReload();
         OnKilled?.Invoke(this, EventArgs.Empty);
     }
 
@@ -128,8 +119,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     {
         ClearAttackTarget();
 
-        if (isWeaponPrepared)
-            HolsterWeapon();
+        characterWeaponHandler.HolsterWeapon();
 
         float now = Time.time;
         bool isDoubleClick = (now - lastMoveClickTime) <= runClickWindow;
@@ -144,37 +134,12 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         agent.SetDestination(target);
     }
 
-
-    public void InstantiateWeapon()
-    {
-        if (weaponTypeSO == null) return;
-
-        Transform weaponPoistion;
-
-        switch (weaponTypeSO.weaponType)
-        {
-            default:
-            case WeaponType.Pistol:
-                weaponPoistion = PistolSocketIdle;
-                break;
-            case WeaponType.Rifle:
-                weaponPoistion = RifleSocketIdle;
-                break;
-        }
-
-        weaponTransform = Instantiate(weaponTypeSO.prefab, weaponPoistion);
-        weaponTransform.localPosition = Vector3.zero;
-        weaponTransform.localRotation = Quaternion.identity;
-
-        currentMagazineAmmo = weaponTypeSO.magazineCapacity;
-    }
-
     public void SetAttackTarget(AiTarget aiTarget)
     {
         this.aiTarget = aiTarget;
         agent.isStopped = true;
         agent.ResetPath();
-        PrepareWeapon();
+        characterWeaponHandler.PrepareWeapon();
 
         ResetRepositionState();
     }
@@ -188,77 +153,11 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         ResetRepositionState();
     }
 
-    public void PrepareWeapon()
-    {
-        if (weaponTypeSO == null) return;
-        if (weaponSocket == null) return;
-        if (isWeaponPrepared) return;
-
-        weapon = weaponTransform.GetComponent<Weapon>();
-        if (weapon == null)
-        {
-            Debug.LogError("Weapon instance does not have Weapon script component");
-            return;
-        }
-
-        switch (weaponTypeSO.weaponType)
-        {
-            default:
-            case WeaponType.Pistol:
-                weaponTransform.SetParent(weaponSocket, worldPositionStays: false);
-                weaponTransform.localPosition = Vector3.zero;
-                weaponTransform.localRotation = Quaternion.identity;
-                break;
-            case WeaponType.Rifle:
-                weaponTransform.SetParent(weaponSocket, worldPositionStays: false);
-                weaponTransform.localPosition = Vector3.zero;
-                weaponTransform.localRotation = Quaternion.identity;
-                break;
-        }
-
-        WeaponPositionInHand weaponPositionInHand = weaponTransform.GetComponentInChildren<WeaponPositionInHand>();
-        if (weaponPositionInHand != null)
-        {
-            weaponTransform.localPosition += weaponPositionInHand.transform.localPosition;
-            weaponTransform.localRotation = Quaternion.Inverse(weaponPositionInHand.transform.localRotation);
-        }
-
-        weaponCooldown = 0f;
-
-        isWeaponPrepared = true;
-    }
-
-    public void HolsterWeapon()
-    {
-        if (weaponTransform == null) return;
-        if (!isWeaponPrepared) return;
-
-        switch (weaponTypeSO.weaponType)
-        {
-            default:
-            case WeaponType.Pistol:
-                weaponTransform.SetParent(PistolSocketIdle, worldPositionStays: false);
-                weaponTransform.localPosition = Vector3.zero;
-                weaponTransform.localRotation = Quaternion.identity;
-                break;
-            case WeaponType.Rifle:
-                weaponTransform.SetParent(RifleSocketIdle, worldPositionStays: false);
-                weaponTransform.localPosition = Vector3.zero;
-                weaponTransform.localRotation = Quaternion.identity;
-                break;
-        }
-
-        isWeaponPrepared = false;
-    }
-
     public void TryToShoot()
     {
         if (aiTarget == null) return;
         if (weaponTypeSO == null) return;
-        if (isWeaponPrepared == false) return;
-        if (weapon == null) return;
-        if (weaponCooldown > 0) return;
-        if (isReloading) return;
+        if (!characterWeaponHandler.WeaponIsReadyToShoot()) return;
 
         // Reposition when no line of sight
         if (!HasLineOfSightToTarget(aiTarget))
@@ -298,20 +197,22 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         if (!IsFacingTarget(targetPos))
             return;
 
-        if (currentMagazineAmmo > 0)
+        if (characterWeaponHandler.GetMagazineAmmo() > 0)
         {
             ShootToTarget(targetPos);
-            weaponCooldown = weaponTypeSO.shootCooldown;
-            currentMagazineAmmo -= 1;
+            characterWeaponHandler.UpdateAfterShot();
         }
         else
         {
-            TryStartReload();
+            characterWeaponHandler.TryStartReload();
         }
     }
 
     public void ShootToTarget(Vector3 targetPos)
     {
+        Weapon weapon = characterWeaponHandler.GetWeapon();
+        if (weapon == null) return;
+
         Transform muzzle = weapon.GetMuzzle();
         if (muzzle == null) return;
 
@@ -370,37 +271,6 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         return angle <= maxAngleDeg;
     }
 
-
-    private void TryStartReload()
-    {
-        if (isReloading) return;
-        if (currentMagazineAmmo >= weaponTypeSO.magazineCapacity) return;
-
-        reloadRoutine = StartCoroutine(ReloadRoutine());
-    }
-
-    private IEnumerator ReloadRoutine()
-    {
-        isReloading = true;
-        weapon.PlayReload();
-
-        yield return new WaitForSeconds(weaponTypeSO.reloadTime);
-
-        currentMagazineAmmo += weaponTypeSO.magazineCapacity;
-
-        isReloading = false;
-        reloadRoutine = null;
-    }
-
-    private void CancelReload()
-    {
-        if (reloadRoutine != null)
-        {
-            StopCoroutine(reloadRoutine);
-            reloadRoutine = null;
-        }
-        isReloading = false;
-    }
     private bool HasLineOfSightToTarget(AiTarget target)
     {
         if (target == null) return false;
