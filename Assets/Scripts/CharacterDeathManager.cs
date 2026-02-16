@@ -26,7 +26,7 @@ public class CharacterDeathManager : MonoBehaviour
     {
         PlayableCharacter playableCharacter = sender as PlayableCharacter;
         // we will inform spawner, ui, camera and all other
-        Debug.Log("Gracz zostal zabity!!!");
+        //Debug.Log("Gracz zostal zabity!!!");
         OnCharacterKilled?.Invoke(this, new CharacterKilledEventArgs { playableCharacter = playableCharacter });
     }
 }

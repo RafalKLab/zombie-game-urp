@@ -8,6 +8,7 @@ public class GameInput : MonoBehaviour
 
     public event EventHandler OnMouseRightClick;
     public event EventHandler OnMouseLeftClick;
+    public event EventHandler OnInteractClick;
 
     private InputActions inputActions;
 
@@ -18,16 +19,22 @@ public class GameInput : MonoBehaviour
         inputActions = new InputActions();
         inputActions.Player.Enable();
 
-        inputActions.Player.RightClick.performed += LeftClick_performed;
-        inputActions.Player.LeftClick.performed += LeftClick_performed1;
+        inputActions.Player.RightClick.performed += RightClick_performed;
+        inputActions.Player.LeftClick.performed += LeftClick_performed;
+        inputActions.Player.Interact.performed += Interact_performed;
     }
 
-    private void LeftClick_performed1(InputAction.CallbackContext obj)
+    private void Interact_performed(InputAction.CallbackContext obj)
+    {
+        OnInteractClick?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void LeftClick_performed(InputAction.CallbackContext obj)
     {
         OnMouseLeftClick?.Invoke(this, EventArgs.Empty);
     }
 
-    private void LeftClick_performed(InputAction.CallbackContext obj)
+    private void RightClick_performed(InputAction.CallbackContext obj)
     {
         OnMouseRightClick?.Invoke(this, EventArgs.Empty);
     }

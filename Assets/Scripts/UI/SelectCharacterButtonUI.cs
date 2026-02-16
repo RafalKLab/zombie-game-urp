@@ -6,10 +6,10 @@ public class SelectCharacterButtonUI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI textBlock;
     [SerializeField] private Image backgroundImage;
+    [SerializeField] private Color defaultColor;
+    [SerializeField] private Color selectedColor;
 
     private bool selected = false;
-    private readonly Color defaultColor = Color.white;
-    private readonly Color selectedColor = new Color(0.91f, 0.94f, 1f);
 
     private PlayableCharacter playableCharacter;
 

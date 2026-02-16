@@ -83,4 +83,9 @@ public class PlayableCharacter : MonoBehaviour, ICharacterController
 
         Destroy(gameObject);
     }
+
+    public void TryInteract()
+    {
+        characterCore.TryInteract();
+    }
 }

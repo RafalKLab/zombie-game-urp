@@ -66,7 +66,7 @@ public class ActiveCharacterManager : MonoBehaviour
         overviewCamera.gameObject.SetActive(true);
         followCamera.Priority = FOLLOW_CAMERA_PRIORITY_DEFAULT;
 
-        InvokeOnActiveCharacterChangedEvent(playableCharacter);
+        InvokeOnActiveCharacterChangedEvent(null);
     }
 
     private void InvokeOnActiveCharacterChangedEvent(PlayableCharacter playableCharacter)

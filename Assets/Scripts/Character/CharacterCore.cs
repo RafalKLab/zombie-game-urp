@@ -40,6 +40,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     // Cached components
     private NavMeshAgent agent;
     private Health health;
+    private Interactor interactor;
 
     // Targeting / combat state
     private AiTarget aiTarget;
@@ -79,6 +80,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     {
         health = GetComponent<Health>();
         agent = GetComponent<NavMeshAgent>();
+        interactor = GetComponent<Interactor>();
 
         currentMoveMode = MoveMode.Walk;
         ApplyMoveMode();
@@ -370,6 +372,29 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
             currentMoveMode = MoveMode.Walk;
             ApplyMoveMode();
         }
+    }
+
+
+    public bool HasWeapon()
+    {
+        return weaponTypeSO != null;
+    }
+
+    public bool TrySetWeapon(WeaponTypeSO weaponTypeSO)
+    {
+        if (weaponTypeSO == null) return false;
+        if (HasWeapon()) return false;
+
+        this.weaponTypeSO = weaponTypeSO;
+        characterWeaponHandler.InstantiateWeapon(weaponTypeSO);
+
+        return true;
+    }
+
+    public bool TryInteract()
+    {
+        if (interactor == null) return false;
+        return interactor.TryInteractCurrent();
     }
 
 }
