@@ -14,10 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
   weaponType: 1
   magazineCapacity: 30
+  totalAmmo: 90
   reloadTime: 3
   reloadClip: {fileID: 8300000, guid: b2f81bb8123eff94e80fb22d9691f05c, type: 3}
   reloadVolume: 1
-  damage: 35
+  damage: 1
   range: 100
   effectiveRange: 70
   accuracy: 0.95

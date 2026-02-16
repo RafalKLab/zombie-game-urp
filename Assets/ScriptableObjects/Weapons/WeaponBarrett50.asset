@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
   weaponType: 1
   magazineCapacity: 5
+  totalAmmo: 10
   reloadTime: 6.5
   reloadClip: {fileID: 8300000, guid: 5f3d4113277a54c4181095ece758e518, type: 3}
   reloadVolume: 1

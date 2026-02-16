@@ -21,7 +21,7 @@ public class InteractableWeaponCrate : MonoBehaviour, IInteractable
 
     public string GetInteractPrompt(Interactor interactor)
     {
-        return $"E - Take ({weaponTypeSO.name})";
+        return $"F - Take ({weaponTypeSO.name})";
     }
 
     public bool Interact(Interactor interactor)

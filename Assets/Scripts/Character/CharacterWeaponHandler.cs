@@ -18,6 +18,7 @@ public class CharacterWeaponHandler
 
     // Ammo
     private int currentMagazineAmmo = 0;
+    private int totalAmmo = 0;
     private bool isReloading = false;
     private Coroutine reloadRoutine;
 
@@ -63,6 +64,7 @@ public class CharacterWeaponHandler
         }
 
         currentMagazineAmmo = weaponTypeSO.magazineCapacity;
+        totalAmmo = weaponTypeSO.totalAmmo - currentMagazineAmmo;
     }
 
     public void PrepareWeapon()
@@ -123,6 +125,7 @@ public class CharacterWeaponHandler
         if (weapon == null) return;
         if (isReloading) return;
         if (currentMagazineAmmo >= weaponTypeSO.magazineCapacity) return;
+        if (totalAmmo <= 0) return;
 
         reloadRoutine = runner.StartCoroutine(ReloadRoutine());
     }
@@ -134,7 +137,13 @@ public class CharacterWeaponHandler
 
         yield return new WaitForSeconds(weaponTypeSO.reloadTime);
 
-        currentMagazineAmmo += weaponTypeSO.magazineCapacity;
+        int magazineCapacity = weaponTypeSO.magazineCapacity;
+
+        int missingAmmo = magazineCapacity - currentMagazineAmmo;
+        int ammoToLoad = Mathf.Min(missingAmmo, totalAmmo);
+
+        currentMagazineAmmo += ammoToLoad;
+        totalAmmo -= ammoToLoad;
 
         isReloading = false;
         reloadRoutine = null;
