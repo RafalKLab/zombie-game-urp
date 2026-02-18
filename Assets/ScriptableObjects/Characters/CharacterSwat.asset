@@ -18,3 +18,4 @@ MonoBehaviour:
   walkSpeed: 2
   runSpeed: 4.5
   maxHealth: 300
+  aimingTime: 0.3

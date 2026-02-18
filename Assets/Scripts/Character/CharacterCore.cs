@@ -37,6 +37,17 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     [SerializeField] private Transform eyesPoint;
     [SerializeField] private LayerMask lineOfSightMask;
 
+    [Header("Strafe settings")]
+    [SerializeField] private float strafeMaxDistance = 2f;
+    [SerializeField] private float strafeStep = 0.5f;
+    [SerializeField] private float strafeNavMeshSampleRadius = 0.4f;
+    [SerializeField] private float strafeCapsuleExtraRadius = 0.05f;
+    [SerializeField] private float peekOvershoot = 0.6f;
+    [SerializeField] private float peekOvershootSampleRadius = 0.5f;
+
+    [Header("Shooting settings")]
+    [SerializeField] private int maxConsecutiveMisses = 10;
+
     // Reposition timing
     private float losGraceTime = 2f;
     private float repositionInterval = 1f;
@@ -84,6 +95,13 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     public float WalkSpeed => characterSO.walkSpeed;
 
     float rotateTowardsTargetSpeed = 200f;
+
+    // Shooting settings runtime
+    private int consecutiveMisses = 0;
+    private bool firstShotPending = false;
+    private bool aimingTimerStarted = false;
+    private float aimingReadyTime = 0f;
+
 
     private void Awake()
     {
@@ -183,6 +201,9 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         characterAnimatorFacade?.EnableAim(weaponTypeSO);
 
         ResetRepositionState();
+
+        firstShotPending = (this.aiTarget != null);
+        aimingTimerStarted = false;
     }
 
     public void ClearAttackTarget()
@@ -192,6 +213,9 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         agent.ResetPath();
 
         ResetRepositionState();
+
+        firstShotPending = false;
+        aimingTimerStarted = false;
     }
 
     public void TryToShoot()
@@ -203,6 +227,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         // Reposition when no line of sight
         if (!HasLineOfSightToTarget(aiTarget))
         {
+            aimingTimerStarted = false;
             noLosTimer += Time.deltaTime;
 
             if (noLosTimer < losGraceTime)
@@ -238,6 +263,22 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         if (!IsFacingTarget(targetPos))
             return;
 
+        if (firstShotPending)
+        {
+            if (!aimingTimerStarted)
+            {
+                aimingTimerStarted = true;
+                aimingReadyTime = Time.time + characterSO.aimingTime;
+                return; // ta klatka tylko "odpala" timer
+            }
+
+            if (Time.time < aimingReadyTime)
+                return;
+
+            firstShotPending = false;
+            aimingTimerStarted = false;
+        }
+
         if (characterWeaponHandler.GetMagazineAmmo() > 0)
         {
             ShootToTarget(targetPos);
@@ -272,12 +313,18 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
         Vector3 direction = AimSpreadService.ApplyConeSpread(baseDirection, spread);
 
-
         ShotResult shot = hitscanShooterService.Shoot(origin, direction, weaponTypeSO, transform.root, aiTarget);
-
         weapon.PlayShot(shot);
         weapon.PlayCooldown();
 
+        if (shot.HitActiveTarget) consecutiveMisses = 0;
+        else consecutiveMisses++;
+
+        if (consecutiveMisses >= maxConsecutiveMisses)
+        {
+            consecutiveMisses = 0;
+            ClearAttackTarget();
+        }
 
         if (shot.ActiveTargetKilled)
             ClearAttackTarget();
@@ -344,6 +391,43 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         return false;
     }
 
+    private bool HasLineOfSightToTarget(AiTarget target, Vector3 fromCharacterPosition)
+    {
+        if (target == null) return false;
+
+        Transform aim = target.GetAimPoint();
+        if (aim == null) return false;
+
+        if (eyesPoint == null) return false;
+
+        Vector3 eyesOffset = eyesPoint.position - transform.position;
+
+        Vector3 origin = fromCharacterPosition + eyesOffset;
+        Vector3 dest = aim.position;
+
+        Vector3 dir = dest - origin;
+        float dist = dir.magnitude;
+        if (dist < 0.01f) return true;
+
+        Vector3 dirNorm = dir / dist;
+
+        var hits = Physics.RaycastAll(origin, dirNorm, dist, lineOfSightMask, QueryTriggerInteraction.Ignore);
+        if (hits == null || hits.Length == 0) return false;
+
+        Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        foreach (var h in hits)
+        {
+            if (h.collider.transform.IsChildOf(transform) || transform.IsChildOf(h.collider.transform))
+                continue;
+
+            return h.collider.GetComponentInParent<AiTarget>() == target;
+        }
+
+        return false;
+    }
+
+
     public Transform GetCameraLookAtPoint()
     {
         return cameraLookAtPoint;
@@ -359,8 +443,33 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         repositionTries++;
 
         agent.isStopped = false;
+
+        if (TryFindStrafePeekPoint(out Vector3 peekPoint))
+        {
+            Vector3 dir = peekPoint - transform.position;
+            dir.y = 0f;
+
+            if (dir.sqrMagnitude > 0.0001f)
+            {
+                Vector3 overshootCandidate = peekPoint + dir.normalized * peekOvershoot;
+
+                if (UnityEngine.AI.NavMesh.SamplePosition(
+                        overshootCandidate,
+                        out UnityEngine.AI.NavMeshHit hit,
+                        peekOvershootSampleRadius,
+                        agent.areaMask))
+                {
+                    peekPoint = hit.position;
+                }
+            }
+
+            agent.SetDestination(peekPoint);
+            return;
+        }
+
         agent.SetDestination(aiTarget.transform.position);
     }
+
 
     private bool IsTargetInWeaponEffectiveRange(Vector3 targetPos, Vector3 origin)
     {
@@ -446,4 +555,73 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     {
         return characterWeaponHandler.GetAmmoInfo();
     }
+
+    private bool TryFindStrafePeekPoint(out Vector3 bestPoint)
+    {
+        bestPoint = default;
+
+        if (aiTarget == null) return false;
+        if (agent == null) return false;
+
+        Vector3 originPos = transform.position;
+        Vector3 targetPos = aiTarget.transform.position;
+
+        Vector3 toTarget = (targetPos - originPos);
+        toTarget.y = 0f;
+        if (toTarget.sqrMagnitude < 0.0001f) return false;
+        toTarget.Normalize();
+
+        // lewo/prawo wzgledem celu
+        Vector3 left = Vector3.Cross(Vector3.up, toTarget).normalized;
+        Vector3 right = -left;
+
+        // parametry kapsuly dla checow
+        float radius = agent.radius + strafeCapsuleExtraRadius;
+        float height = Mathf.Max(agent.height, radius * 2f);
+        Vector3 up = Vector3.up;
+
+        // capsule endpoints (w swiecie) dla pozycji "stop" = candidate
+        float bottomOffset = radius;
+        float topOffset = height - radius;
+
+        Vector3[] sides = UnityEngine.Random.value < 0.5f
+            ? new[] { left, right }
+            : new[] { right, left };
+
+        for (float d = strafeStep; d <= strafeMaxDistance + 0.001f; d += strafeStep)
+        {
+            for (int s = 0; s < sides.Length; s++)
+            {
+                Vector3 candidateRaw = originPos + sides[s] * d;
+
+                // 1) NavMesh sample (czy w ogole jest gdzie stanac)
+                if (!NavMesh.SamplePosition(candidateRaw, out NavMeshHit hit, strafeNavMeshSampleRadius, agent.areaMask))
+                    continue;
+
+                Vector3 candidate = hit.position;
+
+                // 2) NavMesh raycast (czy agent moze dojsc do tego miejsca po navmesh bez "sciany")
+                if (NavMesh.Raycast(originPos, candidate, out _, agent.areaMask))
+                    continue;
+
+                // 3) Kolizje fizyczne (czy nie wpychamy w collider)
+                Vector3 p1 = candidate + up * bottomOffset;
+                Vector3 p2 = candidate + up * topOffset;
+
+                // Uwaga: uzywam ~0 (wszystkie warstwy) i Ignore triggers, bo to typowy przypadek.
+                if (Physics.CheckCapsule(p1, p2, radius, ~0, QueryTriggerInteraction.Ignore))
+                    continue;
+
+                // 4) LOS z tej pozycji
+                if (!HasLineOfSightToTarget(aiTarget, candidate))
+                    continue;
+
+                bestPoint = candidate;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 }

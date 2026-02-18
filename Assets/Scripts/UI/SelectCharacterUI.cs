@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SelectCharacterUI : MonoBehaviour
 {
@@ -93,6 +94,8 @@ public class SelectCharacterUI : MonoBehaviour
 
         selectCharacterButtonUI.SetData(playableCharacter);
 
+        LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)transform);
+
         buttonByPlayableCharacter[playableCharacter] = selectCharacterButtonUI;
     }
 
@@ -108,6 +111,7 @@ public class SelectCharacterUI : MonoBehaviour
             }
 
             buttonByPlayableCharacter.Remove(playableCharacter);
+            LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)transform);
         }
     }
 

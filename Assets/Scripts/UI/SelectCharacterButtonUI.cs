@@ -29,7 +29,7 @@ public class SelectCharacterButtonUI : MonoBehaviour
     public void SetData(PlayableCharacter playableCharacter)
     {
         this.playableCharacter = playableCharacter;
-        textBlock.text = "Placeholder text";
+        textBlock.text = playableCharacter.GetCharacterCore().GetCharacterSO().characterName;
     }
 
     private void OnButtonClicked()

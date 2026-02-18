@@ -401,7 +401,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterCore
   characterSO: {fileID: 11400000, guid: 66f0f615670c10243abab7442d51fecd, type: 2}
   cameraLookAtPoint: {fileID: 4298324805336489829}
-  weaponTypeSO: {fileID: 0}
+  weaponTypeSO: {fileID: 11400000, guid: 25e7c5961397cca488bdb51ce68f7a7f, type: 2}
   weaponSocket: {fileID: 1367704028181128846}
   PistolSocketIdle: {fileID: 5036379054756461963}
   RifleSocketIdle: {fileID: 6080125182333243591}
@@ -409,6 +409,13 @@ MonoBehaviour:
   lineOfSightMask:
     serializedVersion: 2
     m_Bits: 320
+  strafeMaxDistance: 2
+  strafeStep: 0.5
+  strafeNavMeshSampleRadius: 0.4
+  strafeCapsuleExtraRadius: 0.05
+  peekOvershoot: 0.6
+  peekOvershootSampleRadius: 0.5
+  maxConsecutiveMisses: 10
 --- !u!95 &3512837619476537660
 Animator:
   serializedVersion: 7

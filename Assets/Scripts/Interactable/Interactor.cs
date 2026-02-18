@@ -121,4 +121,8 @@ public class Interactor : MonoBehaviour
             new OnInteractableChangeEventArgs { interactable = newInteractable });
     }
 
+    public IInteractable GetCurrentInteractable()
+    {
+        return interactableCurrent;
+    }
 }

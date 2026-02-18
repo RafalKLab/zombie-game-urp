@@ -37,7 +37,16 @@ public class InteractionUIManager : MonoBehaviour
         }
 
         activeInteractor.OnInteractableChange += OnInteractableChange;
-        Hide();
+
+        var currentInteractable = activeInteractor.GetCurrentInteractable();
+        if (currentInteractable != null)
+        {
+            UpdateCanvasVisual(currentInteractable);
+        }
+        else
+        {
+            Hide();
+        }
     }
 
     private void Unsubscribe()

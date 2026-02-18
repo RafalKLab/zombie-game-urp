@@ -76,6 +76,9 @@ public sealed class HitscanShooterService
 
             penetrationsDone++;
 
+            if (isActive)
+                result.HitActiveTarget = true;
+
             if (isActive && health.IsDead)
                 result.ActiveTargetKilled = true;
 
@@ -115,4 +118,5 @@ public struct ShotResult
     public Vector3 EndPoint;
     public bool DidHitSomething;
     public bool ActiveTargetKilled;
+    public bool HitActiveTarget;
 }

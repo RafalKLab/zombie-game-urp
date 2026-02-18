@@ -16,4 +16,7 @@ public class CharacterSO : ScriptableObject
 
     [Header("Stats")]
     public float maxHealth;
+
+    [Header("Shooting")]
+    public float aimingTime;
 }
