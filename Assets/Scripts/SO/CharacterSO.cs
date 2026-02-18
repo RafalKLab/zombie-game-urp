@@ -3,9 +3,17 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "ScriptableObjects/Character")]
 public class CharacterSO : ScriptableObject
 {
+    [Header("Visual")]
     public Transform prefab;
-    public string playableCharacterName;
+    public Sprite sprite;
+
+    [Header("Identity")]
+    public string characterName;
+
+    [Header("Movement")]
     public float walkSpeed;
     public float runSpeed;
+
+    [Header("Stats")]
     public float maxHealth;
 }

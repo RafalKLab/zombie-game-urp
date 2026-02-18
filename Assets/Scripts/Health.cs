@@ -74,4 +74,9 @@ public class Health : MonoBehaviour
             OnDied?.Invoke(this, EventArgs.Empty);
         }
     }
+
+    public float GetNormalizedHealth()
+    {
+        return currentHealth / maxHealth;
+    }
 }

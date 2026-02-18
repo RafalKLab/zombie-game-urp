@@ -12,13 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6276e8aa5ee9a6e4c866241d1d217ace, type: 3}
   m_Name: WeaponAk47
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
+  weaponName: Ak47
   weaponType: 1
   magazineCapacity: 30
   totalAmmo: 90
   reloadTime: 3
   reloadClip: {fileID: 8300000, guid: b2f81bb8123eff94e80fb22d9691f05c, type: 3}
   reloadVolume: 1
-  damage: 1
+  damage: 35
   range: 100
   effectiveRange: 70
   accuracy: 0.95
@@ -33,5 +34,6 @@ MonoBehaviour:
     m_Bits: 320
   prefab: {fileID: 2298662017938403109, guid: 6ffb8f310e3ff9649bda5321af5a79ad, type: 3}
   tracerTypeSO: {fileID: 11400000, guid: 39a813ec0f76fb54a9c131b6ca30f975, type: 2}
+  sprite: {fileID: 21300000, guid: 75beeaae03bcdd041911caebdbec3052, type: 3}
   shotClip: {fileID: 8300000, guid: e6fa8bee795bf364bb10c0d8ac0413a0, type: 3}
   shotVolume: 1

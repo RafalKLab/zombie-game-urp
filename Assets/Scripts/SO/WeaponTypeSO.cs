@@ -4,6 +4,7 @@ using UnityEngine;
 public class WeaponTypeSO : ScriptableObject
 {
     [Header("Identity")]
+    public string weaponName;
     public WeaponType weaponType;
 
     [Header("Reload")]
@@ -45,6 +46,7 @@ public class WeaponTypeSO : ScriptableObject
     [Header("Visual")]
     public Transform prefab;
     public TracerTypeSO tracerTypeSO;
+    public Sprite sprite;
 
     [Header("Shot audio")]
     public AudioClip shotClip;

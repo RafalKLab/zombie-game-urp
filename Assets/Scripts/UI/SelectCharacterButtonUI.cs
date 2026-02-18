@@ -5,37 +5,25 @@ using UnityEngine.UI;
 public class SelectCharacterButtonUI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI textBlock;
-    [SerializeField] private Image backgroundImage;
-    [SerializeField] private Color defaultColor;
-    [SerializeField] private Color selectedColor;
-
-    private bool selected = false;
 
     private PlayableCharacter playableCharacter;
+    private Button button;
 
-    private void Start()
+    private void Awake()
     {
-        GetComponent<Button>().onClick.AddListener(ButtonOnClickAction);
-        ActiveCharacterManager.Instance.OnActiveCharacterChanged += ActiveCharacterManager_OnActiveCharacterChanged;
-
-        CharacterDeathManager.Instance.OnCharacterKilled += CharacterDeathManager_OnCharacterKilled;
+        button = GetComponent<Button>();
     }
 
-    private void CharacterDeathManager_OnCharacterKilled(object sender, CharacterDeathManager.CharacterKilledEventArgs e)
+    private void OnEnable()
     {
-        if (playableCharacter == e.playableCharacter)
-        {
-            Destroy(gameObject);
-        }
+        if (button != null)
+            button.onClick.AddListener(OnButtonClicked);
     }
 
-    private void ActiveCharacterManager_OnActiveCharacterChanged(object sender, ActiveCharacterManager.OnActiveCharacterChangedEventArgs e)
+    private void OnDisable()
     {
-        if (e.playableCharacter != playableCharacter)
-        {
-            selected = false;
-            backgroundImage.color = defaultColor;
-        }
+        if (button != null)
+            button.onClick.RemoveListener(OnButtonClicked);
     }
 
     public void SetData(PlayableCharacter playableCharacter)
@@ -44,28 +32,13 @@ public class SelectCharacterButtonUI : MonoBehaviour
         textBlock.text = "Placeholder text";
     }
 
-    private void ButtonOnClickAction()
+    private void OnButtonClicked()
     {
-        if (selected) {
-            
-            ActiveCharacterManager.Instance.UnsetActivePlayableCharacter(playableCharacter);
-            selected = false;
-            backgroundImage.color = defaultColor;
-        }
-        else
-        {
-            ActiveCharacterManager.Instance.SetActivePlayableCharacter(playableCharacter);
-            selected = true;
-            backgroundImage.color = selectedColor;
-        }
-    }
+        if (playableCharacter == null) return;
 
-    private void OnDestroy()
-    {
-        if (ActiveCharacterManager.Instance != null)
-            ActiveCharacterManager.Instance.OnActiveCharacterChanged -= ActiveCharacterManager_OnActiveCharacterChanged;
+        ActiveCharacterManager activeCharacterManager = ActiveCharacterManager.Instance;
+        if (activeCharacterManager == null) return;
 
-        if (CharacterDeathManager.Instance != null)
-            CharacterDeathManager.Instance.OnCharacterKilled -= CharacterDeathManager_OnCharacterKilled;
+        activeCharacterManager.SetActivePlayableCharacter(playableCharacter);
     }
 }

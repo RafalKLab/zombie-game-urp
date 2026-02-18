@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6276e8aa5ee9a6e4c866241d1d217ace, type: 3}
   m_Name: WeaponGlock
   m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
+  weaponName: Glock
   weaponType: 0
   magazineCapacity: 12
   totalAmmo: 36
@@ -33,5 +34,6 @@ MonoBehaviour:
     m_Bits: 320
   prefab: {fileID: 2298662017938403109, guid: 9ba6f8c7188c57640b091d2101fe0d19, type: 3}
   tracerTypeSO: {fileID: 11400000, guid: 3f2bcd82823ae1f48ad2b52ec1ed3e3a, type: 2}
+  sprite: {fileID: 21300000, guid: c738e85e28d0a9b40b03dcfb9d4e6af1, type: 3}
   shotClip: {fileID: 8300000, guid: 699cdf62c86df22498b1de1125cb9e50, type: 3}
   shotVolume: 1

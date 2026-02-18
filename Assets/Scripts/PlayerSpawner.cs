@@ -10,6 +10,12 @@ public class PlayerSpawner : MonoBehaviour
         public PlayableCharacter playableCharacter;
     }
 
+    public event EventHandler<OnPlayableCharacterRemovedEventArgs> OnPlayableCharacterRemoved;
+    public class OnPlayableCharacterRemovedEventArgs : EventArgs
+    {
+        public PlayableCharacter playableCharacter;
+    }
+
     public static PlayerSpawner Instance { get; private set; }
 
     // id => PlayableCharacter
@@ -69,7 +75,15 @@ public class PlayerSpawner : MonoBehaviour
 
     private void CharacterDeathManager_OnCharacterKilled(object sender, CharacterDeathManager.CharacterKilledEventArgs e)
     {
-        spawnedPlayableCharacterDictionary.Remove(e.playableCharacter.GetInstanceGuid());
+        bool wasRemoved = spawnedPlayableCharacterDictionary.Remove(e.playableCharacter.GetInstanceGuid());
+
+        if (wasRemoved)
+        {
+            OnPlayableCharacterRemoved?.Invoke(this, new OnPlayableCharacterRemovedEventArgs
+            {
+                playableCharacter = e.playableCharacter
+            });
+        }
     }
 
     public Dictionary<string, PlayableCharacter> GetSpawnedPlayableCharacterDictionary()

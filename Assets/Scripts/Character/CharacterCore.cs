@@ -11,6 +11,12 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     // Events
     public event EventHandler OnKilled;
 
+    public event EventHandler<OnDamagedEventArgs> OnDamaged;
+    public class OnDamagedEventArgs : EventArgs
+    {
+        public float currentHealthNormalized;
+    }
+
     // Inspector references
     [Header("References")]
     [SerializeField] private CharacterSO characterSO;
@@ -111,17 +117,26 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     private void OnEnable()
     {
         health.OnDied += Health_OnDied;
+        health.OnDamaged += Health_OnDamaged; ;
     }
 
     private void OnDisable()
     {
         health.OnDied -= Health_OnDied;
+        health.OnDamaged -= Health_OnDamaged;
     }
 
     private void Health_OnDied(object sender, System.EventArgs e)
     {
         characterWeaponHandler.CancelReload();
         OnKilled?.Invoke(this, EventArgs.Empty);
+    }
+    private void Health_OnDamaged(object sender, Health.OnDamagedEventArgs e)
+    {
+        OnDamaged?.Invoke(this, new OnDamagedEventArgs
+        {
+            currentHealthNormalized = e.currentHealthNormalized,
+        });
     }
 
     public void MoveTo(Vector3 target)
@@ -397,4 +412,18 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         return interactor.TryInteractCurrent();
     }
 
+    public float GetNormalizedHealth()
+    {
+        return health.GetNormalizedHealth();
+    }
+
+    public WeaponTypeSO GetWeaponTypeSO()
+    {
+        return weaponTypeSO;
+    }
+
+    public CharacterSO GetCharacterSO()
+    {
+        return characterSO;
+    }
 }
