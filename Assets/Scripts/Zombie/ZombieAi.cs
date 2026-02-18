@@ -288,19 +288,19 @@ public class ZombieAi : MonoBehaviour
         return false;
     }
 
-    private void OnDrawGizmosSelected()
-    {
-        if (enemyTypeSO == null) return;
+    //private void OnDrawGizmosSelected()
+    //{
+    //    if (enemyTypeSO == null) return;
 
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, enemyTypeSO.detectRadius);
+    //    Gizmos.color = Color.red;
+    //    Gizmos.DrawWireSphere(transform.position, enemyTypeSO.detectRadius);
 
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(transform.position, enemyTypeSO.wanderRadius);
+    //    Gizmos.color = Color.green;
+    //    Gizmos.DrawWireSphere(transform.position, enemyTypeSO.wanderRadius);
 
-        Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(transform.position, enemyTypeSO.attackRange);
-    }
+    //    Gizmos.color = Color.blue;
+    //    Gizmos.DrawWireSphere(transform.position, enemyTypeSO.attackRange);
+    //}
 
     private void SetStateWander()
     {

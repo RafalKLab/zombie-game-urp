@@ -1,10 +1,10 @@
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class SelectedCharacterUI : MonoBehaviour
 {
+    // Serialized
     [Header("Character Visual")]
     [SerializeField] private Image characterImage;
     [SerializeField] private Image weaponImage;
@@ -22,8 +22,21 @@ public class SelectedCharacterUI : MonoBehaviour
     [Header("Controls")]
     [SerializeField] private Button closeButton;
 
+    // Runtime
     private PlayableCharacter playableCharacter;
     private CharacterCore characterCore;
+
+    // Lifecycle
+    private void Awake()
+    {
+        Debug.Assert(characterImage != null, "CharacterImage not assigned");
+        Debug.Assert(weaponImage != null, "WeaponImage not assigned");
+        Debug.Assert(healbarImage != null, "HealbarImage not assigned");
+        Debug.Assert(characterName != null, "CharacterName not assigned");
+        Debug.Assert(ammo != null, "Ammo text not assigned");
+        Debug.Assert(totalAmmo != null, "TotalAmmo text not assigned");
+        Debug.Assert(closeButton != null, "CloseButton not assigned");
+    }
 
     private void OnEnable()
     {
@@ -39,6 +52,7 @@ public class SelectedCharacterUI : MonoBehaviour
         UnsubscribeFromCharacterCoreEvents();
     }
 
+    // Public API
     public void Activate(PlayableCharacter playableCharacter)
     {
         this.playableCharacter = playableCharacter;
@@ -70,11 +84,14 @@ public class SelectedCharacterUI : MonoBehaviour
         activeCharacterManager.UnsetActivePlayableCharacter(playableCharacter);
     }
 
+    // Events
     private void SubscribeToCharacterCoreEvents()
     {
         if (characterCore == null) return;
 
-        characterCore.OnDamaged += CharacterCore_OnDamaged; ;
+        characterCore.OnDamaged += CharacterCore_OnDamaged;
+        characterCore.OnWeaponChanged += CharacterCore_OnWeaponChanged;
+        characterCore.OnAmmoChanged += CharacterCore_OnAmmoChanged;
     }
 
     private void UnsubscribeFromCharacterCoreEvents()
@@ -82,11 +99,29 @@ public class SelectedCharacterUI : MonoBehaviour
         if (characterCore == null) return;
 
         characterCore.OnDamaged -= CharacterCore_OnDamaged;
+        characterCore.OnWeaponChanged -= CharacterCore_OnWeaponChanged;
+        characterCore.OnAmmoChanged -= CharacterCore_OnAmmoChanged;
     }
 
+    private void CharacterCore_OnDamaged(object sender, CharacterCore.OnDamagedEventArgs e)
+    {
+        healbarImage.fillAmount = e.currentHealthNormalized;
+    }
+
+    private void CharacterCore_OnWeaponChanged()
+    {
+        UpdateWeaponVisual();
+    }
+
+    private void CharacterCore_OnAmmoChanged()
+    {
+        UpdateAmmoVisual();
+    }
+
+
+    // Visuals
     private void RefreshUIFromCharacter()
     {
-        if (healbarImage == null) return;
         if (characterCore == null) return;
 
         healbarImage.fillAmount = characterCore.GetNormalizedHealth();
@@ -103,24 +138,37 @@ public class SelectedCharacterUI : MonoBehaviour
             characterName.text = "";
         }
 
+        UpdateWeaponVisual();
+    }
+
+    private void UpdateWeaponVisual()
+    {
+        if (characterCore == null) return;
+
         WeaponTypeSO weaponTypeSO = characterCore.GetWeaponTypeSO();
-        if (weaponTypeSO != null)
-        {
-            weaponImage.sprite = weaponTypeSO.sprite;
-            ammo.text = $"{weaponTypeSO.magazineCapacity} / {weaponTypeSO.magazineCapacity}";
-            totalAmmo.text = weaponTypeSO.totalAmmo.ToString();
-        } else
+        if (weaponTypeSO == null)
         {
             weaponImage.gameObject.SetActive(false);
-            ammo.text = "";
-            totalAmmo.text = "";
+            ammo.gameObject.SetActive(false);
+            totalAmmo.gameObject.SetActive(false);
+        }
+        else
+        {
+            weaponImage.sprite = weaponTypeSO.sprite;
+            weaponImage.gameObject.SetActive(true);
+            ammo.gameObject.SetActive(true);
+            totalAmmo.gameObject.SetActive(true);
+            UpdateAmmoVisual();
         }
     }
 
-    private void CharacterCore_OnDamaged(object sender, CharacterCore.OnDamagedEventArgs e)
+    private void UpdateAmmoVisual()
     {
-        if (healbarImage == null) return;
+        if (characterCore == null) return;
 
-        healbarImage.fillAmount = e.currentHealthNormalized;
+        CharacterWeaponHandler.AmmoInfo ammoInfo = characterCore.GetAmmoInfo();
+
+        ammo.text = $"{ammoInfo.CurrentAmmo} / {ammoInfo.MagazineSize}";
+        totalAmmo.text = ammoInfo.TotalAmmo.ToString();
     }
 }

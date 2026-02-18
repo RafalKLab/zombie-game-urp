@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 using static CharacterCore;
+using static CharacterWeaponHandler;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(Health))]
@@ -10,6 +11,8 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 {
     // Events
     public event EventHandler OnKilled;
+    public event Action OnWeaponChanged;
+    public event Action OnAmmoChanged;
 
     public event EventHandler<OnDamagedEventArgs> OnDamaged;
     public class OnDamagedEventArgs : EventArgs
@@ -99,6 +102,8 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
         hitscanShooterService = new HitscanShooterService(raycastBufferSize, envLayer);
         characterWeaponHandler = new CharacterWeaponHandler(this, weaponSocket, PistolSocketIdle, RifleSocketIdle);
+        characterWeaponHandler.OnWeaponChanged += CharacterWeaponHandler_OnWeaponChanged;
+        characterWeaponHandler.OnAmmoChanged += CharacterWeaponHandler_OnAmmoChanged;
 
         characterWeaponHandler.InstantiateWeapon(weaponTypeSO);
 
@@ -137,6 +142,16 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         {
             currentHealthNormalized = e.currentHealthNormalized,
         });
+    }
+
+    private void CharacterWeaponHandler_OnWeaponChanged()
+    {
+        OnWeaponChanged?.Invoke();
+    }
+
+    private void CharacterWeaponHandler_OnAmmoChanged()
+    {
+        OnAmmoChanged?.Invoke();
     }
 
     public void MoveTo(Vector3 target)
@@ -425,5 +440,10 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     public CharacterSO GetCharacterSO()
     {
         return characterSO;
+    }
+
+    public AmmoInfo GetAmmoInfo()
+    {
+        return characterWeaponHandler.GetAmmoInfo();
     }
 }

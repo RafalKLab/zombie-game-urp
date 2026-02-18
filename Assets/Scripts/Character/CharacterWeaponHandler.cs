@@ -1,8 +1,33 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
 public class CharacterWeaponHandler
 {
+    public readonly struct AmmoInfo
+    {
+        public int CurrentAmmo { get; }
+        public int TotalAmmo { get; }
+        public int MagazineSize { get; }
+
+        public AmmoInfo(int currentAmmo, int totalAmmo, int magazineSize)
+        {
+            CurrentAmmo = currentAmmo;
+            TotalAmmo = totalAmmo;
+            MagazineSize = magazineSize;
+        }
+    }
+
+    public event Action OnWeaponChanged;
+    public event Action OnAmmoChanged;
+
+    public class WeaponDataEventArgs : EventArgs
+    {
+        public int ammo;
+        public int totalAmmo;
+        public WeaponTypeSO weaponTypeSO;
+    }
+
     private WeaponTypeSO weaponTypeSO;
     private Transform weaponSocket;
     private Transform pistolSocketIdle;
@@ -65,6 +90,8 @@ public class CharacterWeaponHandler
 
         currentMagazineAmmo = weaponTypeSO.magazineCapacity;
         totalAmmo = weaponTypeSO.totalAmmo - currentMagazineAmmo;
+
+        OnWeaponChanged?.Invoke();
     }
 
     public void PrepareWeapon()
@@ -147,6 +174,7 @@ public class CharacterWeaponHandler
 
         isReloading = false;
         reloadRoutine = null;
+        OnAmmoChanged?.Invoke();
     }
 
     public void CancelReload()
@@ -184,5 +212,14 @@ public class CharacterWeaponHandler
     {
         weaponCooldown = weaponTypeSO.shootCooldown;
         currentMagazineAmmo -= 1;
+        OnAmmoChanged?.Invoke();
     }
+
+    public AmmoInfo GetAmmoInfo()
+    {
+        if (weaponTypeSO == null) return new AmmoInfo();
+        if (weapon == null) return new AmmoInfo();
+
+        return new AmmoInfo(currentMagazineAmmo, totalAmmo, weaponTypeSO.magazineCapacity);
+    }   
 }

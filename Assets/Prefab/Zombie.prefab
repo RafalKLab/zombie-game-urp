@@ -153,7 +153,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 305e14f405cf43a4dbe95c90ace1a166, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAi
-  debugFreeze: 0
+  debugFreeze: 1
   enemyTypeSO: {fileID: 11400000, guid: 0692812cd665616429f65e1d87de38fc, type: 2}
   targetableMask:
     serializedVersion: 2
