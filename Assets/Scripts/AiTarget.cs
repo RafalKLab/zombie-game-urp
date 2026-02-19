@@ -16,10 +16,4 @@ public class AiTarget : MonoBehaviour
     }
 }
 
-public enum Faction
-{
-    Player,
-    Zombie,
-    Hostile,
-}
 

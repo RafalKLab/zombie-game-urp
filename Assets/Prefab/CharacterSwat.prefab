@@ -414,6 +414,7 @@ GameObject:
   - component: {fileID: 7383713440502394080}
   - component: {fileID: 2684976700645901243}
   - component: {fileID: 8368661575692318526}
+  - component: {fileID: 2405331606338227595}
   m_Layer: 0
   m_Name: CharacterSwat
   m_TagString: Untagged
@@ -682,6 +683,32 @@ MonoBehaviour:
     m_Bits: 512
   interactableDetectCooldownMax: 0.5
   interactionPivot: {fileID: 2852314168334636888}
+--- !u!114 &2405331606338227595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3793638073760354250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79c993e12adf0764fa2549d1352ff4f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterAi
+  mainState: 0
+  characterAiStateIdleHelper:
+    idleStandMin: 3
+    idleStandMax: 6
+    arriveDistance: 0.5
+    navmeshSampleMaxDistance: 2
+    idleSubState: 0
+  characterAiStateDefendHelper:
+    defendDetectionCooldown: 0.5
+    targetableMask:
+      serializedVersion: 2
+      m_Bits: 64
+    defendHoldArriveDistance: 0.8
+    defendSubState: 0
 --- !u!1 &3822019871363976791
 GameObject:
   m_ObjectHideFlags: 0

@@ -206,6 +206,20 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         aimingTimerStarted = false;
     }
 
+    public bool PrepareWeapon()
+    {
+        characterWeaponHandler.PrepareWeapon();
+        characterAnimatorFacade?.EnableAim(weaponTypeSO);
+
+        return characterWeaponHandler.GetIsPrepared();
+    }
+
+    public void HolsterWeapon()
+    {
+        characterWeaponHandler.HolsterWeapon();
+        characterAnimatorFacade?.DisableAim();
+    }
+
     public void ClearAttackTarget()
     {
         this.aiTarget = null;
@@ -502,6 +516,16 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
             : characterSO.walkSpeed;
     }
 
+    public bool TrySetAttackTarget(AiTarget newTarget)
+    {
+        if (aiTarget == newTarget)
+            return false;
+
+        SetAttackTarget(newTarget);
+        return true;
+    }
+
+
     private void AutoRevertRunToWalkIfStopped()
     {
         if (currentMoveMode != MoveMode.Run) return;
@@ -512,7 +536,6 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
             ApplyMoveMode();
         }
     }
-
 
     public bool HasWeapon()
     {
@@ -624,4 +647,9 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         return false;
     }
 
+
+    public void ResetPath()
+    {
+        agent.ResetPath();
+    }
 }

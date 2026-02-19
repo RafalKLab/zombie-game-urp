@@ -2,116 +2,275 @@ using System;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterCore))]
+[RequireComponent(typeof(AiTarget))]
 public class CharacterAi : MonoBehaviour, ICharacterController
 {
-    public LayerMask targetableMask;
+    [Header("States")]
+    [SerializeField] private MainState mainState;
+
+    [Header("Idle Helper")]
+    [SerializeField] private CharacterAiStateIdleHelper characterAiStateIdleHelper;
+
+    [Header("Defend Helper")]
+    [SerializeField] private CharacterAiStateDefendHelper characterAiStateDefendHelper;
+
+    [Header("Base")]
+    [SerializeField] private BaseManager baseManager;
 
     private CharacterCore characterCore;
+    private AiTarget entityAiTarget;
 
-    [SerializeField] private LayerMask lineOfSightMask;
+    private Health hostileTargetHealth;
+    private AiTarget hostileAiTarget;
+    private bool attackTargetWasSet;
+
+    private PlayableCharacter playableCharacter;
+   
+    private bool isAiSuspended = false;
+    private bool isDead = false;
+    private MainState lastMainStateBeforeSuspend;
+
+    private enum MainState
+    {
+        Idle,
+        Defend,
+    }
+
     private void Awake()
     {
         characterCore = GetComponent<CharacterCore>();
+        entityAiTarget = GetComponent<AiTarget>();
+        playableCharacter = GetComponent<PlayableCharacter>();
+
+        lastMainStateBeforeSuspend = MainState.Idle;
+
+        if (characterCore != null)
+            characterCore.OnKilled += CharacterCore_OnKilled;
+    }
+
+    private void Start()
+    {
+        SubscribeToActiveCharacterManager();
+
+        SetMainState(MainState.Idle);
+
+        hostileAiTarget = null;
+        hostileTargetHealth = null;
+        attackTargetWasSet = false;
+
+        if (FactionBaseRegistry.Instance != null)
+            baseManager = FactionBaseRegistry.Instance.GetBaseManagerByFaction(entityAiTarget.GetFaction());
+
+        if (characterAiStateIdleHelper != null)
+            characterAiStateIdleHelper.SetBaseManager(baseManager);
     }
 
 
     private void Update()
     {
-        if (characterCore.HasAttackTarget() == false)
+        if (isDead)
+            return;
+
+        if (isAiSuspended)
+            return;
+
+        UpdateCombatTargetAndShooting();
+
+        switch (mainState)
         {
-            Collider[] hits = GetHitsSortedByDistance(transform.position, 100f, targetableMask);
+            default:
+            case MainState.Idle:
+                if (characterAiStateIdleHelper != null)
+                    characterAiStateIdleHelper.Tick(characterCore, transform);
+                break;
 
-            foreach (Collider hit in hits)
-            {
-                AiTarget target = hit.GetComponentInParent<AiTarget>();
-                if (target == null) continue;
-
-                // avoid self kill
-                if (hit.transform.root == transform.root) continue;
-
-                if (target.GetFaction() == Faction.Hostile) continue;
-
-                if (!HasLineOfSightToTarget(target))
-                {
-                    continue;
-                }
-
-                Health targetHealth = target.GetComponentInParent<Health>();
-                if (targetHealth == null) continue;
-                if (targetHealth.IsDead) continue;
-
-                characterCore.SetAttackTarget(target);
-
-                return;
-            }
+            case MainState.Defend:
+                if (characterAiStateDefendHelper != null)
+                    characterAiStateDefendHelper.Tick(characterCore, entityAiTarget, transform, ref hostileAiTarget, ref hostileTargetHealth);
+                break;
         }
+    }
+
+    public void SetIdle()
+    {
+        SetMainState(MainState.Idle);
+    }
+
+    public void SetDefend()
+    {
+        SetMainState(MainState.Defend);
+    }
+
+    private void SubscribeToActiveCharacterManager()
+    {
+        if (ActiveCharacterManager.Instance == null) return;
+
+        ActiveCharacterManager.Instance.OnActiveCharacterChanged += ActiveCharacterManager_OnActiveCharacterChanged;
+    }
+
+    private void UnsubscribeFromActiveCharacterManager()
+    {
+        if (ActiveCharacterManager.Instance == null)
+            return;
+
+        ActiveCharacterManager.Instance.OnActiveCharacterChanged -= ActiveCharacterManager_OnActiveCharacterChanged;
+    }
+
+    private void CharacterCore_OnKilled(object sender, EventArgs e)
+    {
+        isDead = true;
+
+        UnsubscribeFromActiveCharacterManager();
+
+        if (characterCore != null)
+            characterCore.OnKilled -= CharacterCore_OnKilled;
+
+        enabled = false;
+    }
+
+    private void ActiveCharacterManager_OnActiveCharacterChanged(object sender, ActiveCharacterManager.OnActiveCharacterChangedEventArgs e)
+    {
+        if (e.playableCharacter == null)
+        {
+            ResumeAiControl();
+            return;
+        }
+
+        if (playableCharacter == null)
+        {
+            playableCharacter = GetComponent<PlayableCharacter>();
+        }
+
+        if (playableCharacter != null && playableCharacter == e.playableCharacter)
+        {
+            SuspendAiControl();
+            return;
+        }
+
+        ResumeAiControl();
+    }
+
+    private void SuspendAiControl()
+    {
+        if (isAiSuspended)
+            return;
+
+        lastMainStateBeforeSuspend = mainState;
+        isAiSuspended = true;
+
+        hostileAiTarget = null;
+        hostileTargetHealth = null;
+        attackTargetWasSet = false;
+
+        characterCore.ClearAttackTarget();
+
+        characterCore.ResetPath();
+    }
+
+    private void ResumeAiControl()
+    {
+        if (!isAiSuspended)
+            return;
+
+        isAiSuspended = false;
+
+        mainState = lastMainStateBeforeSuspend;
+        EnterMainState(mainState);
+    }
+
+    private void UpdateCombatTargetAndShooting()
+    {
+        bool hasValidHostileTarget =
+            hostileAiTarget != null &&
+            hostileTargetHealth != null &&
+            !hostileTargetHealth.IsDead;
+
+        if (!hasValidHostileTarget)
+        {
+            hostileAiTarget = null;
+            hostileTargetHealth = null;
+
+            if (attackTargetWasSet)
+            {
+                characterCore.ClearAttackTarget();
+                attackTargetWasSet = false;
+            }
+
+            return;
+        }
+
+        characterCore.TrySetAttackTarget(hostileAiTarget);
+        attackTargetWasSet = true;
     }
 
     public void ClearAttackTarget()
     {
-        throw new System.NotImplementedException();
+        hostileAiTarget = null;
+        hostileTargetHealth = null;
+        characterCore.ClearAttackTarget();
+        attackTargetWasSet = false;
     }
 
     public void MoveTo(Vector3 target)
     {
-        throw new System.NotImplementedException();
+        characterCore.MoveTo(target);
     }
 
     public void SetAttackTarget(AiTarget target)
     {
-        throw new System.NotImplementedException();
+        hostileAiTarget = target;
+        hostileTargetHealth = target != null ? target.GetComponentInParent<Health>() : null;
+        characterCore.SetAttackTarget(target);
+        attackTargetWasSet = (target != null);
     }
 
-    private Collider[] GetHitsSortedByDistance(Vector3 origin, float radius, LayerMask mask)
+    private void SetMainState(MainState newMainState)
     {
-        var hits = Physics.OverlapSphere(origin, radius, mask);
+        if (mainState == newMainState)
+            return;
 
-        Array.Sort(hits, (a, b) =>
-        {
-            float da = (a.transform.position - origin).sqrMagnitude;
-            float db = (b.transform.position - origin).sqrMagnitude;
-            return da.CompareTo(db);
-        });
-
-        return hits;
+        ExitMainState(mainState);
+        mainState = newMainState;
+        EnterMainState(mainState);
     }
 
-
-    private bool HasLineOfSightToTarget(AiTarget target)
+    private void EnterMainState(MainState enteredMainState)
     {
-        if (target == null) return false;
-
-        Transform aim = target.GetAimPoint();
-        if (aim == null) return false;
-
-        if (characterCore.GetCameraLookAtPoint() == null) return false;
-        Vector3 origin = characterCore.GetCameraLookAtPoint().position;
-        Vector3 dest = aim.position;
-
-        Vector3 dir = dest - origin;
-        float dist = dir.magnitude;
-        if (dist < 0.01f) return true;
-
-        if (Physics.Raycast(origin, dir / dist, out RaycastHit hit, dist, lineOfSightMask, QueryTriggerInteraction.Ignore))
+        switch (enteredMainState)
         {
-            return hit.collider.GetComponentInParent<AiTarget>() == target;
+            case MainState.Idle:
+                hostileAiTarget = null;
+                hostileTargetHealth = null;
+                attackTargetWasSet = false;
+                characterCore.ClearAttackTarget();
+
+                characterCore.HolsterWeapon();
+
+                if (characterAiStateIdleHelper != null)
+                    characterAiStateIdleHelper.Enter(characterCore, transform);
+
+                if (characterAiStateDefendHelper != null)
+                    characterAiStateDefendHelper.ResetDefendPosition();
+
+                break;
+
+            case MainState.Defend:
+                if (characterAiStateDefendHelper != null)
+                    characterAiStateDefendHelper.Enter(characterCore, transform);
+
+                break;
         }
-
-        return false;
     }
 
-    private void OnEnable()
+    private void ExitMainState(MainState exitedMainState)
     {
-        characterCore.OnKilled += CharacterCore_OnKilled;
-    }
+        switch (exitedMainState)
+        {
+            case MainState.Idle:
+                break;
 
-    private void OnDisable()
-    {
-        characterCore.OnKilled -= CharacterCore_OnKilled;
-    }
-
-    private void CharacterCore_OnKilled(object sender, System.EventArgs e)
-    {
-        Destroy(gameObject);
+            case MainState.Defend:
+                break;
+        }
     }
 }

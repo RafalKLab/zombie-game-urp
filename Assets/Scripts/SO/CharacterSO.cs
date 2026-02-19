@@ -19,4 +19,8 @@ public class CharacterSO : ScriptableObject
 
     [Header("Shooting")]
     public float aimingTime;
+
+    [Header("AI Settings")]
+    public float enemyDetectRadius = 50;
+
 }
