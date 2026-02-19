@@ -1,16 +1,38 @@
+using System;
 using UnityEngine;
 
 public class BaseManager : MonoBehaviour
 {
+    public event EventHandler<OnBaseDefendRequestEventArgs> OnBaseDefendRequest;
+    public class OnBaseDefendRequestEventArgs : EventArgs
+    {
+        public Transform defendPoint;
+        public float defendRadius;
+    }
+
     [SerializeField] private Transform center;
-    [SerializeField] private float radius;
+    [SerializeField] private float baseRadius;
+
+    [SerializeField] private Transform defendPoint;
+    [SerializeField] private float defendRadius;
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(center.position, radius);
+        Gizmos.DrawWireSphere(center.position, baseRadius);
+
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawWireSphere(defendPoint.position, defendRadius);
     }
 
     public Vector3 GetCenter() => center != null ? center.position : transform.position;
-    public float GetRadius() => radius;
+    public float GetRadius() => baseRadius;
+
+    public void RequsetDefend()
+    {
+        OnBaseDefendRequest?.Invoke(this, new OnBaseDefendRequestEventArgs {
+            defendPoint = this.defendPoint,
+            defendRadius = this.defendRadius,
+        });
+    }
 }

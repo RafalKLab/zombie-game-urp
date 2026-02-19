@@ -82,10 +82,8 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     // Movement
     public enum MoveMode { Walk, Run }
 
-    private float runClickWindow = 0.30f;
     private float stopSpeedThreshold = 0.1f;
 
-    private float lastMoveClickTime;
     private MoveMode currentMoveMode;
 
     public bool IsRunning => currentMoveMode == MoveMode.Run;
@@ -179,15 +177,21 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         characterWeaponHandler.HolsterWeapon();
         characterAnimatorFacade?.DisableAim();
 
-        float now = Time.time;
-        bool isDoubleClick = (now - lastMoveClickTime) <= runClickWindow;
-        lastMoveClickTime = now;
+        currentMoveMode = MoveMode.Walk;
+        ApplyMoveMode();
 
-        if (isDoubleClick)
-        {
-            currentMoveMode = MoveMode.Run;
-            ApplyMoveMode();
-        }
+        agent.SetDestination(target);
+    }
+
+    public void RunTo(Vector3 target)
+    {
+        ClearAttackTarget();
+
+        characterWeaponHandler.HolsterWeapon();
+        characterAnimatorFacade?.DisableAim();
+
+        currentMoveMode = MoveMode.Run;
+        ApplyMoveMode();
 
         agent.SetDestination(target);
     }
@@ -525,12 +529,17 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         return true;
     }
 
-
     private void AutoRevertRunToWalkIfStopped()
     {
         if (currentMoveMode != MoveMode.Run) return;
 
-        if (!agent.pathPending && agent.velocity.magnitude < stopSpeedThreshold)
+        if (agent.pathPending) return;
+        if (!agent.hasPath) return;
+
+        bool isAtDestination = agent.remainingDistance <= agent.stoppingDistance;
+        bool isNotMoving = agent.velocity.magnitude < stopSpeedThreshold;
+
+        if (isAtDestination && isNotMoving)
         {
             currentMoveMode = MoveMode.Walk;
             ApplyMoveMode();

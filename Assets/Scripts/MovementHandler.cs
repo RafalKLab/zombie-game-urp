@@ -3,6 +3,9 @@ using UnityEngine;
 // Playbale character movement, TODO: Refactor with clear architecture one handles input proceeds to controller
 public class MovementHandler : MonoBehaviour
 {
+    [SerializeField] private float runClickWindow = 0.25f;
+    private float lastMoveClickTime;
+
     private void Start()
     {
         GameInput.Instance.OnMouseRightClick += OnMouseRightClick;
@@ -49,7 +52,18 @@ public class MovementHandler : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            playableCharacter.MoveTo(hit.point);
+            float now = Time.time;
+            bool isDoubleClick = (now - lastMoveClickTime) <= runClickWindow;
+            lastMoveClickTime = now;
+
+            if (isDoubleClick)
+            {
+                playableCharacter.RunTo(hit.point);
+            }
+            else
+            {
+                playableCharacter.MoveTo(hit.point);
+            }
         }
     }
 

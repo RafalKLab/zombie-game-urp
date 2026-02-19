@@ -99,18 +99,12 @@ public class CharacterAiStateIdleHelper
         Vector3 center = baseManager.GetCenter();
         float radius = baseManager.GetRadius();
 
-        for (int i = 0; i < 12; i++)
-        {
-            Vector2 randomOffset = UnityEngine.Random.insideUnitCircle * radius;
-            Vector3 candidate = new Vector3(center.x + randomOffset.x, center.y, center.z + randomOffset.y);
-
-            if (NavMesh.SamplePosition(candidate, out NavMeshHit hit, navmeshSampleMaxDistance, NavMesh.AllAreas))
-            {
-                result = hit.position;
-                return true;
-            }
-        }
-
-        return false;
+        return NavMeshPointPicker.TryGetRandomPoint(
+            center,
+            radius,
+            navmeshSampleMaxDistance,
+            12,
+            UnityEngine.AI.NavMesh.AllAreas,
+            out result);
     }
 }

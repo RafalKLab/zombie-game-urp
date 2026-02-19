@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using static BaseManager;
 
 [RequireComponent(typeof(CharacterCore))]
 [RequireComponent(typeof(AiTarget))]
@@ -29,6 +30,9 @@ public class CharacterAi : MonoBehaviour, ICharacterController
     private bool isAiSuspended = false;
     private bool isDead = false;
     private MainState lastMainStateBeforeSuspend;
+
+    private bool defendPointIsSet;
+    private Vector3 defendPointPosition;
 
     private enum MainState
     {
@@ -61,8 +65,49 @@ public class CharacterAi : MonoBehaviour, ICharacterController
         if (FactionBaseRegistry.Instance != null)
             baseManager = FactionBaseRegistry.Instance.GetBaseManagerByFaction(entityAiTarget.GetFaction());
 
+        if (baseManager != null)
+            baseManager.OnBaseDefendRequest += BaseManager_OnBaseDefendRequest;
+
         if (characterAiStateIdleHelper != null)
             characterAiStateIdleHelper.SetBaseManager(baseManager);
+    }
+
+    private void BaseManager_OnBaseDefendRequest(object sender, OnBaseDefendRequestEventArgs e)
+    {
+        if (isDead)
+            return;
+
+        if (isAiSuspended)
+            return;
+
+        hostileAiTarget = null;
+        hostileTargetHealth = null;
+        attackTargetWasSet = false;
+
+        float defendNavmeshSampleMaxDistance = 2f;
+        int defendPickAttempts = 12;
+
+        Vector3 pickedPoint;
+
+        bool gotPoint = NavMeshPointPicker.TryGetRandomPointWithMinRadius(
+            e.defendPoint.position,
+            e.defendRadius,
+            0.4f,
+            defendNavmeshSampleMaxDistance,
+            defendPickAttempts,
+            UnityEngine.AI.NavMesh.AllAreas,
+            out pickedPoint
+        );
+
+
+        if (gotPoint)
+        {
+            CommandDefendPoint(pickedPoint);
+        }
+        else
+        {
+            CommandDefendPoint(e.defendPoint);
+        }
     }
 
 
@@ -91,15 +136,35 @@ public class CharacterAi : MonoBehaviour, ICharacterController
         }
     }
 
-    public void SetIdle()
+    public void CommandIdle()
     {
+
         SetMainState(MainState.Idle);
     }
 
-    public void SetDefend()
+    public void CommandDefendHere()
     {
+        defendPointIsSet = false;
+
         SetMainState(MainState.Defend);
     }
+
+    public void CommandDefendPoint(Transform point)
+    {
+        defendPointIsSet = true;
+        defendPointPosition = point.position;
+
+        SetMainState(MainState.Defend);
+    }
+
+    public void CommandDefendPoint(Vector3 point)
+    {
+        defendPointIsSet = true;
+        defendPointPosition = point;
+
+        SetMainState(MainState.Defend);
+    }
+
 
     private void SubscribeToActiveCharacterManager()
     {
@@ -121,6 +186,9 @@ public class CharacterAi : MonoBehaviour, ICharacterController
         isDead = true;
 
         UnsubscribeFromActiveCharacterManager();
+
+        if (baseManager != null)
+            baseManager.OnBaseDefendRequest -= BaseManager_OnBaseDefendRequest;
 
         if (characterCore != null)
             characterCore.OnKilled -= CharacterCore_OnKilled;
@@ -256,9 +324,18 @@ public class CharacterAi : MonoBehaviour, ICharacterController
 
             case MainState.Defend:
                 if (characterAiStateDefendHelper != null)
-                    characterAiStateDefendHelper.Enter(characterCore, transform);
-
+                {
+                    if (defendPointIsSet)
+                    {
+                        characterAiStateDefendHelper.EnterDefendPoint(characterCore, transform, defendPointPosition);
+                    }
+                    else
+                    {
+                        characterAiStateDefendHelper.EnterDefendHere(characterCore, transform);
+                    }
+                }
                 break;
+
         }
     }
 
@@ -270,7 +347,15 @@ public class CharacterAi : MonoBehaviour, ICharacterController
                 break;
 
             case MainState.Defend:
+                defendPointIsSet = false;
+                defendPointPosition = Vector3.zero;
                 break;
         }
     }
+
+    //private void OnDrawGizmosSelected()
+    //{
+    //    Gizmos.color = Color.darkMagenta;
+    //    Gizmos.DrawWireSphere(transform.position, characterCore.GetCharacterSO().enemyDetectRadius);
+    //}
 }

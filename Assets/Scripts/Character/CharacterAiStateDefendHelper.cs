@@ -23,11 +23,22 @@ public class CharacterAiStateDefendHelper
 
     private float defendDetectionTimer;
 
-    public void Enter(CharacterCore characterCore, Transform ownerTransform)
+    public void EnterDefendHere(CharacterCore characterCore, Transform ownerTransform)
     {
-        defendPositionIsSet = false;
+        defendPosition = ownerTransform.position;
+        defendPositionIsSet = true;
         defendDetectionTimer = 0f;
+
         SetDefendSubState(DefendSubState.Defending, characterCore, ownerTransform);
+    }
+
+    public void EnterDefendPoint(CharacterCore characterCore, Transform ownerTransform, Vector3 point)
+    {
+        defendPosition = point;
+        defendPositionIsSet = true;
+        defendDetectionTimer = 0f;
+
+        SetDefendSubState(DefendSubState.GoingToDefendTarget, characterCore, ownerTransform);
     }
 
     public void Tick(
@@ -39,9 +50,7 @@ public class CharacterAiStateDefendHelper
     {
         if (!defendPositionIsSet)
         {
-            defendPosition = ownerTransform.position;
-            defendPositionIsSet = true;
-            SetDefendSubState(DefendSubState.Defending, characterCore, ownerTransform);
+            return;
         }
 
         bool weaponIsPrepared = characterCore.PrepareWeapon();
@@ -69,24 +78,21 @@ public class CharacterAiStateDefendHelper
                 break;
         }
 
-        defendDetectionTimer -= Time.deltaTime;
-        if (defendDetectionTimer <= 0f)
+        if (defendSubState == DefendSubState.Defending)
         {
-            TryAcquireHostileTarget(characterCore, entityAiTarget, ownerTransform, ref hostileAiTarget, ref hostileTargetHealth);
-            defendDetectionTimer = defendDetectionCooldown;
+            defendDetectionTimer -= Time.deltaTime;
+            if (defendDetectionTimer <= 0f)
+            {
+                TryAcquireHostileTarget(characterCore, entityAiTarget, ownerTransform, ref hostileAiTarget, ref hostileTargetHealth);
+                defendDetectionTimer = defendDetectionCooldown;
+            }
         }
     }
 
     public void ResetDefendPosition()
     {
         defendPositionIsSet = false;
-    }
-
-    public void SetDefendPosition(Vector3 newDefendPosition, CharacterCore characterCore)
-    {
-        defendPosition = newDefendPosition;
-        defendPositionIsSet = true;
-        SetDefendSubState(DefendSubState.GoingToDefendTarget, characterCore, null);
+        defendSubState = DefendSubState.Defending;
     }
 
     private void SetDefendSubState(DefendSubState newState, CharacterCore characterCore, Transform ownerTransform)
@@ -96,7 +102,7 @@ public class CharacterAiStateDefendHelper
         switch (defendSubState)
         {
             case DefendSubState.GoingToDefendTarget:
-                characterCore.MoveTo(defendPosition);
+                characterCore.RunTo(defendPosition);
                 break;
 
             case DefendSubState.Defending:

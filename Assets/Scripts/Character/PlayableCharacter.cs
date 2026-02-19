@@ -46,6 +46,12 @@ public class PlayableCharacter : MonoBehaviour, ICharacterController
         characterCore.MoveTo(target);
     }
 
+    public void RunTo(Vector3 target)
+    {
+        characterCore.RunTo(target);
+    }
+
+
     public void SetAttackTarget(AiTarget aiTarget)
     {
         characterCore.SetAttackTarget(aiTarget);
