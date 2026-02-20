@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6276e8aa5ee9a6e4c866241d1d217ace, type: 3}
+  m_Name: WeaponM4
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponTypeSO
+  weaponName: m4a1
+  weaponType: 1
+  magazineCapacity: 30
+  totalAmmo: 90
+  reloadTime: 2.3
+  reloadClip: {fileID: 8300000, guid: 575ee59e84968544d89d8b03a071b798, type: 3}
+  reloadVolume: 1
+  damage: 30
+  range: 110
+  effectiveRange: 85
+  accuracy: 0.97
+  maxSpreadAngle: 3.5
+  accuracyOutEffectiveRange: 0.6
+  shootCooldown: 0.1
+  shotCooldownClip: {fileID: 0}
+  shotCooldownVolume: 1
+  maxPenetrations: 1
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 320
+  prefab: {fileID: 2298662017938403109, guid: 663ba1be84e14094e8e56b0bc4b78f28, type: 3}
+  tracerTypeSO: {fileID: 11400000, guid: 39a813ec0f76fb54a9c131b6ca30f975, type: 2}
+  sprite: {fileID: 21300000, guid: cbaec9e6214a2f4459beda7364a53b6a, type: 3}
+  shotClip: {fileID: 8300000, guid: 024e79a3f3a9aa8428d931023a4763cc, type: 3}
+  shotVolume: 1

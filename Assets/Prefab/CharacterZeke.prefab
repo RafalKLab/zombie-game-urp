@@ -402,7 +402,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterCore
   characterSO: {fileID: 11400000, guid: 66f0f615670c10243abab7442d51fecd, type: 2}
   cameraLookAtPoint: {fileID: 4298324805336489829}
-  weaponTypeSO: {fileID: 11400000, guid: 25e7c5961397cca488bdb51ce68f7a7f, type: 2}
+  weaponTypeSO: {fileID: 0}
   weaponSocket: {fileID: 1367704028181128846}
   PistolSocketIdle: {fileID: 5036379054756461963}
   RifleSocketIdle: {fileID: 6080125182333243591}
@@ -665,6 +665,7 @@ MonoBehaviour:
       m_Bits: 320
     defendHoldArriveDistance: 0.8
     defendSubState: 0
+  baseManager: {fileID: 0}
 --- !u!1 &3837891434967049283
 GameObject:
   m_ObjectHideFlags: 0
