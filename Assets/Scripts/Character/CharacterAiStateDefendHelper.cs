@@ -9,6 +9,8 @@ public class CharacterAiStateDefendHelper
     [SerializeField] private float defendDetectionCooldown = 0.5f;
     [SerializeField] private LayerMask targetableMask;
     [SerializeField] private float defendHoldArriveDistance = 0.8f;
+    [SerializeField] private DefendSubState defendSubState;
+
 
     private enum DefendSubState
     {
@@ -16,12 +18,17 @@ public class CharacterAiStateDefendHelper
         Defending,
     }
 
-    [SerializeField] private DefendSubState defendSubState;
-
     private Vector3 defendPosition;
     private bool defendPositionIsSet;
 
     private float defendDetectionTimer;
+    private BaseManager baseManager;
+
+
+    public void SetBaseManager(BaseManager baseManager)
+    {
+        this.baseManager = baseManager;
+    }
 
     public void EnterDefendHere(CharacterCore characterCore, Transform ownerTransform)
     {
@@ -128,13 +135,17 @@ public class CharacterAiStateDefendHelper
     }
 
     private void TryAcquireHostileTarget(
-        CharacterCore characterCore,
-        AiTarget entityAiTarget,
-        Transform ownerTransform,
-        ref AiTarget hostileAiTarget,
-        ref Health hostileTargetHealth)
+            CharacterCore characterCore,
+            AiTarget entityAiTarget,
+            Transform ownerTransform,
+            ref AiTarget hostileAiTarget,
+            ref Health hostileTargetHealth
+        )
     {
         if (hostileAiTarget != null && hostileTargetHealth != null && !hostileTargetHealth.IsDead)
+            return;
+
+        if (TryAcquireHostileFromBaseRadar(ref hostileAiTarget, ref hostileTargetHealth))
             return;
 
         float detectRadius = characterCore.GetCharacterSO().enemyDetectRadius;
@@ -156,9 +167,24 @@ public class CharacterAiStateDefendHelper
 
             hostileAiTarget = potentialHostileAiTarget;
             hostileTargetHealth = potentialHostileTargetHealth;
-
             return;
         }
+    }
+
+    private bool TryAcquireHostileFromBaseRadar(ref AiTarget hostileAiTarget, ref Health hostileTargetHealth)
+    {
+        if (baseManager == null) return false;
+
+        BaseRadar baseRadar = baseManager.GetComponent<BaseRadar>();
+        if (baseRadar == null) return false;
+
+        if (!baseRadar.TryRequestContact(out BaseRadar.RadarContact radarContact)) return false;
+        if (radarContact == null) return false;
+
+        hostileAiTarget = radarContact.Target;
+        hostileTargetHealth = radarContact.Health;
+
+        return hostileAiTarget != null && hostileTargetHealth != null && !hostileTargetHealth.IsDead;
     }
 
     private static Collider[] GetHitsSortedByDistance(Vector3 origin, float radius, LayerMask mask)

@@ -10,11 +10,23 @@ public class BaseManager : MonoBehaviour
         public float defendRadius;
     }
 
+    [SerializeField] private Faction faction;
+
     [SerializeField] private Transform center;
     [SerializeField] private float baseRadius;
 
     [SerializeField] private Transform defendPoint;
     [SerializeField] private float defendRadius;
+
+    private BaseRadar baseRadar;
+
+    private void Awake()
+    {
+        baseRadar = GetComponent<BaseRadar>();
+    }
+
+    public Faction GetFaction() => faction;
+    public BaseRadar GetBaseRadar() => baseRadar;
 
     private void OnDrawGizmosSelected()
     {

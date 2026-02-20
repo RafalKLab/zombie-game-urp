@@ -65,11 +65,15 @@ public class CharacterAi : MonoBehaviour, ICharacterController
         if (FactionBaseRegistry.Instance != null)
             baseManager = FactionBaseRegistry.Instance.GetBaseManagerByFaction(entityAiTarget.GetFaction());
 
-        if (baseManager != null)
+        if (baseManager != null) {
             baseManager.OnBaseDefendRequest += BaseManager_OnBaseDefendRequest;
 
-        if (characterAiStateIdleHelper != null)
-            characterAiStateIdleHelper.SetBaseManager(baseManager);
+            if (characterAiStateIdleHelper != null)
+            {
+                characterAiStateIdleHelper.SetBaseManager(baseManager);
+                characterAiStateDefendHelper.SetBaseManager(baseManager);
+            }
+        }
     }
 
     private void BaseManager_OnBaseDefendRequest(object sender, OnBaseDefendRequestEventArgs e)
