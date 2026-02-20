@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Interactor : MonoBehaviour
@@ -8,6 +9,15 @@ public class Interactor : MonoBehaviour
     {
         public IInteractable interactable;
     }
+
+    public event EventHandler<OnInteractNeedsChoiceEventArgs> OnInteractNeedsChoice;
+    public class OnInteractNeedsChoiceEventArgs : EventArgs
+    {
+        public IInteractable interactable;
+    }
+
+    private readonly List<IInteractableAction> choiceActions = new();
+    public bool IsChoosing { get; private set; }
 
     [SerializeField] float interactionRange = 1f;
     [SerializeField] LayerMask interactableLayerMask;
@@ -26,13 +36,13 @@ public class Interactor : MonoBehaviour
 
         Character = GetComponent<CharacterCore>();
     }
+
     private void Update()
     {
         interactableDetectCooldown -= Time.deltaTime;
         if (interactableDetectCooldown > 0) return;
 
         DetectInteractables();
-
         interactableDetectCooldown = interactableDetectCooldownMax;
     }
 
@@ -88,28 +98,56 @@ public class Interactor : MonoBehaviour
         SetCurrentInteractable(best);
     }
 
-    //private void OnDrawGizmosSelected()
-    //{
-    //    Transform pivot = interactionPivot != null ? interactionPivot : transform;
-
-    //    if (interactionRange <= 0f) return;
-
-    //    Gizmos.color = Color.yellow;
-    //    Gizmos.DrawWireSphere(pivot.position, interactionRange);
-    //}
-
     public bool TryInteractCurrent()
     {
         if (interactableCurrent == null) return false;
         if (!interactableCurrent.CanInteract(this)) return false;
 
-        bool success = interactableCurrent.Interact(this);
+        InteractResult result = interactableCurrent.Interact(this);
 
-        if (success) {
+        if (result == InteractResult.Executed)
+        {
+            IsChoosing = false;
+            SetCurrentInteractable(null);
+            return true;
+        }
+
+        if (result == InteractResult.NeedsChoice)
+        {
+            IsChoosing = true;
+            BuildChoiceList();
+
+            OnInteractNeedsChoice?.Invoke(this,
+                new OnInteractNeedsChoiceEventArgs { interactable = interactableCurrent });
+
+            return false;
+        }
+
+        IsChoosing = false;
+        return false;
+    }
+
+    public bool TryInteractCurrentAction(int index)
+    {
+        if (!IsChoosing) return false;
+        if (interactableCurrent == null) return false;
+
+        if (index < 0 || index >= choiceActions.Count) return false;
+
+        var action = choiceActions[index];
+        if (action == null) return false;
+
+        if (!action.CanExecute(this)) return false;
+
+        bool ok = action.Execute(this);
+
+        if (ok)
+        {
+            IsChoosing = false;
             SetCurrentInteractable(null);
         }
 
-        return success;
+        return ok;
     }
 
     private void SetCurrentInteractable(IInteractable newInteractable)
@@ -124,5 +162,29 @@ public class Interactor : MonoBehaviour
     public IInteractable GetCurrentInteractable()
     {
         return interactableCurrent;
+    }
+
+    private void BuildChoiceList()
+    {
+        choiceActions.Clear();
+
+        if (interactableCurrent == null) return;
+
+        var all = interactableCurrent.GetActions(this);
+        if (all == null) return;
+
+        for (int i = 0; i < all.Count; i++)
+        {
+            var a = all[i];
+            if (a != null)
+                choiceActions.Add(a);
+        }
+
+        choiceActions.Sort((a, b) => b.Priority.CompareTo(a.Priority));
+    }
+
+    public IReadOnlyList<IInteractableAction> GetCurrentChoiceActions()
+    {
+        return choiceActions;
     }
 }

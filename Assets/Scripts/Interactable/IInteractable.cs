@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public interface IInteractable
@@ -5,6 +6,14 @@ public interface IInteractable
     int Priority { get; }
     bool CanInteract(Interactor interactor);
     string GetInteractPrompt(Interactor interactor);
-    bool Interact(Interactor interactor);
+    InteractResult Interact(Interactor interactor);
     Transform GetUIAnchor();
+    IReadOnlyList<IInteractableAction> GetActions(Interactor interactor);
+}
+
+public enum InteractResult
+{
+    None,
+    Executed,
+    NeedsChoice,
 }

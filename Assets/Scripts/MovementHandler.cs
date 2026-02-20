@@ -1,4 +1,5 @@
 using UnityEngine;
+using static GameInput;
 
 // Playbale character movement, TODO: Refactor with clear architecture one handles input proceeds to controller
 public class MovementHandler : MonoBehaviour
@@ -10,14 +11,16 @@ public class MovementHandler : MonoBehaviour
     {
         GameInput.Instance.OnMouseRightClick += OnMouseRightClick;
         GameInput.Instance.OnInteractClick += GameInput_OnInteractClick;
+        GameInput.Instance.OnInteractActionSlot += GameInput_OnInteractActionSlot;
     }
- 
+
     private void OnDestroy()
     {
         if (GameInput.Instance != null)
         {
             GameInput.Instance.OnMouseRightClick -= OnMouseRightClick;
             GameInput.Instance.OnInteractClick -= GameInput_OnInteractClick;
+            GameInput.Instance.OnInteractActionSlot -= GameInput_OnInteractActionSlot;
         }
     }
 
@@ -84,4 +87,21 @@ public class MovementHandler : MonoBehaviour
         playableCharacter.TryInteract();
     }
 
+
+    private void GameInput_OnInteractActionSlot(object sender, OnInteractActionSlotEventArgs e)
+    {
+        if (ActiveCharacterManager.Instance == null)
+        {
+            return;
+        }
+
+        PlayableCharacter playableCharacter = ActiveCharacterManager.Instance.GetActivePlayableCharacter();
+
+        if (playableCharacter == null)
+        {
+            return;
+        }
+
+        playableCharacter.TryInteractAction(e.index);
+    }
 }

@@ -95,6 +95,11 @@ public class PlayableCharacter : MonoBehaviour, ICharacterController
         characterCore.TryInteract();
     }
 
+    public void TryInteractAction(int actionIndex)
+    {
+        characterCore.TryInteractAction(actionIndex);
+    }
+
     public CharacterCore GetCharacterCore()
     {
         return characterCore;

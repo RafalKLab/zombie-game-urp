@@ -568,6 +568,13 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         return interactor.TryInteractCurrent();
     }
 
+    public bool TryInteractAction(int actionIndex)
+    {
+        if (interactor == null) return false;
+        return interactor.TryInteractCurrentAction(actionIndex);
+    }
+
+
     public float GetNormalizedHealth()
     {
         return health.GetNormalizedHealth();
