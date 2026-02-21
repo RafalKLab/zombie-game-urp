@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Interactor : MonoBehaviour
 {
+    public ResourceItemSO resourceItemSO;
+
     public event EventHandler<OnInteractableChangeEventArgs> OnInteractableChange;
     public class OnInteractableChangeEventArgs : EventArgs
     {

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InteractableWeaponCrate : MonoBehaviour, IInteractable
+public class InteractableWearehouse : MonoBehaviour
 {
     [SerializeField] private int priority = 0;
     [SerializeField] private Transform uiAnchor;
@@ -58,7 +58,7 @@ public class InteractableWeaponCrate : MonoBehaviour, IInteractable
         if (exec.Count == 1)
             return exec[0].GetExecutePrompt(interactor);
 
-        return "F - Interact (choose)";
+        return "F - Open warehouse";
     }
 
     public InteractResult Interact(Interactor interactor)

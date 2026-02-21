@@ -633,6 +633,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9015cfbd3004714a80cf934eb83cff0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Interactor
+  resourceItemSO: {fileID: 11400000, guid: 4a40e0193aad0b3498d858d990d94f95, type: 2}
   interactionRange: 1.2
   interactableLayerMask:
     serializedVersion: 2
