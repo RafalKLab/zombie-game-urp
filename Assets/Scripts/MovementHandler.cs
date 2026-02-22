@@ -1,4 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using static GameInput;
 
 // Playbale character movement, TODO: Refactor with clear architecture one handles input proceeds to controller
@@ -26,6 +29,8 @@ public class MovementHandler : MonoBehaviour
 
     private void OnMouseRightClick(object sender, System.EventArgs e)
     {
+        if (IsPointerOverUI_Now())
+            return;
 
         if (ActiveCharacterManager.Instance == null)
         {
@@ -103,5 +108,21 @@ public class MovementHandler : MonoBehaviour
         }
 
         playableCharacter.TryInteractAction(e.index);
+    }
+
+    private bool IsPointerOverUI_Now()
+    {
+        if (EventSystem.current == null) return false;
+        if (Mouse.current == null) return false;
+
+        PointerEventData eventData = new PointerEventData(EventSystem.current)
+        {
+            position = Mouse.current.position.ReadValue()
+        };
+
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventData, results);
+
+        return results.Count > 0;
     }
 }

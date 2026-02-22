@@ -17,6 +17,9 @@ public class GameInput : MonoBehaviour
         public int index;
     }
 
+    public event Action OnInventoryOpen;
+    public event Action OnInventoryClose;
+
     private InputActions inputActions;
 
     private void Awake()
@@ -30,6 +33,19 @@ public class GameInput : MonoBehaviour
         inputActions.Player.LeftClick.performed += LeftClick_performed;
         inputActions.Player.Interact.performed += Interact_performed;
         inputActions.Player.InteractActionSlot.performed += InteractActionSlot_performed;
+
+        inputActions.Player.InventoryOpen.performed += InventoryOpen_performed;
+        inputActions.Player.InventoryClose.performed += InventoryClose_performed;
+    }
+
+    private void InventoryOpen_performed(InputAction.CallbackContext obj)
+    {
+        OnInventoryOpen?.Invoke();
+    }
+
+    private void InventoryClose_performed(InputAction.CallbackContext obj)
+    {
+        OnInventoryClose?.Invoke();
     }
 
     private void InteractActionSlot_performed(InputAction.CallbackContext obj)

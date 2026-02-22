@@ -62,6 +62,6 @@ public class InteractableActionTakeWeapon : MonoBehaviour, IInteractableAction
     public string GetExecutePrompt(Interactor interactor)
     {
         if (weaponItemSO == null) return executePrompt;
-        return $"{executePrompt} {weaponItemSO.displayName}";
+        return $"{executePrompt}";
     }
 }

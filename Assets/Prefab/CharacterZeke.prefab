@@ -634,7 +634,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9015cfbd3004714a80cf934eb83cff0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Interactor
-  resourceItemSO: {fileID: 11400000, guid: 4a40e0193aad0b3498d858d990d94f95, type: 2}
   interactionRange: 1.2
   interactableLayerMask:
     serializedVersion: 2
@@ -680,10 +679,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1450a4707689824ea6160d347d1da9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Inventory
-  debugLog: 1
-  debugInterval: 1
   capacity: 8
   hugeCapacity: 2
+  debugLog: 0
+  debugInterval: 1
 --- !u!1 &3837891434967049283
 GameObject:
   m_ObjectHideFlags: 0

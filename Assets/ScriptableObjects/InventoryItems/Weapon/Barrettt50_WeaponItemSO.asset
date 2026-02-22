@@ -15,7 +15,7 @@ MonoBehaviour:
   id: 
   displayName: Barett50
   description: 
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: d70993b311da38349893b9d235939823, type: 3}
   stackable: 0
   maxStack: 1
   category: 1

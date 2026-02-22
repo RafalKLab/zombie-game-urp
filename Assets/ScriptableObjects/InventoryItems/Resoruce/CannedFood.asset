@@ -15,9 +15,10 @@ MonoBehaviour:
   id: 
   displayName: Canned Food
   description: 
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: c3698bcd4977128488be21a86faf4604, type: 3}
   stackable: 1
   maxStack: 4
   category: 0
+  requiredSlot: 0
   resourceType: {fileID: 11400000, guid: 53df45d7401a3d043a3c05e32b132f85, type: 2}
   resourceUnits: 5
