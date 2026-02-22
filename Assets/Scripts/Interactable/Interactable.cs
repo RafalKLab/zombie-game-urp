@@ -7,6 +7,12 @@ public class Interactable : MonoBehaviour, IInteractable
     [SerializeField] private Transform uiAnchor;
     [SerializeField] private string defaultPromt = "F - interact";
 
+    [Header("Lifecycle")]
+    [SerializeField] private bool destroyWhenAllActionsDepleted = false;
+    [SerializeField] private float cleanupInterval = 1f;
+
+    private float cleanupTimer;
+
     private readonly List<IInteractableAction> actions = new();
 
     public int Priority => priority;
@@ -22,6 +28,19 @@ public class Interactable : MonoBehaviour, IInteractable
             if (components[i] is IInteractableAction a)
                 actions.Add(a);
         }
+
+        cleanupTimer = cleanupInterval;
+    }
+
+    private void Update()
+    {
+        if (!destroyWhenAllActionsDepleted) return;
+
+        cleanupTimer -= Time.deltaTime;
+        if (cleanupTimer > 0f) return;
+        cleanupTimer = cleanupInterval;
+
+        CleanupAndMaybeDestroy();
     }
 
     public Transform GetUIAnchor() => uiAnchor != null ? uiAnchor : transform;
@@ -36,7 +55,9 @@ public class Interactable : MonoBehaviour, IInteractable
         {
             var a = actions[i];
             if (a == null) continue;
+            if (a.IsDepleted) continue;
             if (!a.CanExecute(interactor)) continue;
+
             result.Add(a);
         }
 
@@ -55,7 +76,6 @@ public class Interactable : MonoBehaviour, IInteractable
 
         if (exec.Count == 0) return string.Empty;
 
-        // Shortcut: 1 akcja => pokaz prompt tej akcji
         if (exec.Count == 1)
             return "F - " + exec[0].GetExecutePrompt(interactor);
 
@@ -71,5 +91,31 @@ public class Interactable : MonoBehaviour, IInteractable
             return exec[0].Execute(interactor) ? InteractResult.Executed : InteractResult.None;
 
         return InteractResult.NeedsChoice;
+    }
+
+    private void CleanupAndMaybeDestroy()
+    {
+        for (int i = actions.Count - 1; i >= 0; i--)
+        {
+            if (actions[i] == null)
+                actions.RemoveAt(i);
+        }
+
+        if (actions.Count == 0)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        for (int i = 0; i < actions.Count; i++)
+        {
+            var a = actions[i];
+            if (a == null) continue;
+
+            if (!a.IsDepleted)
+                return;
+        }
+
+        Destroy(gameObject);
     }
 }

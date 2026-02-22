@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class Interactor : MonoBehaviour
 {
-    public ResourceItemSO resourceItemSO;
-
     public event EventHandler<OnInteractableChangeEventArgs> OnInteractableChange;
     public class OnInteractableChangeEventArgs : EventArgs
     {
@@ -29,6 +27,7 @@ public class Interactor : MonoBehaviour
     private IInteractable interactableCurrent;
     private float interactableDetectCooldown = 0f;
 
+    public Inventory Inventory{ get; private set; }
     public CharacterCore Character { get; private set; }
 
     private void Awake()
@@ -37,6 +36,7 @@ public class Interactor : MonoBehaviour
             interactionPivot = transform;
 
         Character = GetComponent<CharacterCore>();
+        Inventory = GetComponent<Inventory>();
     }
 
     private void Update()

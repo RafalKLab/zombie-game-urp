@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6a73670f721ed84ab1178ec7181cad6, type: 3}
+  m_Name: BoxOfCannedFood
+  m_EditorClassIdentifier: Assembly-CSharp::ResourceItemSO
+  id: 
+  displayName: Box Of Canned Food
+  description: 
+  icon: {fileID: 0}
+  stackable: 0
+  maxStack: 1
+  category: 0
+  requiredSlot: 1
+  resourceType: {fileID: 11400000, guid: 53df45d7401a3d043a3c05e32b132f85, type: 2}
+  resourceUnits: 30

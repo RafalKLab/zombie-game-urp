@@ -156,6 +156,7 @@ GameObject:
   - component: {fileID: 3434809542808208567}
   - component: {fileID: 1294678411919766708}
   - component: {fileID: 4784424902903407032}
+  - component: {fileID: 8243848825632899284}
   m_Layer: 0
   m_Name: 'WeaponCrateInteractable '
   m_TagString: Untagged
@@ -194,6 +195,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InteractableWeaponCrate
   priority: 0
   uiAnchor: {fileID: 6187609422604490545}
+  defaultPromt: F - interact
+  destroyWhenAllActionsDepleted: 0
+  cleanupInterval: 1
 --- !u!114 &3434809542808208567
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -207,7 +211,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractableActionTakeWeapon
   priority: 0
-  weaponTypeSO: {fileID: 11400000, guid: 25e7c5961397cca488bdb51ce68f7a7f, type: 2}
+  weaponItemSO: {fileID: 11400000, guid: 980e67ab7eb06aa4ba2bec6041ff725d, type: 2}
   amount: 1
   executePrompt: 'Select: AK 47'
 --- !u!114 &1294678411919766708
@@ -223,7 +227,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractableActionTakeWeapon
   priority: 0
-  weaponTypeSO: {fileID: 11400000, guid: b17659b9cc405fc469ac1a8370bc4484, type: 2}
+  weaponItemSO: {fileID: 11400000, guid: e1d2128acba29a140a88ec86299f4df9, type: 2}
   amount: 1
   executePrompt: 'Select: m4a1'
 --- !u!114 &4784424902903407032
@@ -239,6 +243,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractableActionTakeWeapon
   priority: 0
-  weaponTypeSO: {fileID: 11400000, guid: 910cf57229a1d074da9f4b74ed442921, type: 2}
+  weaponItemSO: {fileID: 11400000, guid: a0a0c0a342a9d8f4baf701fed512d46d, type: 2}
   amount: 1
   executePrompt: 'Select: Barrett50'
+--- !u!114 &8243848825632899284
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7958339235838825438}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2c7a41833563dc418baeaac7b95660a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractableActionTakeWeapon
+  priority: 0
+  weaponItemSO: {fileID: 11400000, guid: 44884ce965b72304a9d4a515df8c17bf, type: 2}
+  amount: 1
+  executePrompt: 'Select: Glock'

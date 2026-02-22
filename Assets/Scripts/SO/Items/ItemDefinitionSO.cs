@@ -24,4 +24,7 @@ public class ItemDefinitionSO : ScriptableObject
 
     [Header("Category")]
     public ItemCategory category;
+
+    [Header("Inventory")]
+    public InventorySlotType requiredSlot = InventorySlotType.Normal;
 }
