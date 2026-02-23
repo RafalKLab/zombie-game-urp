@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponName: Ak47
   weaponType: 1
   magazineCapacity: 30
-  totalAmmo: 90
+  requiredAmmoItemSO: {fileID: 11400000, guid: ff786237649ad5c47b8ba5b98f49de09, type: 2}
   reloadTime: 3
   reloadClip: {fileID: 8300000, guid: b2f81bb8123eff94e80fb22d9691f05c, type: 3}
   reloadVolume: 1

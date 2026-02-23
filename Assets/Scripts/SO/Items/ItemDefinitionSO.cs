@@ -4,6 +4,7 @@ public enum ItemCategory
 {
     Resource,
     Weapon,
+    WeaponAmmo,
     Trade,
     Misc
 }

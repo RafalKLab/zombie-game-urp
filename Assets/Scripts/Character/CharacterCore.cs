@@ -61,6 +61,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     private NavMeshAgent agent;
     private Health health;
     private Interactor interactor;
+    private Inventory inventory;
 
     // Targeting / combat state
     private AiTarget aiTarget;
@@ -106,6 +107,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         health = GetComponent<Health>();
         agent = GetComponent<NavMeshAgent>();
         interactor = GetComponent<Interactor>();
+        inventory = GetComponent<Inventory>();
 
         currentMoveMode = MoveMode.Walk;
         ApplyMoveMode();
@@ -117,7 +119,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         envLayer = LayerMask.NameToLayer("Environment");
 
         hitscanShooterService = new HitscanShooterService(raycastBufferSize, envLayer);
-        characterWeaponHandler = new CharacterWeaponHandler(this, weaponSocket, PistolSocketIdle, RifleSocketIdle);
+        characterWeaponHandler = new CharacterWeaponHandler(this, weaponSocket, PistolSocketIdle, RifleSocketIdle, inventory);
         characterWeaponHandler.OnWeaponChanged += CharacterWeaponHandler_OnWeaponChanged;
         characterWeaponHandler.OnAmmoChanged += CharacterWeaponHandler_OnAmmoChanged;
 

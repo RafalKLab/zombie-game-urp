@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponName: Barrett50
   weaponType: 1
   magazineCapacity: 5
-  totalAmmo: 10
+  requiredAmmoItemSO: {fileID: 11400000, guid: 00b605dc047c354448fa926645f7dc3b, type: 2}
   reloadTime: 6.5
   reloadClip: {fileID: 8300000, guid: 5f3d4113277a54c4181095ece758e518, type: 3}
   reloadVolume: 1

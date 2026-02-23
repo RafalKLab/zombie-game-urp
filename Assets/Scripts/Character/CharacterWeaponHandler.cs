@@ -32,6 +32,7 @@ public class CharacterWeaponHandler
     private Transform weaponSocket;
     private Transform pistolSocketIdle;
     private Transform rifleSocketIdle;
+    private Inventory inventory;
 
     private readonly MonoBehaviour runner;
 
@@ -51,12 +52,15 @@ public class CharacterWeaponHandler
         MonoBehaviour runner,
         Transform weaponSocket,
         Transform pistolSocketIdle,
-        Transform rifleSocketIdle)
+        Transform rifleSocketIdle,
+        Inventory inventory
+        )
     {
         this.runner = runner;
         this.weaponSocket = weaponSocket;
         this.pistolSocketIdle = pistolSocketIdle;
         this.rifleSocketIdle = rifleSocketIdle;
+        this.inventory = inventory;
     }
 
 
@@ -88,10 +92,22 @@ public class CharacterWeaponHandler
             Debug.LogError("Weapon prefab does not have Weapon script component");
         }
 
-        currentMagazineAmmo = weaponTypeSO.magazineCapacity;
-        totalAmmo = weaponTypeSO.totalAmmo - currentMagazineAmmo;
+        currentMagazineAmmo = 0;
+        totalAmmo = 0;
+
+        if (inventory != null && weaponTypeSO.requiredAmmoItemSO != null)
+        {
+            currentMagazineAmmo = inventory.TryConsumeUpToAndGetRemaining(
+                weaponTypeSO.requiredAmmoItemSO,
+                weaponTypeSO.magazineCapacity,
+                out int _,
+                out int remainingInInventory);
+
+            totalAmmo = remainingInInventory;
+        }
 
         OnWeaponChanged?.Invoke();
+        OnAmmoChanged?.Invoke();
     }
 
     public void PrepareWeapon()
@@ -150,9 +166,14 @@ public class CharacterWeaponHandler
     {
         if (weaponTypeSO == null) return;
         if (weapon == null) return;
+        if (inventory == null) return;
         if (isReloading) return;
         if (currentMagazineAmmo >= weaponTypeSO.magazineCapacity) return;
-        if (totalAmmo <= 0) return;
+
+        if (weaponTypeSO.requiredAmmoItemSO == null) return;
+
+        int available = inventory.GetTotalAmount(weaponTypeSO.requiredAmmoItemSO);
+        if (available <= 0) return;
 
         reloadRoutine = runner.StartCoroutine(ReloadRoutine());
     }
@@ -164,13 +185,30 @@ public class CharacterWeaponHandler
 
         yield return new WaitForSeconds(weaponTypeSO.reloadTime);
 
-        int magazineCapacity = weaponTypeSO.magazineCapacity;
+        if (weaponTypeSO == null || inventory == null || weaponTypeSO.requiredAmmoItemSO == null)
+        {
+            isReloading = false;
+            reloadRoutine = null;
+            yield break;
+        }
 
-        int missingAmmo = magazineCapacity - currentMagazineAmmo;
-        int ammoToLoad = Mathf.Min(missingAmmo, totalAmmo);
+        int missingAmmo = weaponTypeSO.magazineCapacity - currentMagazineAmmo;
 
-        currentMagazineAmmo += ammoToLoad;
-        totalAmmo -= ammoToLoad;
+        if (missingAmmo > 0)
+        {
+            int taken = inventory.TryConsumeUpToAndGetRemaining(
+                weaponTypeSO.requiredAmmoItemSO,
+                missingAmmo,
+                out int _,
+                out int remainingInInventory);
+
+            currentMagazineAmmo += taken;
+            totalAmmo = remainingInInventory; // cache dla UI
+        }
+        else
+        {
+            totalAmmo = inventory.GetTotalAmount(weaponTypeSO.requiredAmmoItemSO);
+        }
 
         isReloading = false;
         reloadRoutine = null;
@@ -220,6 +258,10 @@ public class CharacterWeaponHandler
         if (weaponTypeSO == null) return new AmmoInfo();
         if (weapon == null) return new AmmoInfo();
 
-        return new AmmoInfo(currentMagazineAmmo, totalAmmo, weaponTypeSO.magazineCapacity);
-    }   
+        int total = 0;
+        if (inventory != null && weaponTypeSO.requiredAmmoItemSO != null)
+            total = inventory.GetTotalAmount(weaponTypeSO.requiredAmmoItemSO);
+
+        return new AmmoInfo(currentMagazineAmmo, total, weaponTypeSO.magazineCapacity);
+    }
 }

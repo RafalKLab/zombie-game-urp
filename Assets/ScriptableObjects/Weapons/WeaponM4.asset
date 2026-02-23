@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponName: m4a1
   weaponType: 1
   magazineCapacity: 30
-  totalAmmo: 90
+  requiredAmmoItemSO: {fileID: 11400000, guid: c39303946173a33448ad899c7a1a2081, type: 2}
   reloadTime: 2.3
   reloadClip: {fileID: 8300000, guid: 575ee59e84968544d89d8b03a071b798, type: 3}
   reloadVolume: 1

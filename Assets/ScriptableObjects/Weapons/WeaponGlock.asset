@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponName: Glock
   weaponType: 0
   magazineCapacity: 12
-  totalAmmo: 36
+  requiredAmmoItemSO: {fileID: 11400000, guid: 01a9ed166086f8c4a8a315b92af8aecf, type: 2}
   reloadTime: 2
   reloadClip: {fileID: 8300000, guid: 75ccc6d7513c9bf44a1d3517897e700f, type: 3}
   reloadVolume: 1

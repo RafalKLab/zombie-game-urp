@@ -17,18 +17,13 @@ public class Inventory : MonoBehaviour
 
     private float debugTimer;
 
+    private bool initialized;
     private List<ItemStack> slots;      // normal
     private List<ItemStack> hugeSlots;  // huge
 
     private void Awake()
     {
-        slots = new List<ItemStack>(capacity);
-        for (int i = 0; i < capacity; i++)
-            slots.Add(null);
-
-        hugeSlots = new List<ItemStack>(hugeCapacity);
-        for (int i = 0; i < hugeCapacity; i++)
-            hugeSlots.Add(null);
+        EnsureInitialized();
     }
 
     private void Update()
@@ -217,6 +212,72 @@ public class Inventory : MonoBehaviour
         }
 
         Debug.Log(sb.ToString());
+    }
+
+    /// <summary>
+    /// Zjada z inventory do 'requested' sztuk danego itemu.
+    /// Zwraca ile faktycznie zjadlo (0..requested).
+    /// remainingNeeded = requested - taken.
+    /// remainingInInventory = ile zostalo tego itemu w inventory po operacji.
+    /// </summary>
+    public int TryConsumeUpToAndGetRemaining(
+        ItemDefinitionSO item,
+        int requested,
+        out int remainingNeeded,
+        out int remainingInInventory)
+    {
+        EnsureInitialized();
+
+        remainingNeeded = Mathf.Max(0, requested);
+        remainingInInventory = 0;
+
+        if (item == null || requested <= 0)
+            return 0;
+
+        var target = (item.requiredSlot == InventorySlotType.Huge) ? hugeSlots : slots;
+
+        int remaining = requested;
+        int takenTotal = 0;
+
+        for (int i = 0; i < target.Count; i++)
+        {
+            var stack = target[i];
+            if (stack == null) continue;
+            if (stack.definition != item) continue;
+
+            int take = Mathf.Min(stack.amount, remaining);
+
+            stack.amount -= take;
+            remaining -= take;
+            takenTotal += take;
+
+            if (stack.amount <= 0)
+                target[i] = null;
+
+            if (remaining <= 0)
+                break;
+        }
+
+        remainingNeeded = remaining;
+
+        remainingInInventory = GetTotalAmount(item);
+
+        return takenTotal;
+    }
+
+    private void EnsureInitialized()
+    {
+        if (initialized) return;
+
+        slots = new List<ItemStack>(capacity);
+        for (int i = 0; i < capacity; i++)
+            slots.Add(null);
+
+        hugeSlots = new List<ItemStack>(hugeCapacity);
+        for (int i = 0; i < hugeCapacity; i++)
+            hugeSlots.Add(null);
+
+        initialized = true;
     }
 }
 

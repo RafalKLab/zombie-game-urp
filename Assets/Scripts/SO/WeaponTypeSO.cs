@@ -9,7 +9,7 @@ public class WeaponTypeSO : ScriptableObject
 
     [Header("Reload")]
     [Min(1)] public int magazineCapacity = 1;
-    [Min(1)] public int totalAmmo = 1;
+    public WeaponAmmoItemSO requiredAmmoItemSO;
     public float reloadTime = 1f;
 
     [Header("Reload audio")]

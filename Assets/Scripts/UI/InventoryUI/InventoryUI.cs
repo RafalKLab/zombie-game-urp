@@ -112,7 +112,7 @@ public class InventoryUI : MonoBehaviour
 
     public void Show()
     {
-        equippedInventoryUI.Init(characterCore.GetWeaponTypeSO());
+        equippedInventoryUI.Init(characterCore.GetWeaponTypeSO(), characterCore.GetAmmoInfo());
 
         UpdateSlots(
             characterInventory.GetHugeSlots(),
