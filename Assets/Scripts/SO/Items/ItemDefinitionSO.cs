@@ -28,4 +28,7 @@ public class ItemDefinitionSO : ScriptableObject
 
     [Header("Inventory")]
     public InventorySlotType requiredSlot = InventorySlotType.Normal;
+
+    [Header("Actions")]
+    public ItemActionSO[] actions;
 }

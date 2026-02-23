@@ -20,4 +20,7 @@ MonoBehaviour:
   maxStack: 40
   category: 2
   requiredSlot: 0
+  actions:
+  - {fileID: 11400000, guid: 066825dec5a9de847891be199d962e08, type: 2}
+  - {fileID: 11400000, guid: 265c58256fea6a945a01ed3a1b310011, type: 2}
   ammoType: 9mm
