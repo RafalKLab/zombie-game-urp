@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -9,6 +10,9 @@ public class MovementHandler : MonoBehaviour
 {
     [SerializeField] private float runClickWindow = 0.25f;
     private float lastMoveClickTime;
+
+    private Coroutine pendingMoveCoroutine;
+    private Vector3 pendingMovePoint;
 
     private void Start()
     {
@@ -66,11 +70,22 @@ public class MovementHandler : MonoBehaviour
 
             if (isDoubleClick)
             {
+                if (pendingMoveCoroutine != null)
+                {
+                    StopCoroutine(pendingMoveCoroutine);
+                    pendingMoveCoroutine = null;
+                }
+
                 playableCharacter.RunTo(hit.point);
             }
             else
             {
-                playableCharacter.MoveTo(hit.point);
+                pendingMovePoint = hit.point;
+
+                if (pendingMoveCoroutine != null)
+                    StopCoroutine(pendingMoveCoroutine);
+
+                pendingMoveCoroutine = StartCoroutine(DelayedMove(playableCharacter));
             }
         }
     }
@@ -124,5 +139,13 @@ public class MovementHandler : MonoBehaviour
         EventSystem.current.RaycastAll(eventData, results);
 
         return results.Count > 0;
+    }
+
+    private IEnumerator DelayedMove(PlayableCharacter playableCharacter)
+    {
+        yield return new WaitForSeconds(runClickWindow);
+
+        playableCharacter.MoveTo(pendingMovePoint);
+        pendingMoveCoroutine = null;
     }
 }

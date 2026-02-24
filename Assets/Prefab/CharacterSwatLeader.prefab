@@ -2019,6 +2019,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Inventory
   capacity: 12
   hugeCapacity: 2
+  startingItems:
+  - definition: {fileID: 11400000, guid: 00b605dc047c354448fa926645f7dc3b, type: 2}
+    amount: 40
+  loadStartingItemsOnAwake: 1
   debugLog: 0
   debugInterval: 1
 --- !u!1 &3822019871363976791

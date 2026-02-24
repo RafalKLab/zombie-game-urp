@@ -14,6 +14,11 @@ public class Inventory : MonoBehaviour
     [Header("Huge Slots")]
     [SerializeField] private int hugeCapacity = 2;
 
+    [Header("Starting Items")]
+    [SerializeField] private List<ItemStack> startingItems = new();
+    [SerializeField] private bool loadStartingItemsOnAwake = true;
+
+
     [Header("Debug")]
     [SerializeField] private bool debugLog = false;
     [SerializeField] private float debugInterval = 1f;
@@ -27,6 +32,29 @@ public class Inventory : MonoBehaviour
     private void Awake()
     {
         EnsureInitialized();
+
+        if (loadStartingItemsOnAwake)
+            LoadStartingStacks();
+    }
+
+    private void LoadStartingStacks()
+    {
+        if (startingItems == null || startingItems.Count == 0)
+            return;
+
+        for (int i = 0; i < startingItems.Count; i++)
+        {
+            ItemStack s = startingItems[i];
+            if (s == null || s.definition == null) continue;
+            if (s.amount <= 0) continue;
+
+            ItemStack copy = new ItemStack(s.definition, s.amount)
+            {
+                weaponRuntimeState = s.weaponRuntimeState
+            };
+
+            InsertStack(copy);
+        }
     }
 
     private void Update()

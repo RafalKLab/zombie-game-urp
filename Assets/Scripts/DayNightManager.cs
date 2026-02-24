@@ -13,6 +13,14 @@ public class DayNightManager : MonoBehaviour
     [SerializeField] private float dayDurationInSeconds = 120f;
     [SerializeField] private float sunYawY = 45f;
 
+    [Header("Moon")]
+    [SerializeField] private Light moonLight;
+
+    [Header("Debug")]
+    [SerializeField] private bool freezeCycle = false;
+    [SerializeField] private bool useDebugSunAngle = false;
+    [SerializeField, Range(0f, 360f)] private float debugSunAngle = 0f;
+
     private float timeOfDay; // 0..1
 
     private void Awake()
@@ -21,13 +29,29 @@ public class DayNightManager : MonoBehaviour
 
         if (dayDurationInSeconds <= 0f)
             dayDurationInSeconds = 120f;
+
+        if (moonLight != null && nightPreset != null)
+        {
+            moonLight.color = nightPreset.sunColor;
+            moonLight.intensity = 0f;
+        }
     }
 
     private void Update()
     {
         if (sunLight == null) return;
 
-        timeOfDay = Mathf.Repeat(timeOfDay + (Time.deltaTime / dayDurationInSeconds), 1f);
+        if (useDebugSunAngle)
+        {
+            timeOfDay = Mathf.Repeat(debugSunAngle / 360f, 1f);
+        }
+        else if (!freezeCycle)
+        {
+            timeOfDay = Mathf.Repeat(
+                timeOfDay + (Time.deltaTime / dayDurationInSeconds),
+                1f
+            );
+        }
 
         UpdateSunRotation();
         ApplyPreset();
@@ -41,26 +65,26 @@ public class DayNightManager : MonoBehaviour
 
     private void ApplyPreset()
     {
-        if (timeOfDay < 0.20f)
+        float sunAngle = GetSunAngle();
+
+        if (sunAngle < 45f) // Dawn
         {
-            float t = Mathf.InverseLerp(0.00f, 0.20f, timeOfDay);
+            float t = Mathf.InverseLerp(0f, 45f, sunAngle);
             ApplyLerp(dawnPreset, dayPreset, t);
         }
-        else if (timeOfDay < 0.70f)
+        else if (sunAngle < 180f) // Day
         {
-            // Day -> Dusk
-            float t = Mathf.InverseLerp(0.20f, 0.70f, timeOfDay);
+            float t = Mathf.InverseLerp(45f, 180f, sunAngle);
             ApplyLerp(dayPreset, duskPreset, t);
         }
-        else if (timeOfDay < 0.85f)
+        else if (sunAngle < 225f) // Dusk
         {
-            // Dusk -> Night
-            float t = Mathf.InverseLerp(0.70f, 0.85f, timeOfDay);
+            float t = Mathf.InverseLerp(180f, 225f, sunAngle);
             ApplyLerp(duskPreset, nightPreset, t);
         }
-        else
+        else // Night
         {
-            float t = Mathf.InverseLerp(0.85f, 1.00f, timeOfDay);
+            float t = Mathf.InverseLerp(225f, 360f, sunAngle);
             ApplyLerp(nightPreset, dawnPreset, t);
         }
     }
@@ -70,11 +94,26 @@ public class DayNightManager : MonoBehaviour
         if (a == null || b == null) return;
 
         sunLight.color = Color.Lerp(a.sunColor, b.sunColor, t);
-        sunLight.intensity = Mathf.Lerp(a.sunIntensity, b.sunIntensity, t);
+
+        float baseIntensity = Mathf.Lerp(a.sunIntensity, b.sunIntensity, t);
+
+        // 
+        float sunHeightFactor = Mathf.Clamp01(
+            Vector3.Dot(sunLight.transform.forward, Vector3.down)
+        );
+
+        sunLight.intensity = baseIntensity * sunHeightFactor;
 
         RenderSettings.ambientLight = Color.Lerp(a.ambientColor, b.ambientColor, t);
 
         RenderSettings.ambientIntensity = Mathf.Lerp(a.ambientIntensity, b.ambientIntensity, t);
+
+        // MOON (fixed)
+        if (moonLight != null && nightPreset != null)
+        {
+            float nightFactor = 1f - sunHeightFactor;
+            moonLight.intensity = nightPreset.sunIntensity * nightFactor;
+        }
     }
 
     [System.Serializable]
@@ -86,5 +125,10 @@ public class DayNightManager : MonoBehaviour
         public Color ambientColor = new Color(0.2f, 0.2f, 0.2f, 1f);
 
         public float ambientIntensity = 1f;
+    }
+
+    private float GetSunAngle()
+    {
+        return timeOfDay * 360f;
     }
 }
