@@ -62,8 +62,10 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     private NavMeshAgent agent;
     private Health health;
     private Interactor interactor;
-    private Inventory inventory;
-    private WeaponTypeSO weaponTypeSO;
+    public Inventory inventory { get; private set; }
+
+    private WeaponTypeSO EquippedWeaponTypeSO =>
+    weaponItemSO != null ? weaponItemSO.weaponTypeSO : null;
 
     // Targeting / combat state
     private AiTarget aiTarget;
@@ -128,7 +130,6 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         if (weaponItemSO != null)
         {
             characterWeaponHandler.InstantiateWeapon(weaponItemSO);
-            weaponTypeSO = weaponItemSO.weaponTypeSO;
         }
 
         characterAnimatorFacade = GetComponent<CharacterAnimatorFacade>();
@@ -210,7 +211,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         agent.isStopped = true;
         agent.ResetPath();
         characterWeaponHandler.PrepareWeapon();
-        characterAnimatorFacade?.EnableAim(weaponTypeSO);
+        characterAnimatorFacade?.EnableAim(EquippedWeaponTypeSO);
 
         ResetRepositionState();
 
@@ -221,7 +222,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     public bool PrepareWeapon()
     {
         characterWeaponHandler.PrepareWeapon();
-        characterAnimatorFacade?.EnableAim(weaponTypeSO);
+        characterAnimatorFacade?.EnableAim(EquippedWeaponTypeSO);
 
         return characterWeaponHandler.GetIsPrepared();
     }
@@ -247,7 +248,6 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     public void TryToShoot()
     {
         if (aiTarget == null) return;
-        if (weaponTypeSO == null) return;
         if (!characterWeaponHandler.WeaponIsReadyToShoot()) return;
 
         // Reposition when no line of sight
@@ -323,6 +323,9 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
         Transform muzzle = weapon.GetMuzzle();
         if (muzzle == null) return;
+
+        WeaponTypeSO weaponTypeSO = EquippedWeaponTypeSO;
+        if (weaponTypeSO == null) return;
 
         Vector3 origin = muzzle.position;
         Vector3 baseDirection = (targetPos - origin).normalized;
@@ -453,11 +456,6 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         return false;
     }
 
-
-    public Transform GetCameraLookAtPoint()
-    {
-        return cameraLookAtPoint;
-    }
     private void TryRepositionToGainLineOfSight()
     {
         if (aiTarget == null) return;
@@ -496,12 +494,11 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         agent.SetDestination(aiTarget.transform.position);
     }
 
-
     private bool IsTargetInWeaponEffectiveRange(Vector3 targetPos, Vector3 origin)
     {
-        if (weaponTypeSO == null) return false;
+        if (EquippedWeaponTypeSO == null) return false;
 
-        float range = weaponTypeSO.effectiveRange;
+        float range = EquippedWeaponTypeSO.effectiveRange;
         float sqrDist = (targetPos - origin).sqrMagnitude;
         return sqrDist <= range * range;
     }
@@ -511,6 +508,11 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         noLosTimer = 0f;
         nextRepositionTime = 0f;
         repositionTries = 0;
+    }
+
+    public Transform GetCameraLookAtPoint()
+    {
+        return cameraLookAtPoint;
     }
 
     public bool HasAttackTarget()
@@ -556,19 +558,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
     public bool HasWeapon()
     {
-        return weaponTypeSO != null;
-    }
-
-    public bool TrySetWeapon(WeaponItemSO weaponItemSO, WeaponRuntimeState weaponRuntimeState = null)
-    {
-        if (weaponItemSO == null) return false;
-        if (weaponItemSO.weaponTypeSO == null) return false;
-        if (HasWeapon()) return false;
-
-        characterWeaponHandler.InstantiateWeapon(weaponItemSO, weaponRuntimeState);
-        weaponTypeSO = weaponItemSO.weaponTypeSO;
-
-        return true;
+        return EquippedWeaponTypeSO != null;
     }
 
     public bool TryInteract()
@@ -708,7 +698,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
         if (previousWeaponRuntimeState == null) return false;
 
-        weaponTypeSO = weaponItemSO.weaponTypeSO;
+        this.weaponItemSO = weaponItemSO;
 
         inventory.RemoveStack(itemStack);
 
@@ -728,6 +718,18 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         if (!success) return false;
 
         inventory.RemoveStack(itemStack);
+
+        return true;
+    }
+
+    public bool TrySetWeapon(WeaponItemSO weaponItemSO, WeaponRuntimeState weaponRuntimeState = null)
+    {
+        if (weaponItemSO == null) return false;
+        if (weaponItemSO.weaponTypeSO == null) return false;
+        if (HasWeapon()) return false;
+
+        characterWeaponHandler.InstantiateWeapon(weaponItemSO, weaponRuntimeState);
+        this.weaponItemSO = weaponItemSO;
 
         return true;
     }
