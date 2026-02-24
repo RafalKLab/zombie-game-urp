@@ -22,4 +22,5 @@ MonoBehaviour:
   requiredSlot: 1
   actions:
   - {fileID: 11400000, guid: 066825dec5a9de847891be199d962e08, type: 2}
+  - {fileID: 11400000, guid: 265c58256fea6a945a01ed3a1b310011, type: 2}
   weaponTypeSO: {fileID: 11400000, guid: 25e7c5961397cca488bdb51ce68f7a7f, type: 2}

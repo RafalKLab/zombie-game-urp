@@ -49,95 +49,114 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     [Header("Shooting settings")]
     [SerializeField] private int maxConsecutiveMisses = 10;
 
-    // Reposition timing
-    private float losGraceTime = 2f;
+    // ==============================
+    // Combat / Reposition tuning
+    // ==============================
+    private float losGraceTime = 1f;
     private float repositionInterval = 1f;
     private int maxRepositionTries = 3;
 
+    // ==============================
+    // Combat / Reposition runtime state
+    // ==============================
     private float noLosTimer;
     private float nextRepositionTime;
     private int repositionTries;
 
-    // Cached components
-    private NavMeshAgent agent;
-    private Health health;
-    private Interactor interactor;
-    public Inventory inventory { get; private set; }
-
-    private WeaponTypeSO EquippedWeaponTypeSO =>
-    weaponItemSO != null ? weaponItemSO.weaponTypeSO : null;
-
-    // Targeting / combat state
-    private AiTarget aiTarget;
-
-    // Raycast buffer
-    private const int raycastBufferSize = 16;
-    private RaycastHit[] raycastHits;
-
-    // Layers
-    private int envLayer;
-
-    // Services / Helpers
-    private HitscanShooterService hitscanShooterService;
-    private CharacterWeaponHandler characterWeaponHandler;
-
-    // Animator
-    private CharacterAnimatorFacade characterAnimatorFacade;
-
-    // Movement
-    public enum MoveMode { Walk, Run }
-
-    private float stopSpeedThreshold = 0.1f;
-
-    private MoveMode currentMoveMode;
-
-    public bool IsRunning => currentMoveMode == MoveMode.Run;
-
-    public float RunSpeed => characterSO.runSpeed;
-
-    public float WalkSpeed => characterSO.walkSpeed;
-
-    float rotateTowardsTargetSpeed = 300f;
-
-    // Shooting settings runtime
+    // ==============================
+    // Shooting runtime state
+    // ==============================
     private int consecutiveMisses = 0;
     private bool firstShotPending = false;
     private bool aimingTimerStarted = false;
     private float aimingReadyTime = 0f;
 
+    // ==============================
+    // Cached components
+    // ==============================
+    private NavMeshAgent agent;
+    private Health health;
+    private Interactor interactor;
+    public Inventory inventory { get; private set; }
+
+    // ==============================
+    // Equipped weapon (derived)
+    // ==============================
+    private WeaponTypeSO EquippedWeaponTypeSO =>
+        weaponItemSO != null ? weaponItemSO.weaponTypeSO : null;
+
+    // ==============================
+    // Targeting / combat state
+    // ==============================
+    private AiTarget aiTarget;
+
+    // ==============================
+    // Raycast / physics helpers
+    // ==============================
+    private const int raycastBufferSize = 16;
+    private RaycastHit[] raycastHits;
+
+    // ==============================
+    // Layers
+    // ==============================
+    private int envLayer;
+
+    // ==============================
+    // Services / Handlers
+    // ==============================
+    private HitscanShooterService hitscanShooterService;
+    private CharacterWeaponHandler characterWeaponHandler;
+    private CharacterMoveHandler characterMoveHandler;
+
+    // ==============================
+    // Animator
+    // ==============================
+    private CharacterAnimatorFacade characterAnimatorFacade;
+
+    // ==============================
+    // Public movement props
+    // ==============================
+    public bool IsRunning => characterMoveHandler.IsRunning;
+    public float RunSpeed => characterSO.runSpeed;
+    public float WalkSpeed => characterSO.walkSpeed;
 
     private void Awake()
     {
+        // 1) Cache components
         health = GetComponent<Health>();
         agent = GetComponent<NavMeshAgent>();
         interactor = GetComponent<Interactor>();
         inventory = GetComponent<Inventory>();
+        characterAnimatorFacade = GetComponent<CharacterAnimatorFacade>();
 
-        currentMoveMode = MoveMode.Walk;
-        ApplyMoveMode();
-
+        // 2) Initialize state / buffers
         health.Initialize(characterSO.maxHealth);
 
         raycastHits = new RaycastHit[raycastBufferSize];
-
         envLayer = LayerMask.NameToLayer("Environment");
 
+        // 3) Services / handlers
         hitscanShooterService = new HitscanShooterService(raycastBufferSize, envLayer);
-        characterWeaponHandler = new CharacterWeaponHandler(this, weaponSocket, PistolSocketIdle, RifleSocketIdle, inventory);
+
+        characterWeaponHandler = new CharacterWeaponHandler(
+            this, weaponSocket, PistolSocketIdle, RifleSocketIdle, inventory);
+
+        characterMoveHandler = new CharacterMoveHandler(this, agent);
+
+        // 4) Events
         characterWeaponHandler.OnWeaponChanged += CharacterWeaponHandler_OnWeaponChanged;
         characterWeaponHandler.OnAmmoChanged += CharacterWeaponHandler_OnAmmoChanged;
 
+        // 5) Starting weapon (optional)
         if (weaponItemSO != null)
         {
             characterWeaponHandler.InstantiateWeapon(weaponItemSO);
         }
-
-        characterAnimatorFacade = GetComponent<CharacterAnimatorFacade>();
     }
 
     private void Update()
     {
-        AutoRevertRunToWalkIfStopped();
+        characterMoveHandler.AutoRevertRunToWalkIfStopped();
 
         characterWeaponHandler.TickWeaponCooldown(Time.deltaTime);
 
@@ -179,37 +198,24 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         OnAmmoChanged?.Invoke();
     }
 
-    public void MoveTo(Vector3 target)
+    public void MoveTo(Vector3 target) => StartMove(target, run: false);
+    public void RunTo(Vector3 target) => StartMove(target, run: true);
+
+    private void StartMove(Vector3 target, bool run)
     {
         ClearAttackTarget();
-
         characterWeaponHandler.HolsterWeapon();
         characterAnimatorFacade?.DisableAim();
 
-        currentMoveMode = MoveMode.Walk;
-        ApplyMoveMode();
-
-        agent.SetDestination(target);
-    }
-
-    public void RunTo(Vector3 target)
-    {
-        ClearAttackTarget();
-
-        characterWeaponHandler.HolsterWeapon();
-        characterAnimatorFacade?.DisableAim();
-
-        currentMoveMode = MoveMode.Run;
-        ApplyMoveMode();
-
-        agent.SetDestination(target);
+        if (run) characterMoveHandler.RunTo(target);
+        else characterMoveHandler.MoveTo(target);
     }
 
     public void SetAttackTarget(AiTarget aiTarget)
     {
         this.aiTarget = aiTarget;
         agent.isStopped = true;
-        agent.ResetPath();
+        ResetPath();
         characterWeaponHandler.PrepareWeapon();
         characterAnimatorFacade?.EnableAim(EquippedWeaponTypeSO);
 
@@ -237,7 +243,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     {
         this.aiTarget = null;
         agent.isStopped = false;
-        agent.ResetPath();
+        ResetPath();
 
         ResetRepositionState();
 
@@ -277,16 +283,16 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         if (!agent.isStopped)
         {
             agent.isStopped = true;
-            agent.ResetPath();
+            ResetPath();
         }
 
 
         // if agent is stopping
         if (agent.velocity.sqrMagnitude > 0.01f) return;
 
-        RotateTowardsTarget(targetPos);
+        characterMoveHandler.RotateTowardsTarget(targetPos);
 
-        if (!IsFacingTarget(targetPos))
+        if (!characterMoveHandler.IsFacingTarget(targetPos))
             return;
 
         if (firstShotPending)
@@ -359,32 +365,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
             ClearAttackTarget();
     }
 
-    private void RotateTowardsTarget(Vector3 targetPos)
-    {
-        Vector3 lookDir = targetPos - transform.position;
-        lookDir.y = 0f;
-
-        if (lookDir.sqrMagnitude < 0.001f)
-            return;
-
-        Quaternion targetRotation = Quaternion.LookRotation(lookDir);
-
-        transform.rotation = Quaternion.RotateTowards(
-            transform.rotation,
-            targetRotation,
-            rotateTowardsTargetSpeed * Time.deltaTime
-        );
-    }
-
-    bool IsFacingTarget(Vector3 targetPos, float maxAngleDeg = 1f)
-    {
-        Vector3 toTarget = targetPos - transform.position;
-        toTarget.y = 0f;
-        if (toTarget.sqrMagnitude < 0.001f) return true;
-
-        float angle = Vector3.Angle(transform.forward, toTarget);
-        return angle <= maxAngleDeg;
-    }
+   
 
     private bool HasLineOfSightToTarget(AiTarget target)
     {
@@ -510,90 +491,6 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         repositionTries = 0;
     }
 
-    public Transform GetCameraLookAtPoint()
-    {
-        return cameraLookAtPoint;
-    }
-
-    public bool HasAttackTarget()
-    {
-        if (aiTarget == null)
-            return false;
-        else
-            return true;
-    }
-
-    private void ApplyMoveMode()
-    {
-        agent.speed = (currentMoveMode == MoveMode.Run)
-            ? characterSO.runSpeed
-            : characterSO.walkSpeed;
-    }
-
-    public bool TrySetAttackTarget(AiTarget newTarget)
-    {
-        if (aiTarget == newTarget)
-            return false;
-
-        SetAttackTarget(newTarget);
-        return true;
-    }
-
-    private void AutoRevertRunToWalkIfStopped()
-    {
-        if (currentMoveMode != MoveMode.Run) return;
-
-        if (agent.pathPending) return;
-        if (!agent.hasPath) return;
-
-        bool isAtDestination = agent.remainingDistance <= agent.stoppingDistance;
-        bool isNotMoving = agent.velocity.magnitude < stopSpeedThreshold;
-
-        if (isAtDestination && isNotMoving)
-        {
-            currentMoveMode = MoveMode.Walk;
-            ApplyMoveMode();
-        }
-    }
-
-    public bool HasWeapon()
-    {
-        return EquippedWeaponTypeSO != null;
-    }
-
-    public bool TryInteract()
-    {
-        if (interactor == null) return false;
-        return interactor.TryInteractCurrent();
-    }
-
-    public bool TryInteractAction(int actionIndex)
-    {
-        if (interactor == null) return false;
-        return interactor.TryInteractCurrentAction(actionIndex);
-    }
-
-
-    public float GetNormalizedHealth()
-    {
-        return health.GetNormalizedHealth();
-    }
-
-    public WeaponTypeSO GetWeaponTypeSO()
-    {
-        return characterWeaponHandler.GetWeaponTypeSO();
-    }
-
-    public CharacterSO GetCharacterSO()
-    {
-        return characterSO;
-    }
-
-    public AmmoInfo GetAmmoInfo()
-    {
-        return characterWeaponHandler.GetAmmoInfo();
-    }
-
     private bool TryFindStrafePeekPoint(out Vector3 bestPoint)
     {
         bestPoint = default;
@@ -662,10 +559,69 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         return false;
     }
 
+    public Transform GetCameraLookAtPoint()
+    {
+        return cameraLookAtPoint;
+    }
+
+    public bool HasAttackTarget()
+    {
+        if (aiTarget == null)
+            return false;
+        else
+            return true;
+    }
+
+    public bool TrySetAttackTarget(AiTarget newTarget)
+    {
+        if (aiTarget == newTarget)
+            return false;
+
+        SetAttackTarget(newTarget);
+        return true;
+    }
+
+    public bool HasWeapon()
+    {
+        return EquippedWeaponTypeSO != null;
+    }
+
+    public bool TryInteract()
+    {
+        if (interactor == null) return false;
+        return interactor.TryInteractCurrent();
+    }
+
+    public bool TryInteractAction(int actionIndex)
+    {
+        if (interactor == null) return false;
+        return interactor.TryInteractCurrentAction(actionIndex);
+    }
+
+
+    public float GetNormalizedHealth()
+    {
+        return health.GetNormalizedHealth();
+    }
+
+    public WeaponTypeSO GetWeaponTypeSO()
+    {
+        return characterWeaponHandler.GetWeaponTypeSO();
+    }
+
+    public CharacterSO GetCharacterSO()
+    {
+        return characterSO;
+    }
+
+    public AmmoInfo GetAmmoInfo()
+    {
+        return characterWeaponHandler.GetAmmoInfo();
+    }
 
     public void ResetPath()
     {
-        agent.ResetPath();
+        characterMoveHandler.ResetPath();
     }
 
     public bool TryToEquipItem(ItemStack itemStack)

@@ -20,5 +20,7 @@ MonoBehaviour:
   maxStack: 4
   category: 0
   requiredSlot: 0
+  actions:
+  - {fileID: 11400000, guid: 265c58256fea6a945a01ed3a1b310011, type: 2}
   resourceType: {fileID: 11400000, guid: 53df45d7401a3d043a3c05e32b132f85, type: 2}
   resourceUnits: 5

@@ -231,6 +231,24 @@ public class Inventory : MonoBehaviour
         return false; // brak miejsca
     }
 
+    public bool HasEmptySlotFor(ItemStack stack)
+    {
+        if (stack == null || stack.definition == null)
+            return false;
+
+        var target = stack.definition.requiredSlot == InventorySlotType.Huge
+            ? hugeSlots
+            : slots;
+
+        for (int i = 0; i < target.Count; i++)
+        {
+            if (target[i] == null)
+                return true;
+        }
+
+        return false;
+    }
+
     public int GetTotalAmount(ItemDefinitionSO item)
     {
         if (item == null) return 0;
