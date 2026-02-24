@@ -22,6 +22,7 @@ public class ActiveCharacterManager : MonoBehaviour
     [SerializeField] private TopFollowCameraController topFollowCameraController;
     [SerializeField] private CinemachineCamera overviewCamera;
     [SerializeField] private CinemachineBrain cinemachineBrain;
+    [SerializeField] private float deathCameraDelay = 3.5f;
 
     private PlayableCharacter activePlayableCharacter;
 
@@ -36,7 +37,18 @@ public class ActiveCharacterManager : MonoBehaviour
     {
         if (e.playableCharacter == activePlayableCharacter)
         {
-            UnsetActivePlayableCharacter(e.playableCharacter);
+            activePlayableCharacter = null;
+            StartCoroutine(UnsetActiveAfterDelay(e.playableCharacter));
+        }
+    }
+
+    private IEnumerator UnsetActiveAfterDelay(PlayableCharacter character)
+    {
+        yield return new WaitForSeconds(deathCameraDelay);
+
+        if (activePlayableCharacter == character)
+        {
+            UnsetActivePlayableCharacter(character);
         }
     }
 

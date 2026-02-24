@@ -14,6 +14,10 @@ public class AiTarget : MonoBehaviour
     {
         return aimPoint ?? transform;
     }
+    public void SetFaction(Faction faction)
+    {
+        this.faction = faction;
+    }
 }
 
 

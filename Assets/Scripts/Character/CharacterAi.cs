@@ -38,6 +38,7 @@ public class CharacterAi : MonoBehaviour, ICharacterController
     {
         Idle,
         Defend,
+        Dead,
     }
 
     private void Awake()
@@ -66,6 +67,28 @@ public class CharacterAi : MonoBehaviour, ICharacterController
             baseManager = FactionBaseRegistry.Instance.GetBaseManagerByFaction(entityAiTarget.GetFaction());
 
         if (baseManager != null) {
+            baseManager.OnBaseDefendRequest += BaseManager_OnBaseDefendRequest;
+
+            if (characterAiStateIdleHelper != null)
+            {
+                characterAiStateIdleHelper.SetBaseManager(baseManager);
+                characterAiStateDefendHelper.SetBaseManager(baseManager);
+            }
+        }
+    }
+
+    public void RefreshBase()
+    {
+        if (baseManager != null)
+            baseManager.OnBaseDefendRequest -= BaseManager_OnBaseDefendRequest;
+
+        baseManager = null;
+
+        if (FactionBaseRegistry.Instance != null)
+            baseManager = FactionBaseRegistry.Instance.GetBaseManagerByFaction(entityAiTarget.GetFaction());
+
+        if (baseManager != null)
+        {
             baseManager.OnBaseDefendRequest += BaseManager_OnBaseDefendRequest;
 
             if (characterAiStateIdleHelper != null)
@@ -187,6 +210,8 @@ public class CharacterAi : MonoBehaviour, ICharacterController
 
     private void CharacterCore_OnKilled(object sender, EventArgs e)
     {
+        // musimy zrobic cos takiego na kazdy item z inventory 
+
         isDead = true;
 
         UnsubscribeFromActiveCharacterManager();

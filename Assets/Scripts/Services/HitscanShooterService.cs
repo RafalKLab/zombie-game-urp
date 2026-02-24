@@ -72,7 +72,7 @@ public sealed class HitscanShooterService
             float distance = hit.distance;
             float delay = (speed > 0f) ? (distance / speed) : 0f;
 
-            health.TakeDamage(weaponType.damage, delay);
+            health.TakeDamage(weaponType.damage, delay, weaponType);
 
             penetrationsDone++;
 

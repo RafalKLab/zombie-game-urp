@@ -5,6 +5,7 @@ using UnityEngine.AI;
 using UnityEngine.Assertions.Must;
 using static CharacterCore;
 using static CharacterWeaponHandler;
+using static Health;
 
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(Health))]
@@ -78,6 +79,8 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     private Health health;
     private Interactor interactor;
     public Inventory inventory { get; private set; }
+
+    private bool isDead = false;
 
     // ==============================
     // Equipped weapon (derived)
@@ -156,6 +159,8 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
     private void Update()
     {
+        if (isDead) return;
+
         characterMoveHandler.AutoRevertRunToWalkIfStopped();
 
         characterWeaponHandler.TickWeaponCooldown(Time.deltaTime);
@@ -175,11 +180,31 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         health.OnDamaged -= Health_OnDamaged;
     }
 
-    private void Health_OnDied(object sender, System.EventArgs e)
+    private void Health_OnDied(object sender, OnDiedEventArgs e)
     {
+        isDead = true;
+
+        // Combat / actions
+        ClearAttackTarget();
         characterWeaponHandler.CancelReload();
+
+        // Movement
+        ResetPath();
+        agent.isStopped = true;
+        agent.enabled = false;
+
+        // Animation
+        characterAnimatorFacade.DisableAim();
+
+        if (e.killedByWeaponTypeSO != null)
+            characterAnimatorFacade.PlayWeaponDeath();
+        else
+            characterAnimatorFacade.PlayMeleeDeath();
+
+        // Notify
         OnKilled?.Invoke(this, EventArgs.Empty);
     }
+
     private void Health_OnDamaged(object sender, Health.OnDamagedEventArgs e)
     {
         OnDamaged?.Invoke(this, new OnDamagedEventArgs
@@ -213,6 +238,8 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
     public void SetAttackTarget(AiTarget aiTarget)
     {
+        if (isDead) return;
+
         this.aiTarget = aiTarget;
         agent.isStopped = true;
         ResetPath();
@@ -243,7 +270,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     {
         this.aiTarget = null;
         agent.isStopped = false;
-        ResetPath();
+        //ResetPath();
 
         ResetRepositionState();
 

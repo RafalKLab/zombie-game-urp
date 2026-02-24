@@ -10,6 +10,9 @@ public class CharacterAnimatorFacade : MonoBehaviour
     [Header("Animator")]
     [SerializeField] private string speedParam = "Speed";
     [SerializeField] private string aimAnimationIndexParam = "AimAnimationIndex";
+    [SerializeField] private string meleeDeathParam = "MeleeDeath";
+    [SerializeField] private string weaponDeathParam = "WeaponDeath";
+
     [SerializeField] private float movingSpeedThreshold = 0.05f;
     [SerializeField] private float dampTime = 0.10f;
 
@@ -22,6 +25,8 @@ public class CharacterAnimatorFacade : MonoBehaviour
 
     private int speedHash;
     private int aimAnimationIndexHash;
+    private int meleeDeathParamHash;
+    private int weaponDeathParamHash;
 
     private Dictionary<WeaponType, WeaponAimConfig> aimConfigMap;
 
@@ -40,6 +45,8 @@ public class CharacterAnimatorFacade : MonoBehaviour
 
         speedHash = Animator.StringToHash(speedParam);
         aimAnimationIndexHash = Animator.StringToHash(aimAnimationIndexParam);
+        meleeDeathParamHash = Animator.StringToHash(meleeDeathParam);
+        weaponDeathParamHash = Animator.StringToHash(weaponDeathParam);
 
         SetupAimConfigDictionary();
     }
@@ -128,6 +135,20 @@ public class CharacterAnimatorFacade : MonoBehaviour
     {
         if (rig == null) return;
         rig.weight = Mathf.MoveTowards(rig.weight, targetWeight, aimLerpSpeed * Time.deltaTime);
+    }
+
+    public void PlayMeleeDeath()
+    {
+        if (!animator) return;
+
+        animator.SetTrigger(meleeDeathParamHash);
+    }
+
+    public void PlayWeaponDeath()
+    {
+        if (!animator) return;
+
+        animator.SetTrigger(weaponDeathParamHash);
     }
 }
 

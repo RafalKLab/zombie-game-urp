@@ -28,28 +28,28 @@ public class SelectCharacterUI : MonoBehaviour
 
     private void SubscribeToSpawnerEvents()
     {
-        if (PlayerSpawner.Instance == null) return;
+        if (CommunityManager.Instance == null) return;
 
-        PlayerSpawner.Instance.OnPlayableCharacterSpawned += PlayerSpawner_OnPlayableCharacterSpawned;
-        PlayerSpawner.Instance.OnPlayableCharacterRemoved += PlayerSpawner_OnPlayableCharacterRemoved;
+        CommunityManager.Instance.OnPlayableCharacterSpawned += CommunityManager_OnPlayableCharacterSpawned;
+        CommunityManager.Instance.OnPlayableCharacterRemoved += CommunityManager_OnPlayableCharacterRemoved;
     }
 
     private void UnsubscribeFromSpawnerEvents()
     {
-        if (PlayerSpawner.Instance == null) return;
+        if (CommunityManager.Instance == null) return;
 
-        PlayerSpawner.Instance.OnPlayableCharacterSpawned -= PlayerSpawner_OnPlayableCharacterSpawned;
-        PlayerSpawner.Instance.OnPlayableCharacterRemoved -= PlayerSpawner_OnPlayableCharacterRemoved;
+        CommunityManager.Instance.OnPlayableCharacterSpawned -= CommunityManager_OnPlayableCharacterSpawned;
+        CommunityManager.Instance.OnPlayableCharacterRemoved -= CommunityManager_OnPlayableCharacterRemoved;
     }
 
     private void RebuildCharacterButtons()
     {
         ClearAllCharacterButtons();
 
-        if (PlayerSpawner.Instance == null) return;
+        if (CommunityManager.Instance == null) return;
 
         Dictionary<string, PlayableCharacter> spawnedPlayableCharacterDictionary =
-            PlayerSpawner.Instance.GetSpawnedPlayableCharacterDictionary();
+            CommunityManager.Instance.GetSpawnedPlayableCharacterDictionary();
 
         foreach (PlayableCharacter playableCharacter in spawnedPlayableCharacterDictionary.Values)
         {
@@ -71,12 +71,12 @@ public class SelectCharacterUI : MonoBehaviour
         buttonByPlayableCharacter.Clear();
     }
 
-    private void PlayerSpawner_OnPlayableCharacterSpawned(object sender, PlayerSpawner.OnPlayableCharacterSpawnedEventArgs e)
+    private void CommunityManager_OnPlayableCharacterSpawned(object sender, CommunityManager.OnPlayableCharacterSpawnedEventArgs e)
     {
         AddCharacterButton(e.playableCharacter);
     }
 
-    private void PlayerSpawner_OnPlayableCharacterRemoved(object sender, PlayerSpawner.OnPlayableCharacterRemovedEventArgs e)
+    private void CommunityManager_OnPlayableCharacterRemoved(object sender, CommunityManager.OnPlayableCharacterRemovedEventArgs e)
     {
         RemoveCharacterButton(e.playableCharacter);
     }

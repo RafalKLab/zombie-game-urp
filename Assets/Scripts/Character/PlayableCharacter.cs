@@ -87,7 +87,7 @@ public class PlayableCharacter : MonoBehaviour, ICharacterController
     {
         yield return new WaitForSeconds(deathDelay);
 
-        Destroy(gameObject);
+        Destroy(this);
     }
 
     public void TryInteract()

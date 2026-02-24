@@ -4,8 +4,12 @@ using UnityEngine;
 
 public class Health : MonoBehaviour
 {
-    public event EventHandler OnDied;
-    
+    public event EventHandler<OnDiedEventArgs> OnDied;
+    public class OnDiedEventArgs : EventArgs
+    {
+        public WeaponTypeSO killedByWeaponTypeSO;
+    }
+
     public event EventHandler<OnDamagedEventArgs> OnDamaged;
     public class OnDamagedEventArgs : EventArgs
     {
@@ -28,7 +32,7 @@ public class Health : MonoBehaviour
         isDead = false;
     }
 
-    public void TakeDamage(float damage, float eventDelay = 0f)
+    public void TakeDamage(float damage, float eventDelay = 0f, WeaponTypeSO weaponTypeSO = null)
     {
         if (isDead) return;
 
@@ -38,10 +42,12 @@ public class Health : MonoBehaviour
         if (currentHealth < 0f) currentHealth = 0f;
 
         bool justDied = false;
+        WeaponTypeSO killedByWeaponTypeSO = null;
         if (currentHealth <= 0f)
         {
             isDead = true;
             justDied = true;
+            killedByWeaponTypeSO = weaponTypeSO;
         }
 
         if (eventDelay <= 0f)
@@ -53,17 +59,17 @@ public class Health : MonoBehaviour
 
             if (justDied)
             {
-                OnDied?.Invoke(this, EventArgs.Empty);
+                OnDied?.Invoke(this, new OnDiedEventArgs { killedByWeaponTypeSO = killedByWeaponTypeSO});
             }
         }
         else
         {
-            StartCoroutine(InvokeEventsWithDelay(eventDelay, justDied));
+            StartCoroutine(InvokeEventsWithDelay(eventDelay, justDied, killedByWeaponTypeSO));
         }
     }
 
 
-    private IEnumerator InvokeEventsWithDelay(float delay, bool died)
+    private IEnumerator InvokeEventsWithDelay(float delay, bool died, WeaponTypeSO weaponTypeSO)
     {
         yield return new WaitForSeconds(delay);
 
@@ -71,7 +77,7 @@ public class Health : MonoBehaviour
 
         if (died)
         {
-            OnDied?.Invoke(this, EventArgs.Empty);
+            OnDied?.Invoke(this, new OnDiedEventArgs { killedByWeaponTypeSO = weaponTypeSO });
         }
     }
 

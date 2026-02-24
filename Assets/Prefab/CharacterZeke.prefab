@@ -403,7 +403,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterCore
   characterSO: {fileID: 11400000, guid: 66f0f615670c10243abab7442d51fecd, type: 2}
   cameraLookAtPoint: {fileID: 4298324805336489829}
-  weaponTypeSO: {fileID: 0}
+  weaponItemSO: {fileID: 11400000, guid: a0a0c0a342a9d8f4baf701fed512d46d, type: 2}
   weaponSocket: {fileID: 1367704028181128846}
   PistolSocketIdle: {fileID: 5036379054756461963}
   RifleSocketIdle: {fileID: 6080125182333243591}
@@ -454,6 +454,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimatorFacade
   speedParam: Speed
   aimAnimationIndexParam: AimAnimationIndex
+  meleeDeathParam: MeleeDeath
+  weaponDeathParam: WeaponDeath
   movingSpeedThreshold: 0.05
   dampTime: 0.1
   aimLerpSpeed: 8
@@ -681,6 +683,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Inventory
   capacity: 8
   hugeCapacity: 2
+  startingItems: []
+  loadStartingItemsOnAwake: 1
   debugLog: 0
   debugInterval: 1
 --- !u!1 &3837891434967049283
