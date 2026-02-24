@@ -39,7 +39,7 @@ public class InteractableActionTakeWeapon : MonoBehaviour, IInteractableAction
 
         if (!character.HasWeapon())
         {
-            bool equipped = character.TrySetWeapon(weaponItemSO.weaponTypeSO);
+            bool equipped = character.TrySetWeapon(weaponItemSO);
             if (!equipped) return false;
         }
         else

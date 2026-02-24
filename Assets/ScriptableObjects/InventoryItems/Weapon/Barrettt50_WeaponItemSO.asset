@@ -20,4 +20,6 @@ MonoBehaviour:
   maxStack: 1
   category: 1
   requiredSlot: 1
+  actions:
+  - {fileID: 11400000, guid: 066825dec5a9de847891be199d962e08, type: 2}
   weaponTypeSO: {fileID: 11400000, guid: 910cf57229a1d074da9f4b74ed442921, type: 2}

@@ -6,7 +6,7 @@ public class InventoryItemActionButtonUI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI buttonText;
 
-    public void Init(ItemActionSO itemAction, ItemStack itemStack)
+    public void Init(ItemActionSO itemAction, ItemStack itemStack, CharacterCore characterCore)
     {
         buttonText.text = itemAction.actionName;
 
@@ -15,7 +15,7 @@ public class InventoryItemActionButtonUI : MonoBehaviour
         {
             button.onClick.RemoveAllListeners();
             button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(() => itemAction.Execute(itemStack));
+            button.onClick.AddListener(() => itemAction.Execute(itemStack, characterCore));
         }
 
     }

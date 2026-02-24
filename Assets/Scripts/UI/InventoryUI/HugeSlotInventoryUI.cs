@@ -14,10 +14,13 @@ public class HugeSlotInventoryUI : MonoBehaviour, IPointerEnterHandler, IPointer
     [SerializeField] private Image itemImage;
     [SerializeField] private TextMeshProUGUI itemName;
 
+    [Header("Weapon runtime ammo")]
+    [SerializeField] private TextMeshProUGUI textWeaponAmmo;
+
     private ItemStack itemStack;
     private readonly List<InventoryItemActionButtonUI> actionButtonPool = new();
 
-    public void Init(ItemStack itemStack)
+    public void Init(ItemStack itemStack, CharacterCore characterCore)
     {
         if (itemImage == null) return;
         if (itemName == null) return;
@@ -39,8 +42,25 @@ public class HugeSlotInventoryUI : MonoBehaviour, IPointerEnterHandler, IPointer
         {
             itemImage.gameObject.SetActive(false);
             itemName.gameObject.SetActive(false);
+            textWeaponAmmo.gameObject.SetActive(false);
 
             return;
+        }
+
+        if (itemStack.definition is WeaponItemSO weaponItemSO)
+        {
+            int capacity = weaponItemSO.weaponTypeSO.magazineCapacity;
+
+            int currentAmmo = itemStack.weaponRuntimeState != null
+                ? itemStack.weaponRuntimeState.CurrentMagazineAmmo
+                : capacity;
+
+            textWeaponAmmo.text = $"{currentAmmo} / {capacity}";
+            textWeaponAmmo.gameObject.SetActive(true);
+        }
+        else
+        {
+            textWeaponAmmo.gameObject.SetActive(false);
         }
 
         itemImage.gameObject.SetActive(true);
@@ -63,7 +83,7 @@ public class HugeSlotInventoryUI : MonoBehaviour, IPointerEnterHandler, IPointer
                 actionButtonPool.Add(btn);
             }
 
-            btn.Init(itemAction, itemStack);
+            btn.Init(itemAction, itemStack, characterCore);
             btn.gameObject.SetActive(true);
 
             index++;

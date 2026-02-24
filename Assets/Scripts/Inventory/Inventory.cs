@@ -5,6 +5,9 @@ using UnityEngine;
 
 public class Inventory : MonoBehaviour
 {
+    public event Action OnChanged;
+    private void NotifyChanged() => OnChanged?.Invoke();
+
     [Header("Normal Slots")]
     [SerializeField] private int capacity = 8;
 
@@ -101,7 +104,7 @@ public class Inventory : MonoBehaviour
         var target = (item.requiredSlot == InventorySlotType.Huge) ? hugeSlots : slots;
         int remaining = amount;
 
-        // 1) Stackowanie (sensownie tylko dla Normal; Huge zwykle 1 szt / slot)
+        // 1) Stackowanie
         if (item.stackable && item.requiredSlot == InventorySlotType.Normal)
         {
             for (int i = 0; i < target.Count; i++)
@@ -115,7 +118,11 @@ public class Inventory : MonoBehaviour
                 stack.amount += toAdd;
                 remaining -= toAdd;
 
-                if (remaining <= 0) return 0;
+                if (remaining <= 0)
+                {
+                    NotifyChanged();
+                    return 0;
+                }
             }
         }
 
@@ -124,22 +131,22 @@ public class Inventory : MonoBehaviour
         {
             if (target[i] != null) continue;
 
-            int stackAmount;
-
-            if (item.requiredSlot == InventorySlotType.Huge)
-            {
-                stackAmount = 1; // 1 huge item = 1 huge slot
-            }
-            else
-            {
-                stackAmount = item.stackable ? Mathf.Min(item.maxStack, remaining) : 1;
-            }
+            int stackAmount = (item.requiredSlot == InventorySlotType.Huge)
+                ? 1
+                : (item.stackable ? Mathf.Min(item.maxStack, remaining) : 1);
 
             target[i] = new ItemStack(item, stackAmount);
             remaining -= stackAmount;
 
-            if (remaining <= 0) return 0;
+            if (remaining <= 0)
+            {
+                NotifyChanged();
+                return 0;
+            }
         }
+
+        if (remaining != amount)
+            NotifyChanged();
 
         return remaining;
     }
@@ -172,7 +179,56 @@ public class Inventory : MonoBehaviour
                 break;
         }
 
+        if (removed > 0) NotifyChanged();
+
         return removed;
+    }
+
+    public bool RemoveStack(ItemStack stack)
+    {
+        if (stack == null || stack.definition == null) return false;
+
+        var target = stack.definition.requiredSlot == InventorySlotType.Huge
+            ? hugeSlots
+            : slots;
+
+        for (int i = 0; i < target.Count; i++)
+        {
+            if (target[i] == stack)
+            {
+                target[i] = null;
+
+                NotifyChanged();
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public bool InsertStack(ItemStack stack)
+    {
+        if (stack == null || stack.definition == null)
+            return false;
+
+        var target = stack.definition.requiredSlot == InventorySlotType.Huge
+            ? hugeSlots
+            : slots;
+
+        for (int i = 0; i < target.Count; i++)
+        {
+            if (target[i] == null)
+            {
+                target[i] = stack;
+
+                NotifyChanged();
+
+                return true;
+            }
+        }
+
+        return false; // brak miejsca
     }
 
     public int GetTotalAmount(ItemDefinitionSO item)
@@ -286,6 +342,7 @@ public class ItemStack
 {
     public ItemDefinitionSO definition;
     public int amount;
+    public WeaponRuntimeState weaponRuntimeState;
 
     public ItemStack(ItemDefinitionSO definition, int amount)
     {

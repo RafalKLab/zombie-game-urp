@@ -72,4 +72,9 @@ public class Weapon : MonoBehaviour
         TracerProjectile tracerInstance = Instantiate(weaponTypeSO.tracerTypeSO.tracerProjectile);
         tracerInstance.Init(muzzle.position, shot.EndPoint, weaponTypeSO.tracerTypeSO);
     }
+
+    public void DestroySelf()
+    {
+        Destroy(this.gameObject);
+    }
 }

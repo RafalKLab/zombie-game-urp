@@ -18,7 +18,7 @@ public class NormalSlotInventoryUI : MonoBehaviour, IPointerEnterHandler, IPoint
 
     private readonly List<InventoryItemActionButtonUI> actionButtonPool = new();
 
-    public void Init(ItemStack itemStack)
+    public void Init(ItemStack itemStack, CharacterCore characterCore)
     {
         if (itemImage == null) return;
         if (itemAmount == null) return;
@@ -63,7 +63,7 @@ public class NormalSlotInventoryUI : MonoBehaviour, IPointerEnterHandler, IPoint
                 actionButtonPool.Add(btn);
             }
 
-            btn.Init(itemAction, itemStack);
+            btn.Init(itemAction, itemStack, characterCore);
             btn.gameObject.SetActive(true);
 
             index++;

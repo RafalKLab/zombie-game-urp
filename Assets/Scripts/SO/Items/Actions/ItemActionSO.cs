@@ -7,5 +7,5 @@ public abstract class ItemActionSO : ScriptableObject
 
     public virtual bool CanExecute(ItemStack stack) => stack != null && stack.definition != null;
 
-    public abstract void Execute(ItemStack stack);
+    public abstract void Execute(ItemStack stack, CharacterCore characterCore);
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Assertions.Must;
 using static CharacterCore;
 using static CharacterWeaponHandler;
 
@@ -26,7 +27,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     [SerializeField] private Transform cameraLookAtPoint;
 
     [Header("Weapon")]
-    [SerializeField] private WeaponTypeSO weaponTypeSO;
+    [SerializeField] private WeaponItemSO weaponItemSO;
 
     [Header("Weapon Positions")]
     [SerializeField] private Transform weaponSocket;
@@ -62,6 +63,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     private Health health;
     private Interactor interactor;
     private Inventory inventory;
+    private WeaponTypeSO weaponTypeSO;
 
     // Targeting / combat state
     private AiTarget aiTarget;
@@ -93,7 +95,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
     public float WalkSpeed => characterSO.walkSpeed;
 
-    float rotateTowardsTargetSpeed = 200f;
+    float rotateTowardsTargetSpeed = 300f;
 
     // Shooting settings runtime
     private int consecutiveMisses = 0;
@@ -123,7 +125,11 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         characterWeaponHandler.OnWeaponChanged += CharacterWeaponHandler_OnWeaponChanged;
         characterWeaponHandler.OnAmmoChanged += CharacterWeaponHandler_OnAmmoChanged;
 
-        characterWeaponHandler.InstantiateWeapon(weaponTypeSO);
+        if (weaponItemSO != null)
+        {
+            characterWeaponHandler.InstantiateWeapon(weaponItemSO);
+            weaponTypeSO = weaponItemSO.weaponTypeSO;
+        }
 
         characterAnimatorFacade = GetComponent<CharacterAnimatorFacade>();
     }
@@ -553,13 +559,14 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         return weaponTypeSO != null;
     }
 
-    public bool TrySetWeapon(WeaponTypeSO weaponTypeSO)
+    public bool TrySetWeapon(WeaponItemSO weaponItemSO, WeaponRuntimeState weaponRuntimeState = null)
     {
-        if (weaponTypeSO == null) return false;
+        if (weaponItemSO == null) return false;
+        if (weaponItemSO.weaponTypeSO == null) return false;
         if (HasWeapon()) return false;
 
-        this.weaponTypeSO = weaponTypeSO;
-        characterWeaponHandler.InstantiateWeapon(weaponTypeSO);
+        characterWeaponHandler.InstantiateWeapon(weaponItemSO, weaponRuntimeState);
+        weaponTypeSO = weaponItemSO.weaponTypeSO;
 
         return true;
     }
@@ -584,7 +591,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
     public WeaponTypeSO GetWeaponTypeSO()
     {
-        return weaponTypeSO;
+        return characterWeaponHandler.GetWeaponTypeSO();
     }
 
     public CharacterSO GetCharacterSO()
@@ -669,5 +676,59 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     public void ResetPath()
     {
         agent.ResetPath();
+    }
+
+    public bool TryToEquipItem(ItemStack itemStack)
+    {
+        if (itemStack == null) return false;
+        if (itemStack.definition == null) return false;
+
+        switch (itemStack.definition)
+        {
+            case WeaponItemSO weaponItemSO:
+                return TryEquipWeapon(itemStack, weaponItemSO);
+            default:
+                return false;
+        }
+    }
+
+    private bool TryEquipWeapon(ItemStack itemStack, WeaponItemSO weaponItemSO)
+    {
+        if (weaponItemSO.weaponTypeSO == null) return false;
+
+        return HasWeapon()
+            ? HandleWeaponSwap(itemStack, weaponItemSO)
+            : HandleWeaponFirstEquip(itemStack, weaponItemSO);
+    }
+
+    private bool HandleWeaponSwap(ItemStack itemStack, WeaponItemSO weaponItemSO)
+    {
+        WeaponRuntimeState previousWeaponRuntimeState =
+            characterWeaponHandler.SwapCurrentWeaponWithWeaponItem(weaponItemSO, itemStack.weaponRuntimeState);
+
+        if (previousWeaponRuntimeState == null) return false;
+
+        weaponTypeSO = weaponItemSO.weaponTypeSO;
+
+        inventory.RemoveStack(itemStack);
+
+        ItemStack previousItemStack = new ItemStack(previousWeaponRuntimeState.WeaponItemSO, 1);
+        previousItemStack.weaponRuntimeState = previousWeaponRuntimeState;
+
+        inventory.InsertStack(previousItemStack);
+
+        HolsterWeapon();
+
+        return true;
+    }
+
+    private bool HandleWeaponFirstEquip(ItemStack itemStack, WeaponItemSO weaponItemSO)
+    {
+        bool success = TrySetWeapon(weaponItemSO, itemStack.weaponRuntimeState);
+        if (!success) return false;
+
+        inventory.RemoveStack(itemStack);
+
+        return true;
     }
 }

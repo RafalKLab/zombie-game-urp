@@ -28,6 +28,7 @@ public class CharacterWeaponHandler
         public WeaponTypeSO weaponTypeSO;
     }
 
+    private WeaponItemSO weaponItemSO;
     private WeaponTypeSO weaponTypeSO;
     private Transform weaponSocket;
     private Transform pistolSocketIdle;
@@ -44,7 +45,6 @@ public class CharacterWeaponHandler
 
     // Ammo
     private int currentMagazineAmmo = 0;
-    private int totalAmmo = 0;
     private bool isReloading = false;
     private Coroutine reloadRoutine;
 
@@ -64,10 +64,13 @@ public class CharacterWeaponHandler
     }
 
 
-    public void InstantiateWeapon(WeaponTypeSO weaponTypeSO)
+    public void InstantiateWeapon(WeaponItemSO weaponItemSO, WeaponRuntimeState runtimeState = null)
     {
-        if (weaponTypeSO == null) return;
-        this.weaponTypeSO = weaponTypeSO;
+        if (weaponItemSO == null) return;
+        if (weaponItemSO.weaponTypeSO == null) return;
+
+        this.weaponItemSO = weaponItemSO;
+        this.weaponTypeSO = weaponItemSO.weaponTypeSO;
 
         Transform weaponPoistion;
 
@@ -92,18 +95,22 @@ public class CharacterWeaponHandler
             Debug.LogError("Weapon prefab does not have Weapon script component");
         }
 
-        currentMagazineAmmo = 0;
-        totalAmmo = 0;
 
-        if (inventory != null && weaponTypeSO.requiredAmmoItemSO != null)
+        // If we have runtime state (e.g. from inventory stack), restore mag ammo and do NOT consume ammo.
+        if (runtimeState != null)
         {
-            currentMagazineAmmo = inventory.TryConsumeUpToAndGetRemaining(
-                weaponTypeSO.requiredAmmoItemSO,
-                weaponTypeSO.magazineCapacity,
-                out int _,
-                out int remainingInInventory);
+            currentMagazineAmmo = Mathf.Clamp(runtimeState.CurrentMagazineAmmo, 0, weaponTypeSO.magazineCapacity);
+        }
+        else
+        {
+            // default behavior: start with full mag, 
+            currentMagazineAmmo = weaponTypeSO.magazineCapacity;
 
-            totalAmmo = remainingInInventory;
+            if (inventory != null && weaponTypeSO.requiredAmmoItemSO != null)
+            {
+                currentMagazineAmmo = weaponTypeSO.magazineCapacity;
+
+            }
         }
 
         OnWeaponChanged?.Invoke();
@@ -203,11 +210,6 @@ public class CharacterWeaponHandler
                 out int remainingInInventory);
 
             currentMagazineAmmo += taken;
-            totalAmmo = remainingInInventory; // cache dla UI
-        }
-        else
-        {
-            totalAmmo = inventory.GetTotalAmount(weaponTypeSO.requiredAmmoItemSO);
         }
 
         isReloading = false;
@@ -263,5 +265,47 @@ public class CharacterWeaponHandler
             total = inventory.GetTotalAmount(weaponTypeSO.requiredAmmoItemSO);
 
         return new AmmoInfo(currentMagazineAmmo, total, weaponTypeSO.magazineCapacity);
+    }
+
+
+    public WeaponRuntimeState SwapCurrentWeaponWithWeaponItem(WeaponItemSO weaponItemSO, WeaponRuntimeState weaponRuntimeState)
+    {
+        if (weaponItemSO == null) return null;
+
+        // we get a snapshot of current weapon 
+        WeaponRuntimeState previousWeaponRuntimeState = SnapshotWeapon();
+        if (previousWeaponRuntimeState == null) return null;
+
+        // we destory current weapon object
+        weapon.DestroySelf();
+
+        // we instantiate new
+        InstantiateWeapon(weaponItemSO, weaponRuntimeState);
+
+        return previousWeaponRuntimeState;
+    }
+
+    private WeaponRuntimeState SnapshotWeapon()
+    {
+        if (weaponTypeSO == null) return null;
+
+        return new WeaponRuntimeState(weaponItemSO, currentMagazineAmmo);
+    }
+
+    public WeaponTypeSO GetWeaponTypeSO()
+    {
+        return weaponTypeSO;
+    }
+}
+
+public class WeaponRuntimeState
+{
+    public WeaponItemSO WeaponItemSO { get; }
+    public int CurrentMagazineAmmo { get; }
+
+    public WeaponRuntimeState(WeaponItemSO weaponItemSO, int currentAmmo)
+    {
+        WeaponItemSO = weaponItemSO;
+        CurrentMagazineAmmo = currentAmmo;
     }
 }

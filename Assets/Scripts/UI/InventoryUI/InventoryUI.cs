@@ -81,12 +81,6 @@ public class InventoryUI : MonoBehaviour
         GameInput.Instance.OnInventoryClose += GameInput_OnInventoryClose;
     }
 
-    private void OnDisable()
-    {
-        GameInput.Instance.OnInventoryOpen -= GameInput_OnInventoryOpen;
-        GameInput.Instance.OnInventoryClose -= GameInput_OnInventoryClose;
-    }
-
     private void GameInput_OnInventoryOpen()
     {
         playableCharacter = ActiveCharacterManager.Instance.GetActivePlayableCharacter();
@@ -95,8 +89,15 @@ public class InventoryUI : MonoBehaviour
         characterCore = playableCharacter.GetCharacterCore();
         if (characterCore == null) return;
 
-        characterInventory = playableCharacter.gameObject.GetComponent<Inventory>();
+        characterInventory = playableCharacter.GetComponent<Inventory>();
         if (characterInventory == null) return;
+
+        characterInventory.OnChanged -= CharacterInventory_OnChanged;
+        characterInventory.OnChanged += CharacterInventory_OnChanged;
+
+        // subscribe death
+        characterCore.OnKilled -= CharacterCore_OnKilled;
+        characterCore.OnKilled += CharacterCore_OnKilled;
 
         Show();
     }
@@ -105,9 +106,48 @@ public class InventoryUI : MonoBehaviour
     {
         Hide();
 
+        // unsubscribe first
+        if (characterInventory != null)
+            characterInventory.OnChanged -= CharacterInventory_OnChanged;
+
+        if (characterCore != null)
+            characterCore.OnKilled -= CharacterCore_OnKilled;
+
         playableCharacter = null;
         characterCore = null;
         characterInventory = null;
+    }
+
+    private void OnDisable()
+    {
+        GameInput.Instance.OnInventoryOpen -= GameInput_OnInventoryOpen;
+        GameInput.Instance.OnInventoryClose -= GameInput_OnInventoryClose;
+
+        // safety unsubs
+        if (characterInventory != null)
+            characterInventory.OnChanged -= CharacterInventory_OnChanged;
+
+        if (characterCore != null)
+            characterCore.OnKilled -= CharacterCore_OnKilled;
+    }
+
+    private void CharacterInventory_OnChanged()
+    {
+        if (inventoryBlock == null) return;
+        if (!inventoryBlock.gameObject.activeSelf) return;
+
+        if (characterCore == null || characterInventory == null)
+        {
+            Hide();
+            return;
+        }
+
+        Show(); // rebuild
+    }
+
+    private void CharacterCore_OnKilled(object sender, System.EventArgs e)
+    {
+        GameInput_OnInventoryClose();
     }
 
     public void Show()
@@ -118,14 +158,14 @@ public class InventoryUI : MonoBehaviour
             characterInventory.GetHugeSlots(),
             uiHugeSlotList,
             () => Instantiate(hugeSlotPrefab, hugeSlotContainer),
-            (ui, stack) => ui.Init(stack)
+            (ui, stack) => ui.Init(stack, characterCore)
         );
 
         UpdateSlots(
             characterInventory.GetNormalSlots(),
             uiNormalSlotList,
             () => Instantiate(normalSlotPrefab, normalSlotContainer),
-            (ui, stack) => ui.Init(stack)
+            (ui, stack) => ui.Init(stack, characterCore)
         );
 
         inventoryBlock.gameObject.SetActive(true);
