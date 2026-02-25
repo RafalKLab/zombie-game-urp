@@ -8,9 +8,7 @@ public class CharacterAiStateDefendHelper
     [Header("Defend Settings")]
     [SerializeField] private float defendDetectionCooldown = 0.5f;
     [SerializeField] private LayerMask targetableMask;
-    [SerializeField] private float defendHoldArriveDistance = 0.8f;
-    [SerializeField] private DefendSubState defendSubState;
-
+    [SerializeField] private float arriveDistance = 0.8f;
 
     private enum DefendSubState
     {
@@ -18,34 +16,47 @@ public class CharacterAiStateDefendHelper
         Defending,
     }
 
+    private DefendSubState defendSubState;
+
     private Vector3 defendPosition;
-    private bool defendPositionIsSet;
+    private bool hasDefendOrder;
 
-    private float defendDetectionTimer;
+    private float detectTimer;
+
     private BaseManager baseManager;
-
+    private BaseRadar cachedBaseRadar;
 
     public void SetBaseManager(BaseManager baseManager)
     {
         this.baseManager = baseManager;
+        cachedBaseRadar = baseManager != null ? baseManager.GetComponent<BaseRadar>() : null;
     }
 
-    public void EnterDefendHere(CharacterCore characterCore, Transform ownerTransform)
-    {
-        defendPosition = ownerTransform.position;
-        defendPositionIsSet = true;
-        defendDetectionTimer = 0f;
-
-        SetDefendSubState(DefendSubState.Defending, characterCore, ownerTransform);
-    }
-
+    /// <summary>
+    /// Base issues a strict defend order. This becomes the single source of truth.
+    /// </summary>
     public void EnterDefendPoint(CharacterCore characterCore, Transform ownerTransform, Vector3 point)
     {
-        defendPosition = point;
-        defendPositionIsSet = true;
-        defendDetectionTimer = 0f;
+        if (characterCore == null || ownerTransform == null) return;
 
-        SetDefendSubState(DefendSubState.GoingToDefendTarget, characterCore, ownerTransform);
+        defendPosition = point;
+        hasDefendOrder = true;
+
+        detectTimer = 0f;
+
+        // Decide initial substate based on distance
+        if (Vector3.Distance(ownerTransform.position, defendPosition) <= arriveDistance)
+            SetSubState(DefendSubState.Defending, characterCore);
+        else
+            SetSubState(DefendSubState.GoingToDefendTarget, characterCore);
+    }
+
+    /// <summary>
+    /// Only used when we intentionally cancel defend (e.g. new state, death, suspend).
+    /// </summary>
+    public void ClearOrder()
+    {
+        hasDefendOrder = false;
     }
 
     public void Tick(
@@ -55,54 +66,72 @@ public class CharacterAiStateDefendHelper
         ref AiTarget hostileAiTarget,
         ref Health hostileTargetHealth)
     {
-        if (!defendPositionIsSet)
+        if (!hasDefendOrder) return;
+        if (characterCore == null) return;
+        if (entityAiTarget == null) return;
+        if (ownerTransform == null) return;
+
+        // Move/hold logic
+        switch (defendSubState)
         {
+            case DefendSubState.GoingToDefendTarget:
+                TickGoing(characterCore, ownerTransform);
+                break;
+
+            case DefendSubState.Defending:
+                TickDefending(characterCore, entityAiTarget, ownerTransform, ref hostileAiTarget, ref hostileTargetHealth);
+                break;
+        }
+    }
+
+    private void TickGoing(CharacterCore characterCore, Transform ownerTransform)
+    {
+        // If we are close enough -> switch to defending
+        if (Vector3.Distance(ownerTransform.position, defendPosition) <= arriveDistance)
+        {
+            SetSubState(DefendSubState.Defending, characterCore);
+        }
+        // Otherwise we just keep running toward the defendPosition (RunTo already set in SetSubState)
+    }
+
+    private void TickDefending(
+        CharacterCore characterCore,
+        AiTarget entityAiTarget,
+        Transform ownerTransform,
+        ref AiTarget hostileAiTarget,
+        ref Health hostileTargetHealth)
+    {
+        // If we drift away (pushed, nav glitch), go back
+        if (Vector3.Distance(ownerTransform.position, defendPosition) > arriveDistance * 2f)
+        {
+            SetSubState(DefendSubState.GoingToDefendTarget, characterCore);
             return;
         }
 
+        // Prepare weapon while defending
         bool weaponIsPrepared = characterCore.PrepareWeapon();
         if (weaponIsPrepared)
         {
             AmmoInfo ammoInfo = characterCore.GetAmmoInfo();
             if (ammoInfo.CurrentAmmo == 0 && ammoInfo.TotalAmmo == 0)
             {
-                // TODO: brak amunicji
+                // TODO: no ammo handling (fallback to melee / retreat / request ammo)
             }
         }
         else
         {
-            // TODO: brak broni
+            // TODO: no weapon handling
         }
 
-        switch (defendSubState)
-        {
-            case DefendSubState.GoingToDefendTarget:
-                HandleDefendGoingToTarget(characterCore, ownerTransform);
-                break;
+        // Detect hostiles periodically
+        detectTimer -= Time.deltaTime;
+        if (detectTimer > 0f) return;
+        detectTimer = defendDetectionCooldown;
 
-            case DefendSubState.Defending:
-                HandleDefendHolding(characterCore, ownerTransform);
-                break;
-        }
-
-        if (defendSubState == DefendSubState.Defending)
-        {
-            defendDetectionTimer -= Time.deltaTime;
-            if (defendDetectionTimer <= 0f)
-            {
-                TryAcquireHostileTarget(characterCore, entityAiTarget, ownerTransform, ref hostileAiTarget, ref hostileTargetHealth);
-                defendDetectionTimer = defendDetectionCooldown;
-            }
-        }
+        TryAcquireHostileTarget(characterCore, entityAiTarget, ownerTransform, ref hostileAiTarget, ref hostileTargetHealth);
     }
 
-    public void ResetDefendPosition()
-    {
-        defendPositionIsSet = false;
-        defendSubState = DefendSubState.Defending;
-    }
-
-    private void SetDefendSubState(DefendSubState newState, CharacterCore characterCore, Transform ownerTransform)
+    private void SetSubState(DefendSubState newState, CharacterCore characterCore)
     {
         defendSubState = newState;
 
@@ -118,71 +147,53 @@ public class CharacterAiStateDefendHelper
         }
     }
 
-    private void HandleDefendGoingToTarget(CharacterCore characterCore, Transform ownerTransform)
-    {
-        if (Vector3.Distance(ownerTransform.position, defendPosition) <= defendHoldArriveDistance)
-        {
-            SetDefendSubState(DefendSubState.Defending, characterCore, ownerTransform);
-        }
-    }
-
-    private void HandleDefendHolding(CharacterCore characterCore, Transform ownerTransform)
-    {
-        if (Vector3.Distance(ownerTransform.position, defendPosition) > defendHoldArriveDistance * 2f)
-        {
-            SetDefendSubState(DefendSubState.GoingToDefendTarget, characterCore, ownerTransform);
-        }
-    }
-
     private void TryAcquireHostileTarget(
-            CharacterCore characterCore,
-            AiTarget entityAiTarget,
-            Transform ownerTransform,
-            ref AiTarget hostileAiTarget,
-            ref Health hostileTargetHealth
-        )
+        CharacterCore characterCore,
+        AiTarget entityAiTarget,
+        Transform ownerTransform,
+        ref AiTarget hostileAiTarget,
+        ref Health hostileTargetHealth)
     {
         if (hostileAiTarget != null && hostileTargetHealth != null && !hostileTargetHealth.IsDead)
             return;
 
+        // 1) Prefer base radar
         if (TryAcquireHostileFromBaseRadar(ref hostileAiTarget, ref hostileTargetHealth))
             return;
 
+        // 2) Otherwise scan locally
         float detectRadius = characterCore.GetCharacterSO().enemyDetectRadius;
 
         Collider[] hits = GetHitsSortedByDistance(ownerTransform.position, detectRadius, targetableMask);
 
         foreach (Collider hit in hits)
         {
-            AiTarget potentialHostileAiTarget = hit.GetComponentInParent<AiTarget>();
-            if (potentialHostileAiTarget == null) continue;
+            if (hit == null) continue;
+
+            AiTarget potential = hit.GetComponentInParent<AiTarget>();
+            if (potential == null) continue;
 
             if (hit.transform.root == ownerTransform.root) continue;
+            if (potential.GetFaction() == entityAiTarget.GetFaction()) continue;
 
-            if (potentialHostileAiTarget.GetFaction() == entityAiTarget.GetFaction()) continue;
+            Health hp = potential.GetComponentInParent<Health>();
+            if (hp == null || hp.IsDead) continue;
 
-            Health potentialHostileTargetHealth = potentialHostileAiTarget.GetComponentInParent<Health>();
-            if (potentialHostileTargetHealth == null) continue;
-            if (potentialHostileTargetHealth.IsDead) continue;
-
-            hostileAiTarget = potentialHostileAiTarget;
-            hostileTargetHealth = potentialHostileTargetHealth;
+            hostileAiTarget = potential;
+            hostileTargetHealth = hp;
             return;
         }
     }
 
     private bool TryAcquireHostileFromBaseRadar(ref AiTarget hostileAiTarget, ref Health hostileTargetHealth)
     {
-        if (baseManager == null) return false;
+        if (cachedBaseRadar == null) return false;
 
-        BaseRadar baseRadar = baseManager.GetComponent<BaseRadar>();
-        if (baseRadar == null) return false;
+        if (!cachedBaseRadar.TryRequestContact(out BaseRadar.RadarContact contact)) return false;
+        if (contact == null) return false;
 
-        if (!baseRadar.TryRequestContact(out BaseRadar.RadarContact radarContact)) return false;
-        if (radarContact == null) return false;
-
-        hostileAiTarget = radarContact.Target;
-        hostileTargetHealth = radarContact.Health;
+        hostileAiTarget = contact.Target;
+        hostileTargetHealth = contact.Health;
 
         return hostileAiTarget != null && hostileTargetHealth != null && !hostileTargetHealth.IsDead;
     }
@@ -193,9 +204,9 @@ public class CharacterAiStateDefendHelper
 
         Array.Sort(hits, (a, b) =>
         {
-            float distanceA = (a.transform.position - origin).sqrMagnitude;
-            float distanceB = (b.transform.position - origin).sqrMagnitude;
-            return distanceA.CompareTo(distanceB);
+            float da = (a.transform.position - origin).sqrMagnitude;
+            float db = (b.transform.position - origin).sqrMagnitude;
+            return da.CompareTo(db);
         });
 
         return hits;

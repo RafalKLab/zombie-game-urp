@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 564e84d28ecd3c44fb38737550d5c8d1, type: 3}
+  m_Name: AmmoExchangeTable
+  m_EditorClassIdentifier: Assembly-CSharp::ResourceItemExchangeTableSO
+  currencyResourceType: {fileID: 11400000, guid: 3d9628e63a6b2714f9ec40b18f29439e, type: 2}
+  itemExchangeRates:
+  - item: {fileID: 11400000, guid: 00b605dc047c354448fa926645f7dc3b, type: 2}
+    unitsPerCurrency: 15
+  - item: {fileID: 11400000, guid: c39303946173a33448ad899c7a1a2081, type: 2}
+    unitsPerCurrency: 30
+  - item: {fileID: 11400000, guid: ff786237649ad5c47b8ba5b98f49de09, type: 2}
+    unitsPerCurrency: 30
+  - item: {fileID: 11400000, guid: 01a9ed166086f8c4a8a315b92af8aecf, type: 2}
+    unitsPerCurrency: 40

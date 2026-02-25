@@ -163,12 +163,12 @@ public class InteractionUIManager : MonoBehaviour
             return;
         }
 
-        if (executable <= 1)
-        {
-            menuOpen = false;
-            actionsPanel.gameObject.SetActive(false);
-            return;
-        }
+        //if (executable <= 1)
+        //{
+        //    menuOpen = false;
+        //    actionsPanel.gameObject.SetActive(false);
+        //    return;
+        //}
 
         actionsPanel.gameObject.SetActive(true);
 

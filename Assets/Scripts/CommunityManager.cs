@@ -119,4 +119,33 @@ public class CommunityManager : MonoBehaviour
 
         return true;
     }
+
+    public List<PlayableCharacter> GetIdlePlayableCharacters(bool excludeSuspendedCharacters = true)
+    {
+        List<PlayableCharacter> idlePlayableCharacters = new List<PlayableCharacter>();
+
+        foreach (KeyValuePair<string, PlayableCharacter> entry in spawnedPlayableCharacterDictionary)
+        {
+            PlayableCharacter playableCharacter = entry.Value;
+            if (playableCharacter == null)
+                continue;
+
+            CharacterAi characterAi = playableCharacter.GetComponent<CharacterAi>();
+            if (characterAi == null)
+                continue;
+
+            if (characterAi.IsDead)
+                continue;
+
+            if (!characterAi.IsIdle)
+                continue;
+
+            if (excludeSuspendedCharacters && characterAi.IsAiSuspended)
+                continue;
+
+            idlePlayableCharacters.Add(playableCharacter);
+        }
+
+        return idlePlayableCharacters;
+    }
 }

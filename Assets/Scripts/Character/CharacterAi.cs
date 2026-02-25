@@ -1,11 +1,14 @@
 using System;
 using UnityEngine;
-using static BaseManager;
 
 [RequireComponent(typeof(CharacterCore))]
 [RequireComponent(typeof(AiTarget))]
 public class CharacterAi : MonoBehaviour, ICharacterController
 {
+    public bool IsIdle => mainState == MainState.Idle;
+    public bool IsDead => mainState == MainState.Dead;
+    public bool IsAiSuspended => isAiSuspended;
+
     [Header("States")]
     [SerializeField] private MainState mainState;
 
@@ -26,12 +29,11 @@ public class CharacterAi : MonoBehaviour, ICharacterController
     private bool attackTargetWasSet;
 
     private PlayableCharacter playableCharacter;
-   
+
     private bool isAiSuspended = false;
     private bool isDead = false;
     private MainState lastMainStateBeforeSuspend;
 
-    private bool defendPointIsSet;
     private Vector3 defendPointPosition;
 
     private enum MainState
@@ -57,94 +59,29 @@ public class CharacterAi : MonoBehaviour, ICharacterController
     {
         SubscribeToActiveCharacterManager();
 
+        hostileAiTarget = null;
+        hostileTargetHealth = null;
+        attackTargetWasSet = false;
+
+        if (FactionBaseRegistry.Instance != null && entityAiTarget != null)
+            baseManager = FactionBaseRegistry.Instance.GetBaseManagerByFaction(entityAiTarget.GetFaction());
+
+        if (baseManager != null)
+        {
+            if (characterAiStateIdleHelper != null)
+                characterAiStateIdleHelper.SetBaseManager(baseManager);
+
+            if (characterAiStateDefendHelper != null)
+                characterAiStateDefendHelper.SetBaseManager(baseManager);
+        }
+
         SetMainState(MainState.Idle);
-
-        hostileAiTarget = null;
-        hostileTargetHealth = null;
-        attackTargetWasSet = false;
-
-        if (FactionBaseRegistry.Instance != null)
-            baseManager = FactionBaseRegistry.Instance.GetBaseManagerByFaction(entityAiTarget.GetFaction());
-
-        if (baseManager != null) {
-            baseManager.OnBaseDefendRequest += BaseManager_OnBaseDefendRequest;
-
-            if (characterAiStateIdleHelper != null)
-            {
-                characterAiStateIdleHelper.SetBaseManager(baseManager);
-                characterAiStateDefendHelper.SetBaseManager(baseManager);
-            }
-        }
     }
-
-    public void RefreshBase()
-    {
-        if (baseManager != null)
-            baseManager.OnBaseDefendRequest -= BaseManager_OnBaseDefendRequest;
-
-        baseManager = null;
-
-        if (FactionBaseRegistry.Instance != null)
-            baseManager = FactionBaseRegistry.Instance.GetBaseManagerByFaction(entityAiTarget.GetFaction());
-
-        if (baseManager != null)
-        {
-            baseManager.OnBaseDefendRequest += BaseManager_OnBaseDefendRequest;
-
-            if (characterAiStateIdleHelper != null)
-            {
-                characterAiStateIdleHelper.SetBaseManager(baseManager);
-                characterAiStateDefendHelper.SetBaseManager(baseManager);
-            }
-        }
-    }
-
-    private void BaseManager_OnBaseDefendRequest(object sender, OnBaseDefendRequestEventArgs e)
-    {
-        if (isDead)
-            return;
-
-        if (isAiSuspended)
-            return;
-
-        hostileAiTarget = null;
-        hostileTargetHealth = null;
-        attackTargetWasSet = false;
-
-        float defendNavmeshSampleMaxDistance = 2f;
-        int defendPickAttempts = 12;
-
-        Vector3 pickedPoint;
-
-        bool gotPoint = NavMeshPointPicker.TryGetRandomPointWithMinRadius(
-            e.defendPoint.position,
-            e.defendRadius,
-            0.4f,
-            defendNavmeshSampleMaxDistance,
-            defendPickAttempts,
-            UnityEngine.AI.NavMesh.AllAreas,
-            out pickedPoint
-        );
-
-
-        if (gotPoint)
-        {
-            CommandDefendPoint(pickedPoint);
-        }
-        else
-        {
-            CommandDefendPoint(e.defendPoint);
-        }
-    }
-
 
     private void Update()
     {
-        if (isDead)
-            return;
-
-        if (isAiSuspended)
-            return;
+        if (isDead) return;
+        if (isAiSuspended) return;
 
         UpdateCombatTargetAndShooting();
 
@@ -160,69 +97,43 @@ public class CharacterAi : MonoBehaviour, ICharacterController
                 if (characterAiStateDefendHelper != null)
                     characterAiStateDefendHelper.Tick(characterCore, entityAiTarget, transform, ref hostileAiTarget, ref hostileTargetHealth);
                 break;
+
+            case MainState.Dead:
+                break;
         }
     }
 
+    // ===== Commands =====
+
     public void CommandIdle()
     {
-
         SetMainState(MainState.Idle);
-    }
-
-    public void CommandDefendHere()
-    {
-        defendPointIsSet = false;
-
-        SetMainState(MainState.Defend);
     }
 
     public void CommandDefendPoint(Transform point)
     {
-        defendPointIsSet = true;
-        defendPointPosition = point.position;
-
-        SetMainState(MainState.Defend);
+        if (point == null) return;
+        CommandDefendPoint(point.position);
     }
 
     public void CommandDefendPoint(Vector3 point)
     {
-        defendPointIsSet = true;
         defendPointPosition = point;
-
         SetMainState(MainState.Defend);
     }
 
+    // ===== Active character suspend/resume =====
 
     private void SubscribeToActiveCharacterManager()
     {
         if (ActiveCharacterManager.Instance == null) return;
-
         ActiveCharacterManager.Instance.OnActiveCharacterChanged += ActiveCharacterManager_OnActiveCharacterChanged;
     }
 
     private void UnsubscribeFromActiveCharacterManager()
     {
-        if (ActiveCharacterManager.Instance == null)
-            return;
-
+        if (ActiveCharacterManager.Instance == null) return;
         ActiveCharacterManager.Instance.OnActiveCharacterChanged -= ActiveCharacterManager_OnActiveCharacterChanged;
-    }
-
-    private void CharacterCore_OnKilled(object sender, EventArgs e)
-    {
-        // musimy zrobic cos takiego na kazdy item z inventory 
-
-        isDead = true;
-
-        UnsubscribeFromActiveCharacterManager();
-
-        if (baseManager != null)
-            baseManager.OnBaseDefendRequest -= BaseManager_OnBaseDefendRequest;
-
-        if (characterCore != null)
-            characterCore.OnKilled -= CharacterCore_OnKilled;
-
-        enabled = false;
     }
 
     private void ActiveCharacterManager_OnActiveCharacterChanged(object sender, ActiveCharacterManager.OnActiveCharacterChangedEventArgs e)
@@ -234,9 +145,7 @@ public class CharacterAi : MonoBehaviour, ICharacterController
         }
 
         if (playableCharacter == null)
-        {
             playableCharacter = GetComponent<PlayableCharacter>();
-        }
 
         if (playableCharacter != null && playableCharacter == e.playableCharacter)
         {
@@ -247,10 +156,26 @@ public class CharacterAi : MonoBehaviour, ICharacterController
         ResumeAiControl();
     }
 
+    public void RefreshBase()
+    {
+        baseManager = null;
+
+        if (FactionBaseRegistry.Instance != null && entityAiTarget != null)
+            baseManager = FactionBaseRegistry.Instance.GetBaseManagerByFaction(entityAiTarget.GetFaction());
+
+        if (baseManager != null)
+        {
+            if (characterAiStateIdleHelper != null)
+                characterAiStateIdleHelper.SetBaseManager(baseManager);
+
+            if (characterAiStateDefendHelper != null)
+                characterAiStateDefendHelper.SetBaseManager(baseManager);
+        }
+    }
+
     private void SuspendAiControl()
     {
-        if (isAiSuspended)
-            return;
+        if (isAiSuspended) return;
 
         lastMainStateBeforeSuspend = mainState;
         isAiSuspended = true;
@@ -260,7 +185,6 @@ public class CharacterAi : MonoBehaviour, ICharacterController
         attackTargetWasSet = false;
 
         characterCore.ClearAttackTarget();
-
         characterCore.ResetPath();
     }
 
@@ -272,8 +196,17 @@ public class CharacterAi : MonoBehaviour, ICharacterController
         isAiSuspended = false;
 
         mainState = lastMainStateBeforeSuspend;
+
+        ForceReenterMainState();
+    }
+
+    private void ForceReenterMainState()
+    {
+        ExitMainState(mainState);
         EnterMainState(mainState);
     }
+
+    // ===== Combat upkeep =====
 
     private void UpdateCombatTargetAndShooting()
     {
@@ -296,7 +229,7 @@ public class CharacterAi : MonoBehaviour, ICharacterController
             return;
         }
 
-        characterCore.TrySetAttackTarget(hostileAiTarget);
+        characterCore.TrySetAttackTarget(hostileAiTarget, false);
         attackTargetWasSet = true;
     }
 
@@ -321,6 +254,8 @@ public class CharacterAi : MonoBehaviour, ICharacterController
         attackTargetWasSet = (target != null);
     }
 
+    // ===== State machine =====
+
     private void SetMainState(MainState newMainState)
     {
         if (mainState == newMainState)
@@ -339,52 +274,52 @@ public class CharacterAi : MonoBehaviour, ICharacterController
                 hostileAiTarget = null;
                 hostileTargetHealth = null;
                 attackTargetWasSet = false;
-                characterCore.ClearAttackTarget();
 
+                characterCore.ClearAttackTarget();
                 characterCore.HolsterWeapon();
+
+                // Stop defending order when we go idle
+                if (characterAiStateDefendHelper != null)
+                    characterAiStateDefendHelper.ClearOrder();
 
                 if (characterAiStateIdleHelper != null)
                     characterAiStateIdleHelper.Enter(characterCore, transform);
-
-                if (characterAiStateDefendHelper != null)
-                    characterAiStateDefendHelper.ResetDefendPosition();
-
                 break;
 
             case MainState.Defend:
                 if (characterAiStateDefendHelper != null)
-                {
-                    if (defendPointIsSet)
-                    {
-                        characterAiStateDefendHelper.EnterDefendPoint(characterCore, transform, defendPointPosition);
-                    }
-                    else
-                    {
-                        characterAiStateDefendHelper.EnterDefendHere(characterCore, transform);
-                    }
-                }
+                    characterAiStateDefendHelper.EnterDefendPoint(characterCore, transform, defendPointPosition);
                 break;
 
+            case MainState.Dead:
+                break;
         }
     }
 
     private void ExitMainState(MainState exitedMainState)
     {
-        switch (exitedMainState)
-        {
-            case MainState.Idle:
-                break;
-
-            case MainState.Defend:
-                defendPointIsSet = false;
-                defendPointPosition = Vector3.zero;
-                break;
-        }
+        // No special exits needed right now
     }
 
-    //private void OnDrawGizmosSelected()
-    //{
-    //    Gizmos.color = Color.darkMagenta;
-    //    Gizmos.DrawWireSphere(transform.position, characterCore.GetCharacterSO().enemyDetectRadius);
-    //}
+    private void CharacterCore_OnKilled(object sender, EventArgs e)
+    {
+        isDead = true;
+
+        UnsubscribeFromActiveCharacterManager();
+
+        if (characterCore != null)
+            characterCore.OnKilled -= CharacterCore_OnKilled;
+
+        // Clear combat state
+        hostileAiTarget = null;
+        hostileTargetHealth = null;
+        attackTargetWasSet = false;
+
+        // Optional: clear defend order
+        if (characterAiStateDefendHelper != null)
+            characterAiStateDefendHelper.ClearOrder();
+
+        mainState = MainState.Dead;
+        enabled = false;
+    }
 }

@@ -36,7 +36,11 @@ public class Interactor : MonoBehaviour
             interactionPivot = transform;
 
         Character = GetComponent<CharacterCore>();
-        Inventory = Character != null ? Character.inventory : null;
+    }
+
+    private void Start()
+    {
+        Inventory = GetComponent<Inventory>();
     }
 
     private void Update()

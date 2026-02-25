@@ -7,6 +7,9 @@ public class Interactable : MonoBehaviour, IInteractable
     [SerializeField] private Transform uiAnchor;
     [SerializeField] private string defaultPromt = "F - interact";
 
+    [Header("UI")]
+    [SerializeField] private bool useShortcutWhenOnlyOneExecutableAction = true;
+
     [Header("Lifecycle")]
     [SerializeField] private bool destroyWhenAllActionsDepleted = false;
     [SerializeField] private float cleanupInterval = 1f;
@@ -76,7 +79,7 @@ public class Interactable : MonoBehaviour, IInteractable
 
         if (exec.Count == 0) return string.Empty;
 
-        if (exec.Count == 1)
+        if (useShortcutWhenOnlyOneExecutableAction && exec.Count == 1)
             return "F - " + exec[0].GetExecutePrompt(interactor);
 
         return defaultPromt;
@@ -87,7 +90,7 @@ public class Interactable : MonoBehaviour, IInteractable
         var exec = GetExecutableActions(interactor);
         if (exec.Count == 0) return InteractResult.None;
 
-        if (exec.Count == 1)
+        if (useShortcutWhenOnlyOneExecutableAction && exec.Count == 1)
             return exec[0].Execute(interactor) ? InteractResult.Executed : InteractResult.None;
 
         return InteractResult.NeedsChoice;

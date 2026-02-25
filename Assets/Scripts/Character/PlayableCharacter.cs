@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(CharacterCore))]
+[RequireComponent(typeof(CharacterAi))]
 public class PlayableCharacter : MonoBehaviour, ICharacterController
 {
     // EntityId
@@ -16,12 +17,14 @@ public class PlayableCharacter : MonoBehaviour, ICharacterController
     private Transform cameraLookAtPoint;
     
     private CharacterCore characterCore;
+    private CharacterAi characterAi;
 
     private float deathDelay = 1f;
 
     private void Awake()
     {
         characterCore = GetComponent<CharacterCore>();
+        characterAi = GetComponent<CharacterAi>();
         cameraLookAtPoint = characterCore.GetCameraLookAtPoint();
     }
 
@@ -103,5 +106,10 @@ public class PlayableCharacter : MonoBehaviour, ICharacterController
     public CharacterCore GetCharacterCore()
     {
         return characterCore;
+    }
+
+    public CharacterAi GetCharacterAi()
+    {
+        return characterAi;
     }
 }

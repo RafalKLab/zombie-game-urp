@@ -56,6 +56,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     private float losGraceTime = 1f;
     private float repositionInterval = 1f;
     private int maxRepositionTries = 3;
+    private bool repositionAllowed = true;
 
     // ==============================
     // Combat / Reposition runtime state
@@ -236,9 +237,11 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         else characterMoveHandler.MoveTo(target);
     }
 
-    public void SetAttackTarget(AiTarget aiTarget)
+    public void SetAttackTarget(AiTarget aiTarget, bool repositionAllowed = true)
     {
         if (isDead) return;
+
+        this.repositionAllowed = repositionAllowed;
 
         this.aiTarget = aiTarget;
         agent.isStopped = true;
@@ -268,6 +271,8 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
     public void ClearAttackTarget()
     {
+        if (isDead) return;
+
         this.aiTarget = null;
         agent.isStopped = false;
         //ResetPath();
@@ -283,11 +288,14 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         if (aiTarget == null) return;
         if (!characterWeaponHandler.WeaponIsReadyToShoot()) return;
 
-        // Reposition when no line of sight
+        // Reposition when no line of sight if allowed 
         if (!HasLineOfSightToTarget(aiTarget))
         {
             aimingTimerStarted = false;
             noLosTimer += Time.deltaTime;
+
+            if (!repositionAllowed)
+                return;
 
             if (noLosTimer < losGraceTime)
                 return;
@@ -599,12 +607,12 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
             return true;
     }
 
-    public bool TrySetAttackTarget(AiTarget newTarget)
+    public bool TrySetAttackTarget(AiTarget newTarget, bool repositionAllowed = true)
     {
         if (aiTarget == newTarget)
             return false;
 
-        SetAttackTarget(newTarget);
+        SetAttackTarget(newTarget, repositionAllowed);
         return true;
     }
 
