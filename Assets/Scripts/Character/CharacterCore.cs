@@ -1,8 +1,6 @@
 using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.Assertions.Must;
 using static CharacterCore;
 using static CharacterWeaponHandler;
 using static Health;
@@ -197,6 +195,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
         // Animation
         characterAnimatorFacade.DisableAim();
+        characterAnimatorFacade.DisableRifleIdle();
 
         if (e.killedByWeaponTypeSO != null)
             characterAnimatorFacade.PlayWeaponDeath();
@@ -708,6 +707,19 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
             default:
                 return false;
         }
+    }
+
+    public bool TryEquipWeaponFromInventory()
+    {
+        if (inventory == null) return false;
+
+        if (!inventory.TryGetFirstWeaponStack(out ItemStack stack))
+            return false;
+
+        if (stack.definition is not WeaponItemSO weaponItemSO)
+            return false;
+
+        return TryEquipWeapon(stack, weaponItemSO);
     }
 
     private bool TryEquipWeapon(ItemStack itemStack, WeaponItemSO weaponItemSO)

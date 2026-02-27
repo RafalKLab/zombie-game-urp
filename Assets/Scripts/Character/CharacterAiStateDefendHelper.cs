@@ -116,12 +116,19 @@ public class CharacterAiStateDefendHelper
             AmmoInfo ammoInfo = characterCore.GetAmmoInfo();
             if (ammoInfo.CurrentAmmo == 0 && ammoInfo.TotalAmmo == 0)
             {
-                // TODO: no ammo handling (fallback to melee / retreat / request ammo)
+                BaseSupplyManager supplyManager = baseManager.GetBaseSupplyManager();
+                if (supplyManager != null)
+                {
+                    supplyManager.TrySupplyAmmoFor(characterCore);
+                }
             }
         }
         else
         {
-            // TODO: no weapon handling
+            if (characterCore.TryEquipWeaponFromInventory() == false)
+            {
+                Debug.Log("Character does not have weapon");
+            }
         }
 
         // Detect hostiles periodically

@@ -48,10 +48,17 @@ public class Interactable : MonoBehaviour, IInteractable
 
     public Transform GetUIAnchor() => uiAnchor != null ? uiAnchor : transform;
 
-    public IReadOnlyList<IInteractableAction> GetActions(Interactor interactor) => actions;
+    public IReadOnlyList<IInteractableAction> GetActions(Interactor interactor)
+    {
+        RemoveMissingActionsFromCache();
+
+        return actions;
+    }
 
     public List<IInteractableAction> GetExecutableActions(Interactor interactor)
     {
+        RemoveMissingActionsFromCache();
+
         var result = new List<IInteractableAction>(actions.Count);
 
         for (int i = 0; i < actions.Count; i++)
@@ -120,5 +127,19 @@ public class Interactable : MonoBehaviour, IInteractable
         }
 
         Destroy(gameObject);
+    }
+
+    private void RemoveMissingActionsFromCache()
+    {
+        for (int i = actions.Count - 1; i >= 0; i--)
+        {
+            if (IsMissing(actions[i]))
+                actions.RemoveAt(i);
+        }
+    }
+
+    private static bool IsMissing(IInteractableAction action)
+    {
+        return (action as UnityEngine.Object) == null;
     }
 }

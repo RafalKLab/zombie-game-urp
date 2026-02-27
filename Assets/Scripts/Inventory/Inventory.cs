@@ -381,6 +381,30 @@ public class Inventory : MonoBehaviour
 
         initialized = true;
     }
+
+    public bool TryGetFirstWeaponStack(out ItemStack weaponStack)
+    {
+        weaponStack = null;
+
+        EnsureInitialized();
+
+        if (hugeSlots == null) return false;
+
+        for (int i = 0; i < hugeSlots.Count; i++)
+        {
+            ItemStack stack = hugeSlots[i];
+            if (stack == null) continue;
+            if (stack.definition == null) continue;
+
+            if (stack.definition is WeaponItemSO)
+            {
+                weaponStack = stack;
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 [Serializable]

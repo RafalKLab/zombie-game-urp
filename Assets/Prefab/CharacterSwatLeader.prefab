@@ -1950,7 +1950,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterCore
   characterSO: {fileID: 11400000, guid: 92fc38e82e8a32741a559ea0a741545a, type: 2}
   cameraLookAtPoint: {fileID: 4298324805336489829}
-  weaponItemSO: {fileID: 11400000, guid: a0a0c0a342a9d8f4baf701fed512d46d, type: 2}
+  weaponItemSO: {fileID: 0}
   weaponSocket: {fileID: 8979981976102786670}
   PistolSocketIdle: {fileID: 2600828184786755445}
   RifleSocketIdle: {fileID: 4940211595112884401}
@@ -1982,12 +1982,7 @@ Animator:
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
-  m_WarningMessage: "\nBinding warning: Some generic clip(s) animate transforms that
-    are already bound by a Humanoid avatar. These transforms can only be changed
-    by Humanoid clips.\n\tTransform 'mixamorig:LeftArm'\n\tTransform 'mixamorig:Hips'\n\tTransform
-    'mixamorig:LeftForeArm'\n\tTransform 'mixamorig:Spine'\n\tTransform 'mixamorig:LeftHand'\n\tTransform
-    'mixamorig:LeftArm'\n\tTransform 'mixamorig:Hips'\n\tTransform 'mixamorig:LeftForeArm'\n\tTransform
-    'mixamorig:Spine'\n\tTransform 'mixamorig:LeftHand'\n\tand more ..."
+  m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0

@@ -9,14 +9,17 @@ public class BaseManager : MonoBehaviour
     [SerializeField] private float baseRadius;
 
     private BaseRadar baseRadar;
+    private BaseSupplyManager baseSupplyManager;
 
     private void Awake()
     {
         baseRadar = GetComponent<BaseRadar>();
+        baseSupplyManager = GetComponent<BaseSupplyManager>();
     }
 
     public Faction GetFaction() => faction;
     public BaseRadar GetBaseRadar() => baseRadar;
+    public BaseSupplyManager GetBaseSupplyManager() => baseSupplyManager;
 
     private void OnDrawGizmosSelected()
     {

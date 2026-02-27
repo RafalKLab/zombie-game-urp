@@ -691,8 +691,6 @@ MonoBehaviour:
   startingItems:
   - definition: {fileID: 11400000, guid: 44884ce965b72304a9d4a515df8c17bf, type: 2}
     amount: 1
-  - definition: {fileID: 11400000, guid: e1d2128acba29a140a88ec86299f4df9, type: 2}
-    amount: 1
   loadStartingItemsOnAwake: 1
   debugLog: 0
   debugInterval: 1

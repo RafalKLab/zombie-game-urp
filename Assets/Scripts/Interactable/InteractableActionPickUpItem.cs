@@ -6,6 +6,7 @@ public class InteractableActionPickUpItem : MonoBehaviour, IInteractableAction
     [SerializeField] private ItemDefinitionSO itemDefinitionSO;
     [SerializeField] private int amount = 1;
     [SerializeField] private string promt = "Pick up";
+    [SerializeField] private bool destorySelfOnDepleted = false;
 
     private bool isDepleted = false;
 
@@ -34,22 +35,29 @@ public class InteractableActionPickUpItem : MonoBehaviour, IInteractableAction
         var inventory = interactor.Inventory;
         if (inventory == null) return false;
 
-        int remaining = inventory.TryAddReturnRemaining(itemDefinitionSO, amount);
+        bool isWeapon = itemDefinitionSO is WeaponItemSO;
+        int tryAmount = isWeapon ? 1 : amount;
+        int remaining = inventory.TryAddReturnRemaining(itemDefinitionSO, tryAmount);
+        int added = tryAmount - remaining;
 
-        int added = amount - remaining;
-        amount = remaining;
+        if (added <= 0)
+            return false;
 
-        if (added > 0)
+        // aktualizacja amount
+        if (isWeapon)
+            amount -= 1;
+        else
+            amount = remaining;
+
+        if (amount <= 0)
         {
-            if (amount <= 0)
-            {
-                isDepleted = true;
-            }
+            isDepleted = true;
 
-            return true;
+            if (destorySelfOnDepleted) Destroy(this);
         }
+            
 
-        return false;
+        return true;
     }
 
     public string GetExecutePrompt(Interactor interactor)
