@@ -18,7 +18,7 @@ MonoBehaviour:
   requiredAmmoItemSO: {fileID: 11400000, guid: 00b605dc047c354448fa926645f7dc3b, type: 2}
   reloadTime: 6.5
   reloadClip: {fileID: 8300000, guid: 5f3d4113277a54c4181095ece758e518, type: 3}
-  reloadVolume: 1
+  reloadVolume: 0.2
   damage: 300
   range: 200
   effectiveRange: 150
@@ -27,7 +27,7 @@ MonoBehaviour:
   accuracyOutEffectiveRange: 0.75
   shootCooldown: 2
   shotCooldownClip: {fileID: 8300000, guid: 94b18b8e76ed3ca42a210964d7c26705, type: 3}
-  shotCooldownVolume: 1
+  shotCooldownVolume: 0.2
   maxPenetrations: 5
   layerMask:
     serializedVersion: 2
