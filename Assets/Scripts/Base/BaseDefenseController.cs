@@ -11,9 +11,35 @@ public class BaseDefenseController : MonoBehaviour
 
     [SerializeField] private List<DefenseSpot> defenseSpotsForCharacters;
 
+    private void CharacterDeathManager_OnCharacterKilled(object sender, CharacterDeathManager.CharacterKilledEventArgs e)
+    {
+        PlayableCharacter killedCharacter = e.playableCharacter;
+
+        if (killedCharacter == null)
+            return;
+
+        foreach (var spot in defenseSpotsForCharacters)
+        {
+            if (spot.assignedCharacter == killedCharacter)
+            {
+                UnassignCharacterFromSpot(spot);
+                break;
+            }
+        }
+    }
+
     private void Start()
     {
         InitDefenseSpots();
+
+        if (CharacterDeathManager.Instance != null)
+            CharacterDeathManager.Instance.OnCharacterKilled += CharacterDeathManager_OnCharacterKilled;
+    }
+
+    private void OnDisable()
+    {
+        if (CharacterDeathManager.Instance != null)
+            CharacterDeathManager.Instance.OnCharacterKilled -= CharacterDeathManager_OnCharacterKilled;
     }
 
     private void InitDefenseSpots()
@@ -41,7 +67,8 @@ public class BaseDefenseController : MonoBehaviour
     public void UnassignCharacterFromSpot(DefenseSpot defenseSpot)
     {
         PlayableCharacter playableCharacter = defenseSpot.assignedCharacter;
-        playableCharacter.GetCharacterAi().CommandIdle();
+        CharacterAi ai = playableCharacter?.GetCharacterAi();
+        ai?.CommandIdle();
         defenseSpot.assignedCharacter = null;
         NotifyCharacterDefenseStateChanged();
     }

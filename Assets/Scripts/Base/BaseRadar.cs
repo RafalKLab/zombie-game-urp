@@ -117,6 +117,14 @@ public class BaseRadar : MonoBehaviour
                 if (aiTarget.GetFaction() == baseManager.GetFaction())
                     continue;
 
+                // 1.5) Pomijamy friendly frakcje
+                if (FactionRelationsManager.Instance.AreFriendly(
+                        aiTarget.GetFaction(),
+                        baseManager.GetFaction()))
+                {
+                    continue;
+                }
+
                 // 2) Health check
                 Health health = aiTarget.GetComponentInParent<Health>();
                 if (health == null) continue;

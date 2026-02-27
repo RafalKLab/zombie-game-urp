@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -12,6 +13,7 @@ public class CharacterAnimatorFacade : MonoBehaviour
     [SerializeField] private string aimAnimationIndexParam = "AimAnimationIndex";
     [SerializeField] private string meleeDeathParam = "MeleeDeath";
     [SerializeField] private string weaponDeathParam = "WeaponDeath";
+    [SerializeField] private string rifleIdle = "RifleIdle";
 
     [SerializeField] private float movingSpeedThreshold = 0.05f;
     [SerializeField] private float dampTime = 0.10f;
@@ -20,6 +22,9 @@ public class CharacterAnimatorFacade : MonoBehaviour
     [SerializeField] private float aimLerpSpeed = 8f;
     [SerializeField]  private int animatorAimLayer = 1;
 
+    [Header("Static Rigs")]
+    [SerializeField] private Rig rifleIdleRig;
+
     [Header("Animation Config")]
     [SerializeField] private List<WeaponAimConfig> weaponAimConfigs;
 
@@ -27,6 +32,7 @@ public class CharacterAnimatorFacade : MonoBehaviour
     private int aimAnimationIndexHash;
     private int meleeDeathParamHash;
     private int weaponDeathParamHash;
+    private int rifleIdleHash;
 
     private Dictionary<WeaponType, WeaponAimConfig> aimConfigMap;
 
@@ -37,6 +43,9 @@ public class CharacterAnimatorFacade : MonoBehaviour
     private NavMeshAgent agent;
 
     private bool isAiming = false;
+    private bool isRifleIdle = false;
+
+    public bool IsAiming => isAiming;
 
     private void Awake()
     {
@@ -47,6 +56,7 @@ public class CharacterAnimatorFacade : MonoBehaviour
         aimAnimationIndexHash = Animator.StringToHash(aimAnimationIndexParam);
         meleeDeathParamHash = Animator.StringToHash(meleeDeathParam);
         weaponDeathParamHash = Animator.StringToHash(weaponDeathParam);
+        rifleIdleHash = Animator.StringToHash(rifleIdle);
 
         SetupAimConfigDictionary();
     }
@@ -149,6 +159,32 @@ public class CharacterAnimatorFacade : MonoBehaviour
         if (!animator) return;
 
         animator.SetTrigger(weaponDeathParamHash);
+    }
+
+    public void EnableRifleIdle()
+    {
+        if (isRifleIdle) return;
+
+        isRifleIdle = true;
+        animator.SetBool(rifleIdleHash, true);
+
+        if (rifleIdleRig != null)
+        {
+            rifleIdleRig.weight = 1;
+        }
+    }
+
+    public void DisableRifleIdle()
+    {
+        if (!isRifleIdle) return;
+
+        isRifleIdle = false;
+        animator.SetBool(rifleIdleHash, false);
+
+        if (rifleIdleRig != null)
+        {
+            rifleIdleRig.weight = 0;
+        }
     }
 }
 

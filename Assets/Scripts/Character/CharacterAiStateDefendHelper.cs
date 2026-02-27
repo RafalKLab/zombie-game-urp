@@ -108,7 +108,8 @@ public class CharacterAiStateDefendHelper
             return;
         }
 
-        // Prepare weapon while defending
+        // Prepare weapon in idle mode while defending
+
         bool weaponIsPrepared = characterCore.PrepareWeapon();
         if (weaponIsPrepared)
         {
@@ -129,6 +130,31 @@ public class CharacterAiStateDefendHelper
         detectTimer = defendDetectionCooldown;
 
         TryAcquireHostileTarget(characterCore, entityAiTarget, ownerTransform, ref hostileAiTarget, ref hostileTargetHealth);
+
+        // --- 1) Validate current hostile target ---
+        bool hasValidHostileTarget =
+            hostileAiTarget != null &&
+            hostileTargetHealth != null &&
+            !hostileTargetHealth.IsDead;
+
+        if (hasValidHostileTarget == false)
+        {
+            if (characterCore.IsAimModeEnabled())
+            {
+                characterCore.DisableAim();
+            }
+
+            characterCore.EnableRifleIdle();
+        } else
+        {
+            if (characterCore.IsAimModeEnabled() == false)
+            {
+                characterCore.EnableAim();
+            }
+
+            characterCore.DisableRifleIdle();
+        }
+       
     }
 
     private void SetSubState(DefendSubState newState, CharacterCore characterCore)
@@ -148,18 +174,24 @@ public class CharacterAiStateDefendHelper
     }
 
     private void TryAcquireHostileTarget(
-        CharacterCore characterCore,
-        AiTarget entityAiTarget,
-        Transform ownerTransform,
-        ref AiTarget hostileAiTarget,
-        ref Health hostileTargetHealth)
+    CharacterCore characterCore,
+    AiTarget entityAiTarget,
+    Transform ownerTransform,
+    ref AiTarget hostileAiTarget,
+    ref Health hostileTargetHealth)
     {
         if (hostileAiTarget != null && hostileTargetHealth != null && !hostileTargetHealth.IsDead)
+        {
+            //Debug.Log($"[AI][Acquire] Already have target: {hostileAiTarget.name} (id:{hostileAiTarget.GetInstanceID()})");
             return;
+        }
 
-        // 1) Prefer base radar
-        if (TryAcquireHostileFromBaseRadar(ref hostileAiTarget, ref hostileTargetHealth))
+        // mamy radar -> uzywamy TYLKO radaru (bez fallbacku)
+        if (cachedBaseRadar != null)
+        {
+            TryAcquireHostileFromBaseRadar(ref hostileAiTarget, ref hostileTargetHealth);
             return;
+        }
 
         // 2) Otherwise scan locally
         float detectRadius = characterCore.GetCharacterSO().enemyDetectRadius;
@@ -175,14 +207,24 @@ public class CharacterAiStateDefendHelper
 
             if (hit.transform.root == ownerTransform.root) continue;
             if (potential.GetFaction() == entityAiTarget.GetFaction()) continue;
+            if (FactionRelationsManager.Instance.AreFriendly(
+                        potential.GetFaction(),
+                        entityAiTarget.GetFaction()))
+            {
+                continue;
+            }
 
             Health hp = potential.GetComponentInParent<Health>();
             if (hp == null || hp.IsDead) continue;
 
             hostileAiTarget = potential;
             hostileTargetHealth = hp;
+
+            //Debug.Log($"[AI][Acquire] From LOCAL SCAN -> {hostileAiTarget.name} (id:{hostileAiTarget.GetInstanceID()})");
             return;
         }
+
+        //Debug.Log("[AI][Acquire] No valid targets found");
     }
 
     private bool TryAcquireHostileFromBaseRadar(ref AiTarget hostileAiTarget, ref Health hostileTargetHealth)
@@ -210,5 +252,10 @@ public class CharacterAiStateDefendHelper
         });
 
         return hits;
+    }
+    public void ClearCurrentTarget(ref AiTarget hostileAiTarget, ref Health hostileTargetHealth)
+    {
+        hostileAiTarget = null;
+        hostileTargetHealth = null;
     }
 }

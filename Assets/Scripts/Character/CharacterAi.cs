@@ -107,17 +107,23 @@ public class CharacterAi : MonoBehaviour, ICharacterController
 
     public void CommandIdle()
     {
+        
+
         SetMainState(MainState.Idle);
     }
 
     public void CommandDefendPoint(Transform point)
     {
+        if (isDead) return;
+
         if (point == null) return;
         CommandDefendPoint(point.position);
     }
 
     public void CommandDefendPoint(Vector3 point)
     {
+        if (isDead) return;
+
         defendPointPosition = point;
         SetMainState(MainState.Defend);
     }
@@ -210,11 +216,27 @@ public class CharacterAi : MonoBehaviour, ICharacterController
 
     private void UpdateCombatTargetAndShooting()
     {
+        // --- 0) Check if Core reported a rejected target (one-shot event) ---
+        if (characterCore.TryGetRejectedAiTarget(out AiTarget rejected))
+        {
+            // If Core rejected the same target we are currently trying to use, drop it on AI side
+            if (rejected != null && hostileAiTarget == rejected)
+            {
+                // Drop AI memory of this target so DefendHelper can pick a new one next tick
+                characterAiStateDefendHelper.ClearCurrentTarget(ref hostileAiTarget, ref hostileTargetHealth);
+                hostileAiTarget = null;
+                hostileTargetHealth = null;
+                attackTargetWasSet = false;
+            }
+        }
+
+        // --- 1) Validate current hostile target ---
         bool hasValidHostileTarget =
             hostileAiTarget != null &&
             hostileTargetHealth != null &&
             !hostileTargetHealth.IsDead;
 
+        // If no valid target -> ensure Core is cleared and exit
         if (!hasValidHostileTarget)
         {
             hostileAiTarget = null;
@@ -229,8 +251,28 @@ public class CharacterAi : MonoBehaviour, ICharacterController
             return;
         }
 
+        // --- 2) We have a valid target -> try to set it in Core ---
         characterCore.TrySetAttackTarget(hostileAiTarget, false);
         attackTargetWasSet = true;
+
+        // --- 3) Safety: if Core does not hold the target right after setting it, drop it ---
+        // (covers any immediate rejection paths)
+        if (!characterCore.HasAttackTarget())
+        {
+            hostileAiTarget = null;
+            hostileTargetHealth = null;
+            attackTargetWasSet = false;
+
+            // Also clear helper memory so next detection can pick a different contact
+            if (characterAiStateDefendHelper != null)
+            {
+                characterAiStateDefendHelper.ClearCurrentTarget(ref hostileAiTarget, ref hostileTargetHealth);
+            }
+
+            return;
+        }
+
+        // --- 4) Core accepted the target -> nothing else to do this frame ---
     }
 
     public void ClearAttackTarget()

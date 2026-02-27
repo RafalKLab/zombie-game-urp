@@ -93,6 +93,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     // Targeting / combat state
     // ==============================
     private AiTarget aiTarget;
+    private AiTarget rejectedAiTarget;
 
     // ==============================
     // Raycast / physics helpers
@@ -232,6 +233,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         ClearAttackTarget();
         characterWeaponHandler.HolsterWeapon();
         characterAnimatorFacade?.DisableAim();
+        characterAnimatorFacade?.DisableRifleIdle();
 
         if (run) characterMoveHandler.RunTo(target);
         else characterMoveHandler.MoveTo(target);
@@ -246,8 +248,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         this.aiTarget = aiTarget;
         agent.isStopped = true;
         ResetPath();
-        characterWeaponHandler.PrepareWeapon();
-        characterAnimatorFacade?.EnableAim(EquippedWeaponTypeSO);
+        PrepareWeapon();
 
         ResetRepositionState();
 
@@ -257,16 +258,49 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
     public bool PrepareWeapon()
     {
+        if (characterWeaponHandler.GetIsPrepared() == true) return true;
+
         characterWeaponHandler.PrepareWeapon();
+        characterAnimatorFacade?.DisableRifleIdle();
         characterAnimatorFacade?.EnableAim(EquippedWeaponTypeSO);
 
         return characterWeaponHandler.GetIsPrepared();
     }
 
+    public void DisableAim()
+    {
+        characterAnimatorFacade?.DisableAim();
+        
+    }
+
+    public void EnableRifleIdle()
+    {
+        // TODO rework with idle with pistol
+        if (EquippedWeaponTypeSO == null || EquippedWeaponTypeSO.weaponType == WeaponType.Pistol) return;
+
+        characterAnimatorFacade?.EnableRifleIdle();
+    }
+
+    public void DisableRifleIdle()
+    {
+        characterAnimatorFacade?.DisableRifleIdle();
+    }
+
+    public bool IsAimModeEnabled()
+    {
+        return characterAnimatorFacade != null && characterAnimatorFacade.IsAiming;
+    }
+
+    public void EnableAim()
+    {
+        characterAnimatorFacade?.EnableAim(EquippedWeaponTypeSO);
+    }
+
     public void HolsterWeapon()
     {
         characterWeaponHandler.HolsterWeapon();
-        characterAnimatorFacade?.DisableAim();
+        DisableAim();
+        DisableRifleIdle();
     }
 
     public void ClearAttackTarget()
@@ -275,7 +309,6 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
         this.aiTarget = null;
         agent.isStopped = false;
-        //ResetPath();
 
         ResetRepositionState();
 
@@ -291,11 +324,15 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         // Reposition when no line of sight if allowed 
         if (!HasLineOfSightToTarget(aiTarget))
         {
+            if (!repositionAllowed)
+            {
+                rejectedAiTarget = aiTarget;
+                ClearAttackTarget();
+                return;
+            }
+
             aimingTimerStarted = false;
             noLosTimer += Time.deltaTime;
-
-            if (!repositionAllowed)
-                return;
 
             if (noLosTimer < losGraceTime)
                 return;
@@ -722,6 +759,18 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         characterWeaponHandler.InstantiateWeapon(weaponItemSO, weaponRuntimeState);
         this.weaponItemSO = weaponItemSO;
 
+        return true;
+    }
+
+    public bool TryGetRejectedAiTarget(out AiTarget rejectedTarget)
+    {
+        rejectedTarget = rejectedAiTarget;
+
+        if (rejectedTarget == null)
+            return false;
+
+        // consume
+        rejectedAiTarget = null;
         return true;
     }
 }
