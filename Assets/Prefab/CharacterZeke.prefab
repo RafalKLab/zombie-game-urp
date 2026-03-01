@@ -257,6 +257,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 3614215650998907469}
   m_LocalEulerAnglesHint: {x: 70, y: 90, z: 0}
+--- !u!1 &2940593441740821618
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6772242293919821547}
+  m_Layer: 0
+  m_Name: MeleeIdleShoulderPosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6772242293919821547
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2940593441740821618}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.7071068, y: 0, z: -0.7071068, w: 0}
+  m_LocalPosition: {x: -0.098, y: 0.167, z: -0.08}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7869470320266045093}
+  m_LocalEulerAnglesHint: {x: 180, y: 90, z: 0}
 --- !u!1 &3465280447845398845
 GameObject:
   m_ObjectHideFlags: 0
@@ -405,7 +436,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CharacterCore
   characterSO: {fileID: 11400000, guid: 66f0f615670c10243abab7442d51fecd, type: 2}
   cameraLookAtPoint: {fileID: 4298324805336489829}
-  weaponItemSO: {fileID: 11400000, guid: a0a0c0a342a9d8f4baf701fed512d46d, type: 2}
+  weaponItemSO: {fileID: 0}
   weaponSocket: {fileID: 1367704028181128846}
   PistolSocketIdle: {fileID: 5036379054756461963}
   RifleSocketIdle: {fileID: 6080125182333243591}
@@ -420,6 +451,8 @@ MonoBehaviour:
   peekOvershoot: 0.6
   peekOvershootSampleRadius: 0.5
   maxConsecutiveMisses: 10
+  meleeWeaponPrefab: {fileID: 2298662017938403109, guid: 3bec72ef294080d498bec5a29d6f1c75, type: 3}
+  meleeIdleShoulderPosition: {fileID: 6772242293919821547}
 --- !u!95 &3512837619476537660
 Animator:
   serializedVersion: 7
@@ -689,8 +722,10 @@ MonoBehaviour:
   capacity: 8
   hugeCapacity: 2
   startingItems:
-  - definition: {fileID: 11400000, guid: 44884ce965b72304a9d4a515df8c17bf, type: 2}
+  - definition: {fileID: 11400000, guid: 1b26f97967f9af94eab7784249375915, type: 2}
     amount: 1
+  - definition: {fileID: 11400000, guid: 401fa7a206745524d89193d23092b1ae, type: 2}
+    amount: 15
   loadStartingItemsOnAwake: 1
   debugLog: 0
   debugInterval: 1
@@ -2953,6 +2988,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -3480699329000672020, guid: b536f22e9a09e374b9111126bc6bc810, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6080125182333243591}
+    - targetCorrespondingSourceObject: {fileID: -8021001004253913084, guid: b536f22e9a09e374b9111126bc6bc810, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6772242293919821547}
     - targetCorrespondingSourceObject: {fileID: 1852576806548013000, guid: b536f22e9a09e374b9111126bc6bc810, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1367704028181128846}

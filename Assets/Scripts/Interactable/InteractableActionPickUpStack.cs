@@ -5,7 +5,7 @@ public class InteractableActionPickUpStack : MonoBehaviour, IInteractableAction
     [SerializeField] private int priority = 0;
     [SerializeField] private string promt = "Pick up";
 
-    private ItemStack itemStack;
+    [SerializeField]  private ItemStack itemStack;
     private int amount = 1;
 
     private bool isDepleted = false;

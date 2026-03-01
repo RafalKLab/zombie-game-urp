@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 using static CharacterCore;
@@ -47,6 +48,13 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
     [Header("Shooting settings")]
     [SerializeField] private int maxConsecutiveMisses = 10;
+
+    [Header("Melee cobat")]
+    [SerializeField] private Transform meleeWeaponPrefab;
+    [SerializeField] private Transform meleeIdleShoulderPosition;
+    private Transform meleeWeapon;
+    private bool meleeWeaponInHand = false;
+    private bool meleeWeaponPositionPending = false;
 
     // ==============================
     // Combat / Reposition tuning
@@ -155,6 +163,8 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         {
             characterWeaponHandler.InstantiateWeapon(weaponItemSO);
         }
+
+        InitializeMeleeWeapon();
     }
 
     private void Update()
@@ -162,22 +172,53 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         if (isDead) return;
 
         characterMoveHandler.AutoRevertRunToWalkIfStopped();
-
         characterWeaponHandler.TickWeaponCooldown(Time.deltaTime);
 
-        if (aiTarget != null) TryToShoot();
+        bool hasTarget = aiTarget != null;
+        bool hasRanged = HasWeapon();
+        bool hasMelee = meleeWeapon != null;
+
+        // 1) Jesli mamy ranged, melee ma byc schowane (nawet bez targetu)
+        if (hasRanged)
+        {
+            if (meleeWeaponInHand && !meleeWeaponPositionPending)
+            {
+                TryDisarmMeleeWeaponInHand();
+            }
+
+            // Strzelamy tylko jesli jest target i melee nie jest w rece
+            if (hasTarget && !meleeWeaponInHand)
+            {
+                TryToShoot();
+            }
+
+            return;
+        }
+
+        // 2) Jesli nie mamy ranged, ale mamy target i mamy melee -> wyciagnij melee
+        if (hasTarget && hasMelee)
+        {
+            if (!meleeWeaponInHand && !meleeWeaponPositionPending)
+            {
+                TryEquipMeleeWeaponInHand();
+            }
+
+            // TryToMeleeAttack();
+        }
     }
 
     private void OnEnable()
     {
         health.OnDied += Health_OnDied;
-        health.OnDamaged += Health_OnDamaged; ;
+        health.OnDamaged += Health_OnDamaged;
+        SubscribeToAnimatorFacadeEvents();
     }
 
     private void OnDisable()
     {
         health.OnDied -= Health_OnDied;
         health.OnDamaged -= Health_OnDamaged;
+        UnsubscribeFromAnimatorFacadeEvents();
     }
 
     private void Health_OnDied(object sender, OnDiedEventArgs e)
@@ -784,5 +825,100 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         // consume
         rejectedAiTarget = null;
         return true;
+    }
+
+    public void SubscribeToAnimatorFacadeEvents()
+    {
+        if (characterAnimatorFacade == null) return;
+
+        characterAnimatorFacade.OnMeleeEquiped += CharacterAnimatorFacade_OnMeleeEquiped;
+        characterAnimatorFacade.OnMeleeDisarm += CharacterAnimatorFacade_OnMeleeDisarm;
+    }
+
+    public void UnsubscribeFromAnimatorFacadeEvents()
+    {
+        if (characterAnimatorFacade == null) return;
+
+        characterAnimatorFacade.OnMeleeEquiped -= CharacterAnimatorFacade_OnMeleeEquiped;
+        characterAnimatorFacade.OnMeleeDisarm -= CharacterAnimatorFacade_OnMeleeDisarm;
+    }
+
+    private void CharacterAnimatorFacade_OnMeleeEquiped()
+    {
+        SetMeleeInHand(true);
+    }
+
+    private void CharacterAnimatorFacade_OnMeleeDisarm()
+    {
+        SetMeleeInHand(false);
+    }
+
+    private void SetMeleeInHand(bool inHand)
+    {
+        if (meleeWeapon == null) return;
+
+        Transform target = inHand
+            ? weaponSocket
+            : meleeIdleShoulderPosition;
+
+        if (target == null) return;
+
+        meleeWeapon.SetParent(target, false);
+        meleeWeapon.localPosition = Vector3.zero;
+        meleeWeapon.localRotation = Quaternion.identity;
+
+        meleeWeaponInHand = inHand;
+        meleeWeaponPositionPending = false;
+    }
+
+    public void InitializeMeleeWeapon()
+    {
+        if (meleeWeaponPrefab == null) return;
+        if (meleeIdleShoulderPosition == null) return;
+
+        if (meleeWeapon != null)
+        {
+            Destroy(meleeWeapon.gameObject);
+            meleeWeapon = null;
+        }
+
+        meleeWeapon = Instantiate(meleeWeaponPrefab);
+        SetMeleeInHand(false);
+    }
+
+    private void TryEquipMeleeWeaponInHand()
+    {
+        if (meleeWeapon == null) return;
+
+        if (characterAnimatorFacade == null)
+        {
+            // fallback when no animator attached
+            SetMeleeInHand(true);
+            return;
+        }
+
+        // normally we wait for animation
+        meleeWeaponPositionPending = true;
+        characterAnimatorFacade.PlayMeleeEquip();
+
+        return;
+    }
+
+    private void TryDisarmMeleeWeaponInHand()
+    {
+        if (meleeWeapon == null) return;
+
+        if (characterAnimatorFacade == null)
+        {
+            // fallback when no animator attached
+            SetMeleeInHand(false);
+            return;
+        }
+
+        // normally we wait for animation
+        meleeWeaponPositionPending = true;
+        characterAnimatorFacade.PlayMeleeDisarm();
+
+        return;
     }
 }

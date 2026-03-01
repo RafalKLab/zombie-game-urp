@@ -8,12 +8,21 @@ using UnityEngine.Animations.Rigging;
 [RequireComponent(typeof(NavMeshAgent))]
 public class CharacterAnimatorFacade : MonoBehaviour
 {
+    // Events
+    public event Action OnMeleeEquiped;
+    public event Action OnMeleeDisarm;
+    public event Action OnMeleeAttackHit;
+    public event Action OnMeleeAttackEnd;
+
     [Header("Animator")]
     [SerializeField] private string speedParam = "Speed";
     [SerializeField] private string aimAnimationIndexParam = "AimAnimationIndex";
     [SerializeField] private string meleeDeathParam = "MeleeDeath";
     [SerializeField] private string weaponDeathParam = "WeaponDeath";
     [SerializeField] private string rifleIdle = "RifleIdle";
+    [SerializeField] private string meleeEquip = "MeleeEquip";
+    [SerializeField] private string meleeDisarm = "MeleeDisarm";
+    [SerializeField] private string meleeAttack = "MeleeAttack";
 
     [SerializeField] private float movingSpeedThreshold = 0.05f;
     [SerializeField] private float dampTime = 0.10f;
@@ -33,6 +42,10 @@ public class CharacterAnimatorFacade : MonoBehaviour
     private int meleeDeathParamHash;
     private int weaponDeathParamHash;
     private int rifleIdleHash;
+
+    private int meleeEquipHash;
+    private int meleeDisarmHash;
+    private int meleeAttackHash;
 
     private Dictionary<WeaponType, WeaponAimConfig> aimConfigMap;
 
@@ -57,6 +70,10 @@ public class CharacterAnimatorFacade : MonoBehaviour
         meleeDeathParamHash = Animator.StringToHash(meleeDeathParam);
         weaponDeathParamHash = Animator.StringToHash(weaponDeathParam);
         rifleIdleHash = Animator.StringToHash(rifleIdle);
+
+        meleeEquipHash = Animator.StringToHash(meleeEquip);
+        meleeDisarmHash = Animator.StringToHash(meleeDisarm);
+        meleeAttackHash = Animator.StringToHash(meleeAttack);
 
         SetupAimConfigDictionary();
     }
@@ -185,6 +202,44 @@ public class CharacterAnimatorFacade : MonoBehaviour
         {
             rifleIdleRig.weight = 0;
         }
+    }
+
+    public void PlayMeleeEquip()
+    {
+        if (!animator) return;
+
+        animator.SetTrigger(meleeEquipHash);
+    }
+
+    public void PlayMeleeDisarm()
+    {
+        if (!animator) return;
+
+        animator.SetTrigger(meleeDisarmHash);
+    }
+
+    public void MeleeEquippedOverShoulder()
+    {
+        Debug.Log("Animator Facade: MeleeEquippedOverShoulder");
+        OnMeleeEquiped?.Invoke();
+    }
+
+    public void MeleeDisarmOverShoulder()
+    {
+        Debug.Log("Animator Facade: MeleeDisarmOverShoulder");
+        OnMeleeDisarm?.Invoke();
+    }
+
+    public void MeleeAttackHit()
+    {
+        Debug.Log("Animator Facade: MeleeAttackHit");
+        OnMeleeAttackHit?.Invoke();
+    }
+
+    public void MeleeAttackEnd()
+    {
+        Debug.Log("Animator Facade: MeleeAttackEnd");
+        OnMeleeAttackEnd?.Invoke();
     }
 }
 
