@@ -26,6 +26,8 @@ public class InteractableActionDemolish : MonoBehaviour, IInteractableActionTwoS
 
     public bool CanExecute(Interactor interactor)
     {
+        if (!interactor.Character.HasMeleeWeapon()) return false;
+
         return !isDepleted;
     }
 

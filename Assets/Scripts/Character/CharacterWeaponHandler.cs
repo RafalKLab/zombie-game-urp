@@ -296,6 +296,11 @@ public class CharacterWeaponHandler
     {
         return weaponTypeSO;
     }
+
+    public WeaponItemSO GetWeaponItemSO()
+    {
+        return weaponItemSO;
+    }
 }
 
 public class WeaponRuntimeState

@@ -9,13 +9,13 @@ public class EquippedInventoryUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI weaponName;
     [SerializeField] private TextMeshProUGUI weaponAmmo;
 
-    public void Init(WeaponTypeSO weaponTypeSO, AmmoInfo ammoInfo)
+    public void Init(WeaponItemSO weaponItemSO, AmmoInfo ammoInfo)
     {
         if (weaponImage == null) return;
         if (weaponName == null) return;
         if (weaponAmmo == null) return;
 
-        if (weaponTypeSO == null)
+        if (weaponItemSO == null)
         {
             weaponImage.gameObject.SetActive(false);
             weaponName.gameObject.SetActive(false);
@@ -28,8 +28,15 @@ public class EquippedInventoryUI : MonoBehaviour
         weaponName.gameObject.SetActive(true);
         weaponAmmo.gameObject.SetActive(true);
 
-        weaponImage.sprite = weaponTypeSO.sprite;
-        weaponName.text = weaponTypeSO.weaponName;
-        weaponAmmo.text = $"{ammoInfo.CurrentAmmo} / {ammoInfo.MagazineSize}";
+        weaponImage.sprite = weaponItemSO.icon;
+        weaponName.text = weaponItemSO.displayName;
+
+        if (weaponItemSO.useMelee)
+        {
+            weaponAmmo.gameObject.SetActive(false);
+        } else
+        {
+            weaponAmmo.text = $"{ammoInfo.CurrentAmmo} / {ammoInfo.MagazineSize}";
+        }
     }
 }

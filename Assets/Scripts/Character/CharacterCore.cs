@@ -50,7 +50,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     [SerializeField] private int maxConsecutiveMisses = 10;
 
     [Header("Melee cobat")]
-    [SerializeField] private Transform meleeWeaponPrefab;
+    [SerializeField] private WeaponItemSO meleeWeaponItemSO;
     [SerializeField] private Transform meleeIdleShoulderPosition;
 
     // ==============================
@@ -164,9 +164,9 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
             characterWeaponHandler.InstantiateWeapon(weaponItemSO);
         }
 
-        if (meleeWeaponPrefab != null)
+        if (meleeWeaponItemSO != null)
         {
-            characterMeleeWeaponHandler.InstantiateMeleeWeapon(meleeWeaponPrefab);
+            characterMeleeWeaponHandler.InstantiateMeleeWeapon(meleeWeaponItemSO);
         }
     }
 
@@ -708,6 +708,11 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         return EquippedWeaponTypeSO != null;
     }
 
+    public bool HasMeleeWeapon()
+    {
+        return characterMeleeWeaponHandler.HasMeleeWeapon;
+    }
+
     public bool TryInteract()
     {
         if (interactor == null) return false;
@@ -735,6 +740,16 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     public WeaponTypeSO GetWeaponTypeSO()
     {
         return characterWeaponHandler.GetWeaponTypeSO();
+    }
+
+    public WeaponItemSO GetWeaponItemSO()
+    {
+        return characterWeaponHandler.GetWeaponItemSO();
+    }
+
+    public WeaponItemSO GetMeleeWeaponItemSO()
+    {
+        return characterMeleeWeaponHandler.MeleeWeaponItemSO;
     }
 
     public CharacterSO GetCharacterSO()
@@ -781,32 +796,65 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
     private bool TryEquipWeapon(ItemStack itemStack, WeaponItemSO weaponItemSO)
     {
-        if (weaponItemSO.weaponTypeSO == null) return false;
+        bool hasWeapon = false;
+        bool isMaleeWeapon = weaponItemSO.useMelee;
 
-        return HasWeapon()
+        if (isMaleeWeapon)
+        {
+            if (weaponItemSO.meleeWeaponTypeSO == null) return false;
+            hasWeapon = HasMeleeWeapon();
+        } else
+        {
+            if (weaponItemSO.weaponTypeSO == null) return false;
+            hasWeapon = HasWeapon();
+        }
+
+        return hasWeapon
             ? HandleWeaponSwap(itemStack, weaponItemSO)
             : HandleWeaponFirstEquip(itemStack, weaponItemSO);
     }
 
     private bool HandleWeaponSwap(ItemStack itemStack, WeaponItemSO weaponItemSO)
     {
-        WeaponRuntimeState previousWeaponRuntimeState =
+        if (weaponItemSO.useMelee == false)
+        {
+            // swap ranged weapon
+            WeaponRuntimeState previousWeaponRuntimeState =
             characterWeaponHandler.SwapCurrentWeaponWithWeaponItem(weaponItemSO, itemStack.weaponRuntimeState);
 
-        if (previousWeaponRuntimeState == null) return false;
+            if (previousWeaponRuntimeState == null) return false;
 
-        this.weaponItemSO = weaponItemSO;
+            this.weaponItemSO = weaponItemSO;
 
-        inventory.RemoveStack(itemStack);
+            inventory.RemoveStack(itemStack);
 
-        ItemStack previousItemStack = new ItemStack(previousWeaponRuntimeState.WeaponItemSO, 1);
-        previousItemStack.weaponRuntimeState = previousWeaponRuntimeState;
+            ItemStack previousItemStack = new ItemStack(previousWeaponRuntimeState.WeaponItemSO, 1);
+            previousItemStack.weaponRuntimeState = previousWeaponRuntimeState;
 
-        inventory.InsertStack(previousItemStack);
+            inventory.InsertStack(previousItemStack);
 
-        HolsterWeapon();
+            HolsterWeapon();
 
-        return true;
+            return true;
+        } else
+        {
+            // swap melee weapon
+            WeaponRuntimeState previousWeaponRuntimeState =
+            characterMeleeWeaponHandler.SwapCurrentWeaponWithWeaponItem(weaponItemSO);
+
+            if (previousWeaponRuntimeState == null) return false;
+
+            this.meleeWeaponItemSO = weaponItemSO;
+
+            inventory.RemoveStack(itemStack);
+
+            ItemStack previousItemStack = new ItemStack(previousWeaponRuntimeState.WeaponItemSO, 1);
+            previousItemStack.weaponRuntimeState = previousWeaponRuntimeState;
+
+            inventory.InsertStack(previousItemStack);
+
+            return true;
+        }
     }
 
     private bool HandleWeaponFirstEquip(ItemStack itemStack, WeaponItemSO weaponItemSO)
@@ -822,13 +870,25 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     public bool TrySetWeapon(WeaponItemSO weaponItemSO, WeaponRuntimeState weaponRuntimeState = null)
     {
         if (weaponItemSO == null) return false;
-        if (weaponItemSO.weaponTypeSO == null) return false;
-        if (HasWeapon()) return false;
 
-        characterWeaponHandler.InstantiateWeapon(weaponItemSO, weaponRuntimeState);
-        this.weaponItemSO = weaponItemSO;
+        if (weaponItemSO.useMelee == false)
+        {
+            if (weaponItemSO.weaponTypeSO == null) return false;
+            if (HasWeapon()) return false;
 
-        return true;
+            characterWeaponHandler.InstantiateWeapon(weaponItemSO, weaponRuntimeState);
+            this.weaponItemSO = weaponItemSO;
+
+            return true;
+        } else
+        {
+            if (weaponItemSO.meleeWeaponTypeSO == null) return false;
+            if (HasMeleeWeapon()) return false;
+            characterMeleeWeaponHandler.InstantiateMeleeWeapon(weaponItemSO);
+            this.meleeWeaponItemSO = weaponItemSO;
+
+            return true;
+        }
     }
 
     public bool TryGetRejectedAiTarget(out AiTarget rejectedTarget)

@@ -145,8 +145,8 @@ public class SelectedCharacterUI : MonoBehaviour
     {
         if (characterCore == null) return;
 
-        WeaponTypeSO weaponTypeSO = characterCore.GetWeaponTypeSO();
-        if (weaponTypeSO == null)
+        WeaponItemSO weaponItemSO = characterCore.GetWeaponItemSO();
+        if (weaponItemSO == null)
         {
             weaponImage.gameObject.SetActive(false);
             ammo.gameObject.SetActive(false);
@@ -154,7 +154,7 @@ public class SelectedCharacterUI : MonoBehaviour
         }
         else
         {
-            weaponImage.sprite = weaponTypeSO.sprite;
+            weaponImage.sprite = weaponItemSO.icon;
             weaponImage.gameObject.SetActive(true);
             ammo.gameObject.SetActive(true);
             totalAmmo.gameObject.SetActive(true);

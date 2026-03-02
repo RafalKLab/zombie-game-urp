@@ -49,14 +49,20 @@ public class HugeSlotInventoryUI : MonoBehaviour, IPointerEnterHandler, IPointer
 
         if (itemStack.definition is WeaponItemSO weaponItemSO)
         {
-            int capacity = weaponItemSO.weaponTypeSO.magazineCapacity;
+            if (weaponItemSO.useMelee)
+            {
+                textWeaponAmmo.gameObject.SetActive(false);
+            } else
+            {
+                int capacity = weaponItemSO.weaponTypeSO.magazineCapacity;
 
-            int currentAmmo = itemStack.weaponRuntimeState != null
-                ? itemStack.weaponRuntimeState.CurrentMagazineAmmo
-                : capacity;
+                int currentAmmo = itemStack.weaponRuntimeState != null
+                    ? itemStack.weaponRuntimeState.CurrentMagazineAmmo
+                    : capacity;
 
-            textWeaponAmmo.text = $"{currentAmmo} / {capacity}";
-            textWeaponAmmo.gameObject.SetActive(true);
+                textWeaponAmmo.text = $"{currentAmmo} / {capacity}";
+                textWeaponAmmo.gameObject.SetActive(true);
+            }
         }
         else
         {

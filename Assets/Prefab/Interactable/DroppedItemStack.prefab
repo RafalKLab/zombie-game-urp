@@ -115,6 +115,7 @@ MonoBehaviour:
   priority: 0
   uiAnchor: {fileID: 9158283040115660729}
   defaultPromt: F - interact
+  useShortcutWhenOnlyOneExecutableAction: 1
   destroyWhenAllActionsDepleted: 1
   cleanupInterval: 1
 --- !u!114 &4112025693875117735
@@ -131,6 +132,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InteractableActionPickUpStack
   priority: 0
   promt: Pick up
+  itemStack:
+    definition: {fileID: 0}
+    amount: 0
 --- !u!114 &1766935233033334877
 MonoBehaviour:
   m_ObjectHideFlags: 0

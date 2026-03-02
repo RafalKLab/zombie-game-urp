@@ -24,3 +24,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 066825dec5a9de847891be199d962e08, type: 2}
   - {fileID: 11400000, guid: 265c58256fea6a945a01ed3a1b310011, type: 2}
   weaponTypeSO: {fileID: 11400000, guid: 24ec26d689b46304084833845fd9f857, type: 2}
+  meleeWeaponTypeSO: {fileID: 0}
+  useMelee: 0

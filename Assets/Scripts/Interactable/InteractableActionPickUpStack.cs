@@ -1,4 +1,5 @@
 using UnityEngine;
+using static UnityEditor.Experimental.GraphView.Port;
 
 public class InteractableActionPickUpStack : MonoBehaviour, IInteractableAction
 {
@@ -44,7 +45,8 @@ public class InteractableActionPickUpStack : MonoBehaviour, IInteractableAction
     private bool TryApply(Interactor interactor)
     {
         if (itemStack.definition is WeaponItemSO weaponItemSO &&
-            !interactor.Character.HasWeapon())
+            !interactor.Character.HasWeapon() &&
+                weaponItemSO.useMelee == false)
         {
             return interactor.Character.TrySetWeapon(
                 weaponItemSO,
@@ -62,9 +64,15 @@ public class InteractableActionPickUpStack : MonoBehaviour, IInteractableAction
 
         if (itemStack.definition is WeaponItemSO weaponItemSO)
         {
-            int capacity = weaponItemSO.weaponTypeSO.magazineCapacity;
-            int current = itemStack.weaponRuntimeState?.CurrentMagazineAmmo ?? capacity;
-            return $"{promt} {weaponItemSO.displayName} ({current} / {capacity})";
+            if (weaponItemSO.useMelee)
+            {
+                return $"{promt} {weaponItemSO.displayName}";
+            } else
+            {
+                int capacity = weaponItemSO.weaponTypeSO.magazineCapacity;
+                int current = itemStack.weaponRuntimeState?.CurrentMagazineAmmo ?? capacity;
+                return $"{promt} {weaponItemSO.displayName} ({current} / {capacity})";
+            }
         }
 
         return $"{promt} {itemStack.definition.displayName} ({itemStack.amount})";

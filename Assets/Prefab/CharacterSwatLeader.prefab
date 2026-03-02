@@ -1670,6 +1670,37 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!1 &2930661106461545410
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1108600764137456845}
+  m_Layer: 0
+  m_Name: MeleeIdleShoulderPosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1108600764137456845
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2930661106461545410}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.7071068, y: 0, z: -0.7071068, w: 0}
+  m_LocalPosition: {x: -0.098, y: 0.167, z: -0.08}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3750822530992201549}
+  m_LocalEulerAnglesHint: {x: 180, y: 90, z: 0}
 --- !u!1 &3083938615589246524
 GameObject:
   m_ObjectHideFlags: 0
@@ -1965,6 +1996,8 @@ MonoBehaviour:
   peekOvershoot: 0.6
   peekOvershootSampleRadius: 0.5
   maxConsecutiveMisses: 10
+  meleeWeaponItemSO: {fileID: 0}
+  meleeIdleShoulderPosition: {fileID: 1108600764137456845}
 --- !u!95 &3512837619476537660
 Animator:
   serializedVersion: 7
@@ -2004,6 +2037,9 @@ MonoBehaviour:
   meleeDeathParam: MeleeDeath
   weaponDeathParam: WeaponDeath
   rifleIdle: RifleIdle
+  meleeEquip: MeleeEquip
+  meleeDisarm: MeleeDisarm
+  meleeAttack: MeleeAttack
   movingSpeedThreshold: 0.05
   dampTime: 0.1
   aimLerpSpeed: 8
@@ -3125,6 +3161,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2429372373889904422}
+  - {fileID: 1108600764137456845}
   m_Father: {fileID: 7714707168654511013}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6471182937581794679

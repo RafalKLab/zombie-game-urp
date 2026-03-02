@@ -522,6 +522,37 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &3672493897663669567
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2958951325847420282}
+  m_Layer: 0
+  m_Name: MeleeIdleShoulderPosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2958951325847420282
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3672493897663669567}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.7071068, y: 0, z: -0.7071068, w: 0}
+  m_LocalPosition: {x: -0.098, y: 0.167, z: -0.08}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3750822530992201549}
+  m_LocalEulerAnglesHint: {x: 180, y: 90, z: 0}
 --- !u!1 &3793638073760354250
 GameObject:
   m_ObjectHideFlags: 0
@@ -652,6 +683,8 @@ MonoBehaviour:
   peekOvershoot: 0.6
   peekOvershootSampleRadius: 0.5
   maxConsecutiveMisses: 10
+  meleeWeaponItemSO: {fileID: 0}
+  meleeIdleShoulderPosition: {fileID: 2958951325847420282}
 --- !u!95 &3512837619476537660
 Animator:
   serializedVersion: 7
@@ -691,6 +724,9 @@ MonoBehaviour:
   meleeDeathParam: MeleeDeath
   weaponDeathParam: WeaponDeath
   rifleIdle: RifleIdle
+  meleeEquip: MeleeEquip
+  meleeDisarm: MeleeDisarm
+  meleeAttack: MeleeAttack
   movingSpeedThreshold: 0.05
   dampTime: 0.1
   aimLerpSpeed: 8
@@ -3138,6 +3174,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -3480699329000672020, guid: 32947e1b420169e44bd5803a96e08373, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4940211595112884401}
+    - targetCorrespondingSourceObject: {fileID: -8021001004253913084, guid: 32947e1b420169e44bd5803a96e08373, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2958951325847420282}
     - targetCorrespondingSourceObject: {fileID: 1852576806548013000, guid: 32947e1b420169e44bd5803a96e08373, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8979981976102786670}

@@ -13,6 +13,7 @@ public sealed class CharacterMeleeWeaponHandler
     public bool HasMeleeWeapon => meleeWeapon != null;
     public bool MeleeWeaponInHand { get; private set; }
     public bool MeleeWeaponPositionPending { get; private set; }
+    public WeaponItemSO MeleeWeaponItemSO { get; private set; }
 
     public Transform MeleeWeaponTransform => meleeWeapon;
 
@@ -34,14 +35,18 @@ public sealed class CharacterMeleeWeaponHandler
     /// Instantiates a new melee weapon from given prefab.
     /// Automatically places it in idle position.
     /// </summary>
-    public void InstantiateMeleeWeapon(Transform prefab)
+    public void InstantiateMeleeWeapon(WeaponItemSO meleeWeaponItemSO)
     {
-        if (prefab == null) return;
+        if (meleeWeaponItemSO == null) return;
+        if (meleeWeaponItemSO.useMelee == false) return;
+        if (meleeWeaponItemSO.meleeWeaponTypeSO == null) return;
         if (meleeIdleShoulderPosition == null) return;
 
-        DestroyCurrentWeapon();
 
-        meleeWeapon = Object.Instantiate(prefab);
+        Debug.Log("InstantiateMeleeWeapon: InstantiateMeleeWeapon");
+        MeleeWeaponItemSO = meleeWeaponItemSO;
+
+        meleeWeapon = Object.Instantiate(meleeWeaponItemSO.meleeWeaponTypeSO.prefab);
         SetMeleeInHand(false);
     }
 
@@ -114,25 +119,12 @@ public sealed class CharacterMeleeWeaponHandler
         MeleeWeaponPositionPending = false;
     }
 
-    private void DestroyCurrentWeapon()
-    {
-        if (meleeWeapon != null)
-        {
-            Object.Destroy(meleeWeapon.gameObject);
-            meleeWeapon = null;
-        }
-
-        MeleeWeaponInHand = false;
-        MeleeWeaponPositionPending = false;
-    }
-
     /// <summary>
     /// Cleanup method for character death or despawn.
     /// </summary>
     public void Dispose()
     {
         UnsubscribeFromAnimatorEvents();
-        DestroyCurrentWeapon();
     }
 
     private void SubscribeToAnimatorEvents()
@@ -186,5 +178,40 @@ public sealed class CharacterMeleeWeaponHandler
         if (characterAnimatorFacade == null) return;
 
         characterAnimatorFacade.PlayMeleeAttack();
+    }
+
+    public WeaponRuntimeState SwapCurrentWeaponWithWeaponItem(WeaponItemSO weaponItemSO)
+    {
+        if (weaponItemSO == null) return null;
+
+        // we get a snapshot of current weapon 
+        WeaponRuntimeState previousWeaponRuntimeState = SnapshotWeapon();
+        if (previousWeaponRuntimeState == null) return null;
+
+        // we destory current weapon object
+        DestroyMeleeWeapon();
+
+        // we instantiate new
+        InstantiateMeleeWeapon(weaponItemSO);
+
+        return previousWeaponRuntimeState;
+    }
+
+    private WeaponRuntimeState SnapshotWeapon()
+    {
+        if (HasMeleeWeapon == false) return null;
+
+        return new WeaponRuntimeState(MeleeWeaponItemSO, 0);
+    }
+
+    private void DestroyMeleeWeapon()
+    {
+        if (meleeWeapon == null) return;
+
+        Object.Destroy(meleeWeapon.gameObject);
+        meleeWeapon = null;
+        MeleeWeaponItemSO = null;
+        MeleeWeaponInHand = false;
+        MeleeWeaponPositionPending = false;
     }
 }

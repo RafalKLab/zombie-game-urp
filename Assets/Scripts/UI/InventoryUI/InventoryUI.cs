@@ -2,6 +2,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static CharacterWeaponHandler;
 
 public class InventoryUI : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class InventoryUI : MonoBehaviour
 
     [Header("Player equipped")]
     [SerializeField] private EquippedInventoryUI equippedInventoryUI;
+    [SerializeField] private EquippedInventoryUI equippedMeleeInventoryUI;
 
     [Header("Player huge slots")]
     [SerializeField] private Transform hugeSlotContainer;
@@ -39,6 +41,12 @@ public class InventoryUI : MonoBehaviour
         if (equippedInventoryUI == null)
         {
             Debug.LogError($"{name} InventoryUI: missing reference: equippedInventoryUI", this);
+            ok = false;
+        }
+
+        if (equippedMeleeInventoryUI == null)
+        {
+            Debug.LogError($"{name} InventoryUI: missing reference: equippedMeleeInventoryUI", this);
             ok = false;
         }
 
@@ -152,7 +160,8 @@ public class InventoryUI : MonoBehaviour
 
     public void Show()
     {
-        equippedInventoryUI.Init(characterCore.GetWeaponTypeSO(), characterCore.GetAmmoInfo());
+        equippedInventoryUI.Init(characterCore.GetWeaponItemSO(), characterCore.GetAmmoInfo());
+        equippedMeleeInventoryUI.Init(characterCore.GetMeleeWeaponItemSO(), new AmmoInfo());
 
         UpdateSlots(
             characterInventory.GetHugeSlots(),

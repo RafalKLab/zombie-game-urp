@@ -46,7 +46,6 @@ public class WeaponTypeSO : ScriptableObject
     [Header("Visual")]
     public Transform prefab;
     public TracerTypeSO tracerTypeSO;
-    public Sprite sprite;
 
     [Header("Shot audio")]
     public AudioClip shotClip;

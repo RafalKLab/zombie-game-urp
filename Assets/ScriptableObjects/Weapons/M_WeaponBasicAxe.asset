@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bfeb2cd23f87904c9dd08f7a2677fb7, type: 3}
+  m_Name: M_WeaponBasicAxe
+  m_EditorClassIdentifier: Assembly-CSharp::MeleeWeaponTypeSO
+  weaponName: Basic axe
+  weaponType: 2
+  damage: 75
+  range: 1
+  hitCooldown: 1
+  prefab: {fileID: 2298662017938403109, guid: 3bec72ef294080d498bec5a29d6f1c75, type: 3}
+  sprite: {fileID: 0}
+  hitClip: {fileID: 0}
+  hitVolume: 1

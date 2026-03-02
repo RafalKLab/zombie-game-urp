@@ -19,7 +19,10 @@ public class DroppedItemStack : MonoBehaviour
 
         if (itemStack.definition is WeaponItemSO weaponItemSO)
         {
-            Instantiate(weaponItemSO.weaponTypeSO.prefab, weaponVisualPosition);
+            if (weaponItemSO.useMelee)
+                Instantiate(weaponItemSO.meleeWeaponTypeSO.prefab, weaponVisualPosition);
+            else
+                Instantiate(weaponItemSO.weaponTypeSO.prefab, weaponVisualPosition);
         }
         else
         {
