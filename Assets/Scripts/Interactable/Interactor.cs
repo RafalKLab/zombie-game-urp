@@ -26,6 +26,7 @@ public class Interactor : MonoBehaviour
 
     private IInteractable interactableCurrent;
     private float interactableDetectCooldown = 0f;
+    private IInteractableActionTwoStep pendingInteractableActionTwoStep;
 
     public Inventory Inventory{ get; private set; }
     public CharacterCore Character { get; private set; }
@@ -192,5 +193,19 @@ public class Interactor : MonoBehaviour
     public IReadOnlyList<IInteractableAction> GetCurrentChoiceActions()
     {
         return choiceActions;
+    }
+    public void SetPendingInteractableActionTwoStep(IInteractableActionTwoStep action)
+    {
+        pendingInteractableActionTwoStep = action;
+    }
+
+    public bool TryFinalizePendingTwoStepAction()
+    {
+        if (pendingInteractableActionTwoStep == null) return false;
+
+        bool success = pendingInteractableActionTwoStep.FinalizeExecute(this);
+        pendingInteractableActionTwoStep = null;
+
+        return success;
     }
 }

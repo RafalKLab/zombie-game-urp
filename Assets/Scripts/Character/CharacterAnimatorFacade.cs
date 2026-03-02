@@ -211,6 +211,13 @@ public class CharacterAnimatorFacade : MonoBehaviour
         animator.SetTrigger(meleeEquipHash);
     }
 
+    public void PlayMeleeAttack()
+    {
+        if (!animator) return;
+
+        animator.SetTrigger(meleeAttackHash);
+    }
+
     public void PlayMeleeDisarm()
     {
         if (!animator) return;

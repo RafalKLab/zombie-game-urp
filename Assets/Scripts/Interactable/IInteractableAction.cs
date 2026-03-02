@@ -6,3 +6,7 @@ public interface IInteractableAction
     bool Execute(Interactor interactor);
     bool IsDepleted { get; }
 }
+public interface IInteractableActionTwoStep : IInteractableAction
+{
+    bool FinalizeExecute(Interactor interactor);
+}
