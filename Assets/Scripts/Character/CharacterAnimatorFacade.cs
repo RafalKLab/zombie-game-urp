@@ -23,6 +23,7 @@ public class CharacterAnimatorFacade : MonoBehaviour
     [SerializeField] private string meleeEquip = "MeleeEquip";
     [SerializeField] private string meleeDisarm = "MeleeDisarm";
     [SerializeField] private string meleeAttack = "MeleeAttack";
+    [SerializeField] private string meleeAttackIndex = "MeleeAttackIndex";
 
     [SerializeField] private float movingSpeedThreshold = 0.05f;
     [SerializeField] private float dampTime = 0.10f;
@@ -46,6 +47,7 @@ public class CharacterAnimatorFacade : MonoBehaviour
     private int meleeEquipHash;
     private int meleeDisarmHash;
     private int meleeAttackHash;
+    private int meleeAttackIndexHash;
 
     private Dictionary<WeaponType, WeaponAimConfig> aimConfigMap;
 
@@ -74,6 +76,7 @@ public class CharacterAnimatorFacade : MonoBehaviour
         meleeEquipHash = Animator.StringToHash(meleeEquip);
         meleeDisarmHash = Animator.StringToHash(meleeDisarm);
         meleeAttackHash = Animator.StringToHash(meleeAttack);
+        meleeAttackIndexHash = Animator.StringToHash(meleeAttackIndex);
 
         SetupAimConfigDictionary();
     }
@@ -211,10 +214,13 @@ public class CharacterAnimatorFacade : MonoBehaviour
         animator.SetTrigger(meleeEquipHash);
     }
 
-    public void PlayMeleeAttack()
+    public void PlayMeleeAttack(int? index = null)
     {
         if (!animator) return;
 
+        // TODO: Refactor
+        int chosenIndex = index ?? UnityEngine.Random.Range(1, 4);
+        animator.SetInteger(meleeAttackIndexHash, chosenIndex);
         animator.SetTrigger(meleeAttackHash);
     }
 

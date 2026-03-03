@@ -9055,7 +9055,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractableActionPickUpItem
   priority: 0
-  itemDefinitionSO: {fileID: 11400000, guid: f36c36d5e4507f24b923d7d8ff63b543, type: 2}
+  itemDefinitionSO: {fileID: 11400000, guid: 650de99b8c34cc04abc3f8617a37d0ab, type: 2}
   amount: 5
   promt: Pick up
   destorySelfOnDepleted: 1
@@ -11580,6 +11580,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1089742813889535493, guid: 90ba8d3b82fe21b46b801482afd45446, type: 3}
+      propertyPath: interactionsToDemolish
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 3777208755518783887, guid: 90ba8d3b82fe21b46b801482afd45446, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
