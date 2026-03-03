@@ -52,6 +52,8 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     [Header("Melee cobat")]
     [SerializeField] private WeaponItemSO meleeWeaponItemSO;
     [SerializeField] private Transform meleeIdleShoulderPosition;
+    [SerializeField] private float meleeCombatRepathInterval = 1.0f;
+    
 
     // ==============================
     // Combat / Reposition tuning
@@ -97,6 +99,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     // ==============================
     private AiTarget aiTarget;
     private AiTarget rejectedAiTarget;
+    public AiTarget AiTarget => aiTarget;
 
     // ==============================
     // Raycast / physics helpers
@@ -115,6 +118,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     private HitscanShooterService hitscanShooterService;
     private CharacterWeaponHandler characterWeaponHandler;
     private CharacterMeleeWeaponHandler characterMeleeWeaponHandler;
+    private CharacterMeleeCombatHandler characterMeleeCombatHandler;
     private CharacterMoveHandler characterMoveHandler;
 
     // ==============================
@@ -145,14 +149,14 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
         envLayer = LayerMask.NameToLayer("Environment");
 
         // 3) Services / handlers
+        characterMoveHandler = new CharacterMoveHandler(this, agent);
         hitscanShooterService = new HitscanShooterService(raycastBufferSize, envLayer);
 
         characterWeaponHandler = new CharacterWeaponHandler(
             this, weaponSocket, PistolSocketIdle, RifleSocketIdle, inventory);
 
         characterMeleeWeaponHandler = new CharacterMeleeWeaponHandler(this, weaponSocket, meleeIdleShoulderPosition, characterAnimatorFacade);
-
-        characterMoveHandler = new CharacterMoveHandler(this, agent);
+        characterMeleeCombatHandler = new CharacterMeleeCombatHandler(this, agent, characterMeleeWeaponHandler, meleeCombatRepathInterval, characterAnimatorFacade, characterMoveHandler);
 
         // 4) Events
         characterWeaponHandler.OnWeaponChanged += CharacterWeaponHandler_OnWeaponChanged;
@@ -176,6 +180,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
 
         characterMoveHandler.AutoRevertRunToWalkIfStopped();
         characterWeaponHandler.TickWeaponCooldown(Time.deltaTime);
+        characterMeleeWeaponHandler.Tick();
 
         bool hasTarget = aiTarget != null;
         bool hasRanged = HasWeapon();
@@ -216,7 +221,7 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
                 characterMeleeWeaponHandler.TryEquip();
             }
 
-            // TryToMeleeAttack();
+            characterMeleeCombatHandler.TryToMeleeAttack();
         }
     }
 
@@ -224,12 +229,23 @@ public class CharacterCore : MonoBehaviour, IMoveModeProvider
     {
         health.OnDied += Health_OnDied;
         health.OnDamaged += Health_OnDamaged;
+        
+        if (characterAnimatorFacade != null)
+            characterAnimatorFacade.OnMeleeAttackHit += CharacterCore_OnMeleeAttackHit;
     }
 
     private void OnDisable()
     {
         health.OnDied -= Health_OnDied;
         health.OnDamaged -= Health_OnDamaged;
+
+        if (characterAnimatorFacade != null)
+            characterAnimatorFacade.OnMeleeAttackHit -= CharacterCore_OnMeleeAttackHit;
+    }
+
+    private void CharacterCore_OnMeleeAttackHit()
+    {
+        TryFinalizeTwoStepAction();
     }
 
     private void Health_OnDied(object sender, OnDiedEventArgs e)

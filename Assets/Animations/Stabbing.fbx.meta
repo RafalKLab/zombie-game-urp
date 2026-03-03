@@ -62,6 +62,13 @@ ModelImporter:
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
+      - time: 0.990013
+        functionName: MeleeAttackEnd
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: b96f8d4632c797648832c08b2fff807a, type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}

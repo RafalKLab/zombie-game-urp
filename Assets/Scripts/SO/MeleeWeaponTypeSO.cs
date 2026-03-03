@@ -11,9 +11,10 @@ public class MeleeWeaponTypeSO : ScriptableObject
     [Min(0f)] public float damage = 10f;
     [Min(0f)] public float range = 20f;
     [Min(0f)] public float hitCooldown = 1f;
+    public LayerMask targetableMask;
 
     [Header("Visual")]
-    public Transform prefab;
+    public MeleeWeapon prefab;
 
     [Header("Hit audio")]
     public AudioClip hitClip;

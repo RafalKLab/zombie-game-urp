@@ -14,10 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MeleeWeaponTypeSO
   weaponName: Basic axe
   weaponType: 2
-  damage: 75
-  range: 1
-  hitCooldown: 1
-  prefab: {fileID: 2298662017938403109, guid: 3bec72ef294080d498bec5a29d6f1c75, type: 3}
-  sprite: {fileID: 0}
+  damage: 65
+  range: 1.3
+  hitCooldown: 0.6
+  targetableMask:
+    serializedVersion: 2
+    m_Bits: 64
+  prefab: {fileID: 6790044722039835336, guid: 3bec72ef294080d498bec5a29d6f1c75, type: 3}
   hitClip: {fileID: 0}
   hitVolume: 1

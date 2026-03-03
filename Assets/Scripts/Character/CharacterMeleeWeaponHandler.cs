@@ -8,14 +8,18 @@ public sealed class CharacterMeleeWeaponHandler
     private readonly Transform meleeIdleShoulderPosition;
     private readonly CharacterAnimatorFacade characterAnimatorFacade;
 
-    private Transform meleeWeapon;
+    private MeleeWeapon meleeWeapon;
 
     public bool HasMeleeWeapon => meleeWeapon != null;
     public bool MeleeWeaponInHand { get; private set; }
     public bool MeleeWeaponPositionPending { get; private set; }
     public WeaponItemSO MeleeWeaponItemSO { get; private set; }
 
-    public Transform MeleeWeaponTransform => meleeWeapon;
+    public Transform MeleeWeaponTransform => meleeWeapon != null ? meleeWeapon.transform : null;
+    public MeleeWeapon MeleeWeapon => meleeWeapon;
+
+    private float noTargetSinceTime = -1f;
+    private const float AutoDisarmDelay = 10f;
 
     public CharacterMeleeWeaponHandler(
         CharacterCore characterCore,
@@ -111,9 +115,9 @@ public sealed class CharacterMeleeWeaponHandler
         Transform target = inHand ? weaponSocket : meleeIdleShoulderPosition;
         if (target == null) return;
 
-        meleeWeapon.SetParent(target, false);
-        meleeWeapon.localPosition = Vector3.zero;
-        meleeWeapon.localRotation = Quaternion.identity;
+        meleeWeapon.transform.SetParent(target, false);
+        meleeWeapon.transform.localPosition = Vector3.zero;
+        meleeWeapon.transform.localRotation = Quaternion.identity;
 
         MeleeWeaponInHand = inHand;
         MeleeWeaponPositionPending = false;
@@ -133,7 +137,6 @@ public sealed class CharacterMeleeWeaponHandler
 
         characterAnimatorFacade.OnMeleeEquiped += OnMeleeEquipped;
         characterAnimatorFacade.OnMeleeDisarm += OnMeleeDisarmed;
-        characterAnimatorFacade.OnMeleeAttackHit += CharacterAnimatorFacade_OnMeleeAttackHit;
     }
 
     private void UnsubscribeFromAnimatorEvents()
@@ -142,12 +145,6 @@ public sealed class CharacterMeleeWeaponHandler
 
         characterAnimatorFacade.OnMeleeEquiped -= OnMeleeEquipped;
         characterAnimatorFacade.OnMeleeDisarm -= OnMeleeDisarmed;
-        characterAnimatorFacade.OnMeleeAttackHit -= CharacterAnimatorFacade_OnMeleeAttackHit;
-    }
-
-    private void CharacterAnimatorFacade_OnMeleeAttackHit()
-    {
-        characterCore.TryFinalizeTwoStepAction();
     }
 
     private void OnMeleeEquipped()
@@ -213,5 +210,38 @@ public sealed class CharacterMeleeWeaponHandler
         MeleeWeaponItemSO = null;
         MeleeWeaponInHand = false;
         MeleeWeaponPositionPending = false;
+    }
+
+    public void Tick()
+    {
+        // No weapon or currently transitioning (equip/disarm) -> do nothing
+        if (!HasMeleeWeapon) return;
+        if (MeleeWeaponPositionPending) return;
+
+        // If we have a target -> reset timer and exit
+        if (characterCore.AiTarget != null)
+        {
+            noTargetSinceTime = -1f;
+            return;
+        }
+
+        // No target and weapon not in hand -> nothing to handle
+        if (!MeleeWeaponInHand)
+        {
+            // Optional: reset timer so old time is not reused
+            noTargetSinceTime = -1f;
+            return;
+        }
+
+        // Start timer when target is lost
+        if (noTargetSinceTime < 0f)
+            noTargetSinceTime = Time.time;
+
+        // After fixed delay -> auto disarm
+        if (Time.time - noTargetSinceTime >= AutoDisarmDelay)
+        {
+            TryDisarm();
+            noTargetSinceTime = -1f;
+        }
     }
 }

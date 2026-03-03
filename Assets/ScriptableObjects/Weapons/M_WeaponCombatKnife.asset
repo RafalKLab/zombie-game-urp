@@ -14,9 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MeleeWeaponTypeSO
   weaponName: CombatKnife
   weaponType: 2
-  damage: 45
-  range: 1
-  hitCooldown: 1
-  prefab: {fileID: 2298662017938403109, guid: 610f7e12f2eef284c9c30f7ce5b83e01, type: 3}
+  damage: 65
+  range: 1.2
+  hitCooldown: 0.2
+  targetableMask:
+    serializedVersion: 2
+    m_Bits: 64
+  prefab: {fileID: 7489564249868657827, guid: 610f7e12f2eef284c9c30f7ce5b83e01, type: 3}
   hitClip: {fileID: 0}
   hitVolume: 1
