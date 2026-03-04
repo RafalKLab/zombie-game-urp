@@ -96,6 +96,8 @@ public class CharacterMeleeCombatHandler
         List<Health> targets = weapon.GetHitTargets(characterCore.transform.root);
         if (targets.Count == 0) return;
 
+        weapon.PlayHitFleshSound();
+
         for (int i = 0; i < targets.Count; i++)
         {
             Health health = targets[i];

@@ -21,5 +21,5 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   prefab: {fileID: 7489564249868657827, guid: 610f7e12f2eef284c9c30f7ce5b83e01, type: 3}
-  hitClip: {fileID: 0}
-  hitVolume: 1
+  hitFleshClip: {fileID: 8300000, guid: 0d4915d1a339bdf48aae22d6746d9d62, type: 3}
+  hitFleshClipVolume: 1

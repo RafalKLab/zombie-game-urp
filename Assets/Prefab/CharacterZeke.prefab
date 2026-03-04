@@ -451,7 +451,7 @@ MonoBehaviour:
   peekOvershoot: 0.6
   peekOvershootSampleRadius: 0.5
   maxConsecutiveMisses: 10
-  meleeWeaponItemSO: {fileID: 11400000, guid: 650de99b8c34cc04abc3f8617a37d0ab, type: 2}
+  meleeWeaponItemSO: {fileID: 11400000, guid: f36c36d5e4507f24b923d7d8ff63b543, type: 2}
   meleeIdleShoulderPosition: {fileID: 6772242293919821547}
   meleeCombatRepathInterval: 1
 --- !u!95 &3512837619476537660

@@ -17,6 +17,6 @@ public class MeleeWeaponTypeSO : ScriptableObject
     public MeleeWeapon prefab;
 
     [Header("Hit audio")]
-    public AudioClip hitClip;
-    [Range(0f, 1f)] public float hitVolume = 1f;
+    public AudioClip hitFleshClip;
+    [Range(0f, 1f)] public float hitFleshClipVolume = 1f;
 }

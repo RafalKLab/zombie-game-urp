@@ -43,6 +43,8 @@ public class ZombieAi : MonoBehaviour
     private float deathTimer = 0f;
     private float deathTimerMax = 10f;
 
+    private ZombieSoundManager zombieSoundManager;
+
     private enum State {
         Wander,
         Chase,
@@ -61,6 +63,10 @@ public class ZombieAi : MonoBehaviour
         entityFaction = GetComponent<AiTarget>().GetFaction();
 
         attackCooldownTimer = 0f;
+
+        zombieSoundManager = GetComponent<ZombieSoundManager>();
+        if (zombieSoundManager != null)
+            zombieSoundManager.EnableSounds();
     }
 
     private void OnEnable()
@@ -335,6 +341,9 @@ public class ZombieAi : MonoBehaviour
         chaseTarget = null;
         chaseTargetHealth = null;
         activeState = State.Dead;
+
+        if (zombieSoundManager != null)
+            zombieSoundManager.DisableSounds();
     }
 
     private bool TryGetTargetSqrDistance(out float sqrTargetDistance)

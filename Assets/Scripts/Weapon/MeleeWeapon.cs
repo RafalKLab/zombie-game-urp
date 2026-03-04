@@ -13,8 +13,15 @@ public class MeleeWeapon : MonoBehaviour
     [SerializeField] private bool debugSpawnHitSphere = true;
     [SerializeField] private float debugSphereLifetime = 2f;
 
+    private AudioSource audioSource;
+
     public Transform HitPoint => hitPoint;
     public float Radius => radius;
+
+    private void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+    }
 
     public List<Health> GetHitTargets(Transform attackerRoot)
     {
@@ -79,5 +86,13 @@ public class MeleeWeapon : MonoBehaviour
         renderer.material.color = Color.red;
 
         Destroy(sphere, debugSphereLifetime);
+    }
+
+    public void PlayHitFleshSound()
+    {
+        if (audioSource == null) return;
+        if (meleeWeaponTypeSO == null || meleeWeaponTypeSO.hitFleshClip == null) return;
+
+        audioSource.PlayOneShot(meleeWeaponTypeSO.hitFleshClip);
     }
 }

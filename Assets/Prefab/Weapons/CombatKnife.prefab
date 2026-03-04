@@ -53,8 +53,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2298662017938403109}
-  - component: {fileID: 5588637153856209444}
   - component: {fileID: 7489564249868657827}
+  - component: {fileID: 2135155285557377459}
   m_Layer: 0
   m_Name: CombatKnife
   m_TagString: Untagged
@@ -79,7 +79,25 @@ Transform:
   - {fileID: 3140668047565858160}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!82 &5588637153856209444
+--- !u!114 &7489564249868657827
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2123993730072318405}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c72d9dc9233aeb42a94bea86ab9ac70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MeleeWeapon
+  meleeWeaponTypeSO: {fileID: 11400000, guid: 4d17c28a1e41db0459f2215fb493ef44, type: 2}
+  hitPoint: {fileID: 7819802477366554553}
+  radius: 0.3
+  debugSpawnHitSphere: 0
+  debugSphereLifetime: 2
+  meleeHitFlesh: {fileID: 8300000, guid: 077ee9e73148bc942a66adb69291da2c, type: 3}
+--- !u!82 &2135155285557377459
 AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -101,7 +119,7 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 500
+  MaxDistance: 5
   Pan2D: 0
   rolloffMode: 0
   BypassEffects: 0
@@ -136,7 +154,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -176,23 +194,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &7489564249868657827
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2123993730072318405}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c72d9dc9233aeb42a94bea86ab9ac70, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MeleeWeapon
-  meleeWeaponTypeSO: {fileID: 11400000, guid: 4d17c28a1e41db0459f2215fb493ef44, type: 2}
-  hitPoint: {fileID: 7819802477366554553}
-  radius: 0.3
-  debugSpawnHitSphere: 1
-  debugSphereLifetime: 2
 --- !u!1 &4365102298982088432
 GameObject:
   m_ObjectHideFlags: 0
