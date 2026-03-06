@@ -1,6 +1,4 @@
-using NUnit.Framework;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using static CharacterWeaponHandler;
 
@@ -8,18 +6,22 @@ public class InventoryUI : MonoBehaviour
 {
     [Header("Player inventory")]
     [SerializeField] private Transform inventoryBlock;
+    [SerializeField] private Transform normalSlotContainer;
+    [SerializeField] private Transform hugeSlotContainer;
+
+    [Header("Base inventory")]
+    [SerializeField] private Transform baseInventoryBlock;
+    [SerializeField] private Transform baseNormalSlotContainer;
+    [SerializeField] private Transform baseHugeSlotContainer;
 
     [Header("Player equipped")]
     [SerializeField] private EquippedInventoryUI equippedInventoryUI;
     [SerializeField] private EquippedInventoryUI equippedMeleeInventoryUI;
 
-    [Header("Player huge slots")]
-    [SerializeField] private Transform hugeSlotContainer;
-    [SerializeField] private HugeSlotInventoryUI hugeSlotPrefab;
-
-    [Header("Player normal slots")]
-    [SerializeField] private Transform normalSlotContainer;
+    [Header("Prefabs")]
     [SerializeField] private NormalSlotInventoryUI normalSlotPrefab;
+    [SerializeField] private HugeSlotInventoryUI hugeSlotPrefab;
+    [SerializeField] private InventoryItemTransferButton inventoryItemTransferButton;
 
     private PlayableCharacter playableCharacter;
     private CharacterCore characterCore;
@@ -27,6 +29,17 @@ public class InventoryUI : MonoBehaviour
 
     private List<HugeSlotInventoryUI> uiHugeSlotList = new();
     private List<NormalSlotInventoryUI> uiNormalSlotList = new();
+
+    private List<HugeSlotInventoryUI> uiBaseHugeSlotList = new();
+    private List<NormalSlotInventoryUI> uiBaseNormalSlotList = new();
+
+    private bool CanTransfer =>
+        mainInventory != null &&
+        secondaryInventory != null &&
+        inventoryItemTransferButton != null;
+
+    private Inventory mainInventory;
+    private Inventory secondaryInventory;
 
     private void Awake()
     {
@@ -80,13 +93,35 @@ public class InventoryUI : MonoBehaviour
             return;
         }
 
-        inventoryBlock.gameObject.SetActive(false);
+        HideAll();
     }
 
     private void Start()
     {
         GameInput.Instance.OnInventoryOpen += GameInput_OnInventoryOpen;
         GameInput.Instance.OnInventoryClose += GameInput_OnInventoryClose;
+        UiEventsManager.Instance.OnOpenStorageRequested += Instance_OnOpenStorageRequested;
+    }
+
+    private void Instance_OnOpenStorageRequested(object sender, UiEventsManager.OnOpenStorageRequestedEventArgs e)
+    {
+        // we allow open stoarge alwasy with main invetory, this does
+        // not suppoer openning storage where there is no active character
+
+        if (secondaryInventory != null)
+            secondaryInventory.OnChanged -= SecondaryInventory_OnChanged;
+        
+        secondaryInventory = e.inventory;
+
+        if (secondaryInventory != null)
+        {
+            secondaryInventory.OnChanged -= SecondaryInventory_OnChanged;
+            secondaryInventory.OnChanged += SecondaryInventory_OnChanged;
+        }
+
+
+        GameInput_OnInventoryOpen();
+        ShowSecondary(e.inventory);
     }
 
     private void GameInput_OnInventoryOpen()
@@ -100,6 +135,8 @@ public class InventoryUI : MonoBehaviour
         characterInventory = playableCharacter.GetComponent<Inventory>();
         if (characterInventory == null) return;
 
+        mainInventory = characterInventory;
+
         characterInventory.OnChanged -= CharacterInventory_OnChanged;
         characterInventory.OnChanged += CharacterInventory_OnChanged;
 
@@ -107,12 +144,12 @@ public class InventoryUI : MonoBehaviour
         characterCore.OnKilled -= CharacterCore_OnKilled;
         characterCore.OnKilled += CharacterCore_OnKilled;
 
-        Show();
+        ShowMain();
     }
 
     private void GameInput_OnInventoryClose()
     {
-        Hide();
+        HideAll();
 
         // unsubscribe first
         if (characterInventory != null)
@@ -146,11 +183,25 @@ public class InventoryUI : MonoBehaviour
 
         if (characterCore == null || characterInventory == null)
         {
-            Hide();
+            HideAll();
             return;
         }
 
-        Show(); // rebuild
+        ShowMain();
+    }
+
+    private void SecondaryInventory_OnChanged()
+    {
+        if (baseInventoryBlock == null) return;
+        if (!baseInventoryBlock.gameObject.activeSelf) return;
+
+        if (secondaryInventory == null || mainInventory == null)
+        {
+            HideAll();
+            return;
+        }
+
+        ShowSecondary(secondaryInventory);
     }
 
     private void CharacterCore_OnKilled(object sender, System.EventArgs e)
@@ -158,7 +209,7 @@ public class InventoryUI : MonoBehaviour
         GameInput_OnInventoryClose();
     }
 
-    public void Show()
+    public void ShowMain()
     {
         equippedInventoryUI.Init(characterCore.GetWeaponItemSO(), characterCore.GetAmmoInfo());
         equippedMeleeInventoryUI.Init(characterCore.GetMeleeWeaponItemSO(), new AmmoInfo());
@@ -167,49 +218,127 @@ public class InventoryUI : MonoBehaviour
             characterInventory.GetHugeSlots(),
             uiHugeSlotList,
             () => Instantiate(hugeSlotPrefab, hugeSlotContainer),
-            (ui, stack) => ui.Init(stack, characterCore)
+            (ui, stack) => ui.Init(stack, characterCore),
+            mainInventory,
+            secondaryInventory,
+            true
         );
 
         UpdateSlots(
             characterInventory.GetNormalSlots(),
             uiNormalSlotList,
             () => Instantiate(normalSlotPrefab, normalSlotContainer),
-            (ui, stack) => ui.Init(stack, characterCore)
+            (ui, stack) => ui.Init(stack, characterCore),
+            mainInventory,
+            secondaryInventory,
+            true
         );
 
         inventoryBlock.gameObject.SetActive(true);
     }
 
-    public void Hide()
+    public void ShowSecondary(Inventory inventory)
     {
+        UpdateSlots(
+            inventory.GetHugeSlots(),
+            uiBaseHugeSlotList,
+            () => Instantiate(hugeSlotPrefab, baseHugeSlotContainer),
+            (ui, stack) => ui.Init(stack, characterCore, false),
+            secondaryInventory,
+            mainInventory,
+            false
+        );
+
+        UpdateSlots(
+            inventory.GetNormalSlots(),
+            uiBaseNormalSlotList,
+            () => Instantiate(normalSlotPrefab, baseNormalSlotContainer),
+            (ui, stack) => ui.Init(stack, characterCore, false),
+            secondaryInventory,
+            mainInventory,
+            false
+        );
+
+        baseInventoryBlock.gameObject.SetActive(true);
+    }
+
+    // always hide main and secondary invenotry windows
+    public void HideAll()
+    {
+        if (secondaryInventory != null)
+            secondaryInventory.OnChanged -= SecondaryInventory_OnChanged;
+
+        mainInventory = null;
+        secondaryInventory = null;
+
         inventoryBlock.gameObject.SetActive(false);
+        baseInventoryBlock.gameObject.SetActive(false);
     }
 
     private void UpdateSlots<TUI>(
     IReadOnlyList<ItemStack> inventorySlots,
     List<TUI> uiSlots,
     System.Func<TUI> createUI,
-    System.Action<TUI, ItemStack> bindData
-    ) where TUI : MonoBehaviour
+    System.Action<TUI, ItemStack> bindData,
+    Inventory fromInventory,
+    Inventory toInventory,
+    bool includeEmptySlots
+) where TUI : MonoBehaviour
+    {
+        int uiIndex = 0;
+
+        for (int i = 0; i < inventorySlots.Count; i++)
         {
-            for (int i = 0; i < inventorySlots.Count; i++)
+            ItemStack itemStack = inventorySlots[i];
+
+            if (!includeEmptySlots && itemStack == null)
+                continue;
+
+            if (uiIndex >= uiSlots.Count || uiSlots[uiIndex] == null)
             {
-                ItemStack itemStack = inventorySlots[i];
-
-                if (i >= uiSlots.Count || uiSlots[i] == null)
-                {
-                    TUI uiBlock = createUI();
-                    uiSlots.Add(uiBlock);
-                }
-
-                bindData(uiSlots[i], itemStack);
-                uiSlots[i].gameObject.SetActive(true);
+                TUI uiBlock = createUI();
+                if (uiIndex < uiSlots.Count) uiSlots[uiIndex] = uiBlock;
+                else uiSlots.Add(uiBlock);
             }
 
-            for (int i = inventorySlots.Count; i < uiSlots.Count; i++)
+            // Bind visuals
+            bindData(uiSlots[uiIndex], itemStack);
+            uiSlots[uiIndex].gameObject.SetActive(true);
+
+            InventoryItemTransferButton transferBtn =
+                uiSlots[uiIndex].GetComponentInChildren<InventoryItemTransferButton>(true);
+
+            bool allowTransferHere =
+                CanTransfer &&
+                fromInventory != null &&
+                toInventory != null;
+
+            if (!allowTransferHere)
             {
-                if (uiSlots[i] != null)
-                    uiSlots[i].gameObject.SetActive(false);
+                if (transferBtn != null)
+                    transferBtn.gameObject.SetActive(false);
             }
+            else
+            {
+                if (transferBtn == null)
+                    transferBtn = Instantiate(inventoryItemTransferButton, uiSlots[uiIndex].transform);
+
+                transferBtn.gameObject.SetActive(true);
+                transferBtn.Init(itemStack, fromInventory, toInventory);
+            }
+
+            uiIndex++;
         }
+
+        for (int i = uiIndex; i < uiSlots.Count; i++)
+        {
+            if (uiSlots[i] == null) continue;
+
+            uiSlots[i].gameObject.SetActive(false);
+
+            var transferBtn = uiSlots[i].GetComponentInChildren<InventoryItemTransferButton>(true);
+            if (transferBtn != null)
+                transferBtn.gameObject.SetActive(false);
+        }
+    }
 }

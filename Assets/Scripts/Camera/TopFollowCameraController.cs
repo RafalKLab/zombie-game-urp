@@ -83,6 +83,8 @@ public class TopFollowCameraController : MonoBehaviour
     }
     public void OnZoom(InputAction.CallbackContext callbackContext)
     {
+        if (GeneralHelper.IsPointerOverUI_Now()) return;
+
         zoomInput = callbackContext.ReadValue<float>();
     }
 

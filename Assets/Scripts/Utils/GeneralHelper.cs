@@ -1,4 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 public static class GeneralHelper {
     public static bool IsInRange(
@@ -21,5 +24,20 @@ public static class GeneralHelper {
 
         float sqrDist = (target - origin).sqrMagnitude;
         return sqrDist <= effectiveRange * effectiveRange;
+    }
+    public static bool IsPointerOverUI_Now()
+    {
+        if (EventSystem.current == null) return false;
+        if (Mouse.current == null) return false;
+
+        PointerEventData eventData = new PointerEventData(EventSystem.current)
+        {
+            position = Mouse.current.position.ReadValue()
+        };
+
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventData, results);
+
+        return results.Count > 0;
     }
 }

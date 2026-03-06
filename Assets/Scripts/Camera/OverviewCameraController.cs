@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class OverviewCameraController : MonoBehaviour
@@ -88,6 +90,9 @@ public class OverviewCameraController : MonoBehaviour
     }
     public void OnZoom(InputAction.CallbackContext callbackContext)
     {
+        if (GeneralHelper.IsPointerOverUI_Now()) return;
+
         zoomInput = callbackContext.ReadValue<float>();
     }
 }
+

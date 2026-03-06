@@ -20,7 +20,7 @@ public class HugeSlotInventoryUI : MonoBehaviour, IPointerEnterHandler, IPointer
     private ItemStack itemStack;
     private readonly List<InventoryItemActionButtonUI> actionButtonPool = new();
 
-    public void Init(ItemStack itemStack, CharacterCore characterCore)
+    public void Init(ItemStack itemStack, CharacterCore characterCore, bool initItemActions = true)
     {
         if (itemImage == null) return;
         if (itemName == null) return;
@@ -74,25 +74,28 @@ public class HugeSlotInventoryUI : MonoBehaviour, IPointerEnterHandler, IPointer
         itemImage.sprite = itemStack.definition.icon;
         itemName.text = itemStack.definition.displayName;
 
-        int index = 0;
-        foreach (var itemAction in itemStack.definition.actions)
+        if (initItemActions)
         {
-            InventoryItemActionButtonUI btn;
-
-            if (index < actionButtonPool.Count && actionButtonPool[index] != null)
+            int index = 0;
+            foreach (var itemAction in itemStack.definition.actions)
             {
-                btn = actionButtonPool[index];
-            }
-            else
-            {
-                btn = Instantiate(actionButtonPrefab, actionMenu);
-                actionButtonPool.Add(btn);
-            }
+                InventoryItemActionButtonUI btn;
 
-            btn.Init(itemAction, itemStack, characterCore);
-            btn.gameObject.SetActive(true);
+                if (index < actionButtonPool.Count && actionButtonPool[index] != null)
+                {
+                    btn = actionButtonPool[index];
+                }
+                else
+                {
+                    btn = Instantiate(actionButtonPrefab, actionMenu);
+                    actionButtonPool.Add(btn);
+                }
 
-            index++;
+                btn.Init(itemAction, itemStack, characterCore);
+                btn.gameObject.SetActive(true);
+
+                index++;
+            }
         }
     }
 
