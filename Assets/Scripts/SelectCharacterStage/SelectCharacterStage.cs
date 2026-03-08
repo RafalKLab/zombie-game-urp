@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class SelectCharacterStage : MonoBehaviour
 {
@@ -12,6 +13,8 @@ public class SelectCharacterStage : MonoBehaviour
     [SerializeField] private Vector3 basePosition = new Vector3(0f, 1.5f, 0f);
 
     [SerializeField] private CinemachineCamera stageCinemachineCamera;
+    [SerializeField] private Transform cameraLookTarget;
+    [SerializeField] private LayerMask stageClickableMask;
 
     private int currentSelectedNavigationIndex = -1;
     private bool selectCharacterStageIsActive = false;
@@ -25,12 +28,29 @@ public class SelectCharacterStage : MonoBehaviour
 
     private void Start()
     {
-        Debug.Log("Start sync");
         SyncExistingCharactersToSlots();
 
         GameInput.Instance.OnToggleSelectCharacterStage += GameInput_OnToggleSelectCharacterStage;
         GameInput.Instance.OnCycleNextCharacter += GameInput_OnCycleNextCharacter;
         GameInput.Instance.OnCyclePreviousCharacter += GameInput_OnCyclePreviousCharacter;
+        GameInput.Instance.OnClickPreviewCharacter += GameInput_OnClickPreviewCharacter;
+    }
+
+    private void GameInput_OnClickPreviewCharacter()
+    {
+        if (!selectCharacterStageIsActive) return;
+
+        Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+
+        if (Physics.Raycast(ray, out RaycastHit hit, 999f, stageClickableMask))
+        {
+            CharacterPreviewSlot clickedSlot = hit.collider.GetComponentInParent<CharacterPreviewSlot>();
+            if (clickedSlot == null) return;
+            if (!clickedSlot.HasCharacterAssigned()) return;
+
+            currentSelectedNavigationIndex = clickedSlot.NavigationIndex;
+            stageCinemachineCamera.Follow = clickedSlot.transform;
+        }
     }
 
     private void GameInput_OnCyclePreviousCharacter()
@@ -164,14 +184,11 @@ public class SelectCharacterStage : MonoBehaviour
 
     private void AddCharacterToFirstEmptySlot(PlayableCharacter playableCharacter)
     {
-        Debug.Log("AddCharacterToFirstEmptySlot: START");
         if (playableCharacter == null) return;
 
-        Debug.Log("AddCharacterToFirstEmptySlot: CHARACTER is not null");
         if (FindSlotWithPlayableCharacter(playableCharacter) != null)
             return;
 
-        Debug.Log("AddCharacterToFirstEmptySlot: is not yet set");
         CharacterPreviewSlot emptySlot = FindSlot(true);
         if (emptySlot == null)
         {
@@ -179,9 +196,8 @@ public class SelectCharacterStage : MonoBehaviour
             return;
         }
 
-        Debug.Log("AddCharacterToFirstEmptySlot: SetCharacter");
 
-        emptySlot.SetCharacter(playableCharacter);
+        emptySlot.SetCharacter(playableCharacter, cameraLookTarget);
     }
 
     private void CommunityManager_OnPlayableCharacterSpawned(object sender, CommunityManager.OnPlayableCharacterSpawnedEventArgs e)
@@ -197,17 +213,14 @@ public class SelectCharacterStage : MonoBehaviour
     {
         if (CommunityManager.Instance == null) return;
 
-        Debug.Log("CommunityManager NOT NULL");
 
         Dictionary<string, PlayableCharacter> spawnedPlayableCharacterDictionary =
             CommunityManager.Instance.GetSpawnedPlayableCharacterDictionary();
 
-        Debug.Log($"Spawned dictionary: {spawnedPlayableCharacterDictionary.Count}");
 
         foreach (PlayableCharacter playableCharacter in spawnedPlayableCharacterDictionary.Values)
         {
             AddCharacterToFirstEmptySlot(playableCharacter);
-            Debug.Log($"AddCharacterToFirstEmptySlot called for {playableCharacter.name}");
         }
     }
 

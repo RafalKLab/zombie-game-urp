@@ -81,6 +81,9 @@ public class CommunityManager : MonoBehaviour
 
         playableCharacter.SetInstanceGuid(id);
 
+        playableCharacter.gameObject.GetComponent<AiTarget>().SetFaction(Faction.Player);
+        playableCharacter.gameObject.GetComponent<CharacterAi>().RefreshBase();
+
         spawnedPlayableCharacterDictionary.Add(id, playableCharacter);
 
         CharacterDeathManager.Instance.SubscribeToPlayableCharacterOnKilled(playableCharacter);

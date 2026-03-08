@@ -12,8 +12,7 @@ GameObject:
   - component: {fileID: 2212367954176063888}
   - component: {fileID: 7419567825101586263}
   - component: {fileID: 1661616372852217435}
-  - component: {fileID: 6341587324823765437}
-  m_Layer: 10
+  m_Layer: 11
   m_Name: CharacterPreviewSlot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -77,30 +76,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e986b983404a4149ad19e8aa1782170, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NewMonoBehaviourScript
-  characterSO: {fileID: 11400000, guid: 92fc38e82e8a32741a559ea0a741545a, type: 2}
   characterPreviewVisualContainer: {fileID: 4027260806419231553}
---- !u!95 &6341587324823765437
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6599271964515224845}
-  m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 32947e1b420169e44bd5803a96e08373, type: 3}
-  m_Controller: {fileID: 9100000, guid: d1141253d7dd2da4d9754ed5e30c553f, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &7185357033093184206
 GameObject:
   m_ObjectHideFlags: 0

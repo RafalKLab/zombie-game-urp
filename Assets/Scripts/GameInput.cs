@@ -15,6 +15,7 @@ public class GameInput : MonoBehaviour
     public event Action OnToggleSelectCharacterStage;
     public event Action OnCycleNextCharacter;
     public event Action OnCyclePreviousCharacter;
+    public event Action OnClickPreviewCharacter;
 
     public class OnInteractActionSlotEventArgs : EventArgs
     {
@@ -45,6 +46,12 @@ public class GameInput : MonoBehaviour
         inputActions.SelectCharacterStage.ToggleSelectCharacterStage.performed += ToggleSelectCharacterStage_performed;
         inputActions.SelectCharacterStage.CycleNextCharacter.performed += CycleNextCharacter_performed;
         inputActions.SelectCharacterStage.CyclePreviousCharacter.performed += CyclePreviousCharacter_performed;
+        inputActions.SelectCharacterStage.ClickPreviewCharacter.performed += ClickPreviewCharacter_performed;
+    }
+
+    private void ClickPreviewCharacter_performed(InputAction.CallbackContext obj)
+    {
+        OnClickPreviewCharacter?.Invoke();
     }
 
     private void CyclePreviousCharacter_performed(InputAction.CallbackContext obj)

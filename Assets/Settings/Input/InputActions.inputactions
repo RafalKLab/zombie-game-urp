@@ -457,6 +457,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "ClickPreviewCharacter",
+                    "type": "Button",
+                    "id": "be4bd043-4569-4324-b2dd-d86bcc3ef4f8",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -512,6 +521,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "CyclePreviousCharacter",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "439f47be-f316-43d3-ac93-6db582f2c55e",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ClickPreviewCharacter",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -19,14 +19,14 @@ public class CharacterPreviewSlot : MonoBehaviour
         animator = GetComponent<Animator>();
     }
 
-    public void SetCharacter(PlayableCharacter playableCharacter)
+    public void SetCharacter(PlayableCharacter playableCharacter, Transform cameraLookTarget)
     {
         this.playableCharacter = playableCharacter;
 
-        UpdateCharacterVisual();
+        UpdateCharacterVisual(cameraLookTarget);
     }
 
-    private void UpdateCharacterVisual()
+    private void UpdateCharacterVisual(Transform cameraLookTarget)
     {
         if (playableCharacter == null) return;
 
@@ -34,6 +34,12 @@ public class CharacterPreviewSlot : MonoBehaviour
         if (characterSO == null) return;
 
         characterVisual = Instantiate(characterSO.mesh, characterPreviewVisualContainer);
+
+        CharacterLookAtTarget characterLookAtTarget = characterVisual.GetComponentInChildren<CharacterLookAtTarget>();
+        if (characterLookAtTarget != null && cameraLookTarget != null)
+        {
+            characterLookAtTarget.SetSourceTarget(cameraLookTarget);
+        }
 
         if (animator != null)
         {
