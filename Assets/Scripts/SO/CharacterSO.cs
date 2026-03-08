@@ -5,6 +5,7 @@ public class CharacterSO : ScriptableObject
 {
     [Header("Visual")]
     public Transform prefab;
+    public Transform mesh;
     public Sprite sprite;
 
     [Header("Identity")]

@@ -12,6 +12,10 @@ public class GameInput : MonoBehaviour
     public event EventHandler OnInteractClick;
     public event EventHandler<OnInteractActionSlotEventArgs> OnInteractActionSlot;
 
+    public event Action OnToggleSelectCharacterStage;
+    public event Action OnCycleNextCharacter;
+    public event Action OnCyclePreviousCharacter;
+
     public class OnInteractActionSlotEventArgs : EventArgs
     {
         public int index;
@@ -28,6 +32,7 @@ public class GameInput : MonoBehaviour
 
         inputActions = new InputActions();
         inputActions.Player.Enable();
+        inputActions.SelectCharacterStage.Enable();
 
         inputActions.Player.RightClick.performed += RightClick_performed;
         inputActions.Player.LeftClick.performed += LeftClick_performed;
@@ -36,6 +41,25 @@ public class GameInput : MonoBehaviour
 
         inputActions.Player.InventoryOpen.performed += InventoryOpen_performed;
         inputActions.Player.InventoryClose.performed += InventoryClose_performed;
+
+        inputActions.SelectCharacterStage.ToggleSelectCharacterStage.performed += ToggleSelectCharacterStage_performed;
+        inputActions.SelectCharacterStage.CycleNextCharacter.performed += CycleNextCharacter_performed;
+        inputActions.SelectCharacterStage.CyclePreviousCharacter.performed += CyclePreviousCharacter_performed;
+    }
+
+    private void CyclePreviousCharacter_performed(InputAction.CallbackContext obj)
+    {
+        OnCyclePreviousCharacter?.Invoke();
+    }
+
+    private void CycleNextCharacter_performed(InputAction.CallbackContext obj)
+    {
+        OnCycleNextCharacter?.Invoke();
+    }
+
+    private void ToggleSelectCharacterStage_performed(InputAction.CallbackContext obj)
+    {
+        OnToggleSelectCharacterStage?.Invoke();
     }
 
     private void InventoryOpen_performed(InputAction.CallbackContext obj)

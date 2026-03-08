@@ -47,7 +47,7 @@ public sealed class CharacterMeleeWeaponHandler
         if (meleeIdleShoulderPosition == null) return;
 
 
-        Debug.Log("InstantiateMeleeWeapon: InstantiateMeleeWeapon");
+        //Debug.Log("InstantiateMeleeWeapon: InstantiateMeleeWeapon");
         MeleeWeaponItemSO = meleeWeaponItemSO;
 
         meleeWeapon = Object.Instantiate(meleeWeaponItemSO.meleeWeaponTypeSO.prefab);

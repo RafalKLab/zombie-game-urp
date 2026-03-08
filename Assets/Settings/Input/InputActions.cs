@@ -512,6 +512,96 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": true
                 }
             ]
+        },
+        {
+            ""name"": ""SelectCharacterStage"",
+            ""id"": ""a1770136-5c70-46ce-b677-a990187160dd"",
+            ""actions"": [
+                {
+                    ""name"": ""ToggleSelectCharacterStage"",
+                    ""type"": ""Button"",
+                    ""id"": ""907ffae3-9022-44ba-bbf6-8640a50b31b0"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""CycleNextCharacter"",
+                    ""type"": ""Button"",
+                    ""id"": ""316364ff-857d-4e9c-9d1b-806f601df98e"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""CyclePreviousCharacter"",
+                    ""type"": ""Button"",
+                    ""id"": ""25d409e6-3a56-43b3-90f2-7b2f970701e3"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""cf3f0981-ab6d-48b9-b730-02fc52160920"",
+                    ""path"": ""<Keyboard>/tab"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ToggleSelectCharacterStage"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""70d1bad3-5336-4533-aafe-95892b44fbd5"",
+                    ""path"": ""<Keyboard>/d"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CycleNextCharacter"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""a7d273de-09ba-4c00-a1f1-b6ce73f4323a"",
+                    ""path"": ""<Keyboard>/rightArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CycleNextCharacter"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""58e80f04-f4a3-40da-a221-c9b5c7903b76"",
+                    ""path"": ""<Keyboard>/a"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CyclePreviousCharacter"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0e9ae657-1f02-46a4-b622-358b95a73e37"",
+                    ""path"": ""<Keyboard>/leftArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CyclePreviousCharacter"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -530,12 +620,18 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         m_Camera_Sprint = m_Camera.FindAction("Sprint", throwIfNotFound: true);
         m_Camera_Rotate = m_Camera.FindAction("Rotate", throwIfNotFound: true);
         m_Camera_Zoom = m_Camera.FindAction("Zoom", throwIfNotFound: true);
+        // SelectCharacterStage
+        m_SelectCharacterStage = asset.FindActionMap("SelectCharacterStage", throwIfNotFound: true);
+        m_SelectCharacterStage_ToggleSelectCharacterStage = m_SelectCharacterStage.FindAction("ToggleSelectCharacterStage", throwIfNotFound: true);
+        m_SelectCharacterStage_CycleNextCharacter = m_SelectCharacterStage.FindAction("CycleNextCharacter", throwIfNotFound: true);
+        m_SelectCharacterStage_CyclePreviousCharacter = m_SelectCharacterStage.FindAction("CyclePreviousCharacter", throwIfNotFound: true);
     }
 
     ~@InputActions()
     {
         UnityEngine.Debug.Assert(!m_Player.enabled, "This will cause a leak and performance issues, InputActions.Player.Disable() has not been called.");
         UnityEngine.Debug.Assert(!m_Camera.enabled, "This will cause a leak and performance issues, InputActions.Camera.Disable() has not been called.");
+        UnityEngine.Debug.Assert(!m_SelectCharacterStage.enabled, "This will cause a leak and performance issues, InputActions.SelectCharacterStage.Disable() has not been called.");
     }
 
     /// <summary>
@@ -887,6 +983,124 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     /// Provides a new <see cref="CameraActions" /> instance referencing this action map.
     /// </summary>
     public CameraActions @Camera => new CameraActions(this);
+
+    // SelectCharacterStage
+    private readonly InputActionMap m_SelectCharacterStage;
+    private List<ISelectCharacterStageActions> m_SelectCharacterStageActionsCallbackInterfaces = new List<ISelectCharacterStageActions>();
+    private readonly InputAction m_SelectCharacterStage_ToggleSelectCharacterStage;
+    private readonly InputAction m_SelectCharacterStage_CycleNextCharacter;
+    private readonly InputAction m_SelectCharacterStage_CyclePreviousCharacter;
+    /// <summary>
+    /// Provides access to input actions defined in input action map "SelectCharacterStage".
+    /// </summary>
+    public struct SelectCharacterStageActions
+    {
+        private @InputActions m_Wrapper;
+
+        /// <summary>
+        /// Construct a new instance of the input action map wrapper class.
+        /// </summary>
+        public SelectCharacterStageActions(@InputActions wrapper) { m_Wrapper = wrapper; }
+        /// <summary>
+        /// Provides access to the underlying input action "SelectCharacterStage/ToggleSelectCharacterStage".
+        /// </summary>
+        public InputAction @ToggleSelectCharacterStage => m_Wrapper.m_SelectCharacterStage_ToggleSelectCharacterStage;
+        /// <summary>
+        /// Provides access to the underlying input action "SelectCharacterStage/CycleNextCharacter".
+        /// </summary>
+        public InputAction @CycleNextCharacter => m_Wrapper.m_SelectCharacterStage_CycleNextCharacter;
+        /// <summary>
+        /// Provides access to the underlying input action "SelectCharacterStage/CyclePreviousCharacter".
+        /// </summary>
+        public InputAction @CyclePreviousCharacter => m_Wrapper.m_SelectCharacterStage_CyclePreviousCharacter;
+        /// <summary>
+        /// Provides access to the underlying input action map instance.
+        /// </summary>
+        public InputActionMap Get() { return m_Wrapper.m_SelectCharacterStage; }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Enable()" />
+        public void Enable() { Get().Enable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Disable()" />
+        public void Disable() { Get().Disable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.enabled" />
+        public bool enabled => Get().enabled;
+        /// <summary>
+        /// Implicitly converts an <see ref="SelectCharacterStageActions" /> to an <see ref="InputActionMap" /> instance.
+        /// </summary>
+        public static implicit operator InputActionMap(SelectCharacterStageActions set) { return set.Get(); }
+        /// <summary>
+        /// Adds <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <param name="instance">Callback instance.</param>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c> or <paramref name="instance"/> have already been added this method does nothing.
+        /// </remarks>
+        /// <seealso cref="SelectCharacterStageActions" />
+        public void AddCallbacks(ISelectCharacterStageActions instance)
+        {
+            if (instance == null || m_Wrapper.m_SelectCharacterStageActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_SelectCharacterStageActionsCallbackInterfaces.Add(instance);
+            @ToggleSelectCharacterStage.started += instance.OnToggleSelectCharacterStage;
+            @ToggleSelectCharacterStage.performed += instance.OnToggleSelectCharacterStage;
+            @ToggleSelectCharacterStage.canceled += instance.OnToggleSelectCharacterStage;
+            @CycleNextCharacter.started += instance.OnCycleNextCharacter;
+            @CycleNextCharacter.performed += instance.OnCycleNextCharacter;
+            @CycleNextCharacter.canceled += instance.OnCycleNextCharacter;
+            @CyclePreviousCharacter.started += instance.OnCyclePreviousCharacter;
+            @CyclePreviousCharacter.performed += instance.OnCyclePreviousCharacter;
+            @CyclePreviousCharacter.canceled += instance.OnCyclePreviousCharacter;
+        }
+
+        /// <summary>
+        /// Removes <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <remarks>
+        /// Calling this method when <paramref name="instance" /> have not previously been registered has no side-effects.
+        /// </remarks>
+        /// <seealso cref="SelectCharacterStageActions" />
+        private void UnregisterCallbacks(ISelectCharacterStageActions instance)
+        {
+            @ToggleSelectCharacterStage.started -= instance.OnToggleSelectCharacterStage;
+            @ToggleSelectCharacterStage.performed -= instance.OnToggleSelectCharacterStage;
+            @ToggleSelectCharacterStage.canceled -= instance.OnToggleSelectCharacterStage;
+            @CycleNextCharacter.started -= instance.OnCycleNextCharacter;
+            @CycleNextCharacter.performed -= instance.OnCycleNextCharacter;
+            @CycleNextCharacter.canceled -= instance.OnCycleNextCharacter;
+            @CyclePreviousCharacter.started -= instance.OnCyclePreviousCharacter;
+            @CyclePreviousCharacter.performed -= instance.OnCyclePreviousCharacter;
+            @CyclePreviousCharacter.canceled -= instance.OnCyclePreviousCharacter;
+        }
+
+        /// <summary>
+        /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="SelectCharacterStageActions.UnregisterCallbacks(ISelectCharacterStageActions)" />.
+        /// </summary>
+        /// <seealso cref="SelectCharacterStageActions.UnregisterCallbacks(ISelectCharacterStageActions)" />
+        public void RemoveCallbacks(ISelectCharacterStageActions instance)
+        {
+            if (m_Wrapper.m_SelectCharacterStageActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        /// <summary>
+        /// Replaces all existing callback instances and previously registered input action callbacks associated with them with callbacks provided via <param cref="instance" />.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c>, calling this method will only unregister all existing callbacks but not register any new callbacks.
+        /// </remarks>
+        /// <seealso cref="SelectCharacterStageActions.AddCallbacks(ISelectCharacterStageActions)" />
+        /// <seealso cref="SelectCharacterStageActions.RemoveCallbacks(ISelectCharacterStageActions)" />
+        /// <seealso cref="SelectCharacterStageActions.UnregisterCallbacks(ISelectCharacterStageActions)" />
+        public void SetCallbacks(ISelectCharacterStageActions instance)
+        {
+            foreach (var item in m_Wrapper.m_SelectCharacterStageActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_SelectCharacterStageActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    /// <summary>
+    /// Provides a new <see cref="SelectCharacterStageActions" /> instance referencing this action map.
+    /// </summary>
+    public SelectCharacterStageActions @SelectCharacterStage => new SelectCharacterStageActions(this);
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Player" which allows adding and removing callbacks.
     /// </summary>
@@ -972,5 +1186,34 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnZoom(InputAction.CallbackContext context);
+    }
+    /// <summary>
+    /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "SelectCharacterStage" which allows adding and removing callbacks.
+    /// </summary>
+    /// <seealso cref="SelectCharacterStageActions.AddCallbacks(ISelectCharacterStageActions)" />
+    /// <seealso cref="SelectCharacterStageActions.RemoveCallbacks(ISelectCharacterStageActions)" />
+    public interface ISelectCharacterStageActions
+    {
+        /// <summary>
+        /// Method invoked when associated input action "ToggleSelectCharacterStage" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnToggleSelectCharacterStage(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "CycleNextCharacter" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCycleNextCharacter(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "CyclePreviousCharacter" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCyclePreviousCharacter(InputAction.CallbackContext context);
     }
 }

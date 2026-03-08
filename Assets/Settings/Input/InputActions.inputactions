@@ -426,6 +426,96 @@
                     "isPartOfComposite": true
                 }
             ]
+        },
+        {
+            "name": "SelectCharacterStage",
+            "id": "a1770136-5c70-46ce-b677-a990187160dd",
+            "actions": [
+                {
+                    "name": "ToggleSelectCharacterStage",
+                    "type": "Button",
+                    "id": "907ffae3-9022-44ba-bbf6-8640a50b31b0",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "CycleNextCharacter",
+                    "type": "Button",
+                    "id": "316364ff-857d-4e9c-9d1b-806f601df98e",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "CyclePreviousCharacter",
+                    "type": "Button",
+                    "id": "25d409e6-3a56-43b3-90f2-7b2f970701e3",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "cf3f0981-ab6d-48b9-b730-02fc52160920",
+                    "path": "<Keyboard>/tab",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleSelectCharacterStage",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "70d1bad3-5336-4533-aafe-95892b44fbd5",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "CycleNextCharacter",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a7d273de-09ba-4c00-a1f1-b6ce73f4323a",
+                    "path": "<Keyboard>/rightArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "CycleNextCharacter",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "58e80f04-f4a3-40da-a221-c9b5c7903b76",
+                    "path": "<Keyboard>/a",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "CyclePreviousCharacter",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0e9ae657-1f02-46a4-b622-358b95a73e37",
+                    "path": "<Keyboard>/leftArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "CyclePreviousCharacter",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": []

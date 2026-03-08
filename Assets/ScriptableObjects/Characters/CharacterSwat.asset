@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: CharacterSwat
   m_EditorClassIdentifier: Assembly-CSharp::PlayableCharacterSO
   prefab: {fileID: 6985511564715820613, guid: 026becf3b90b9ef4d9398339f3bcadd0, type: 3}
+  mesh: {fileID: 8963938792703913905, guid: d3b344fb4005c1e48a6b49c194db9038, type: 3}
   sprite: {fileID: 21300000, guid: 041d2b397b627a54280fa176dcd7bac8, type: 3}
   characterName: SWAT Operator
   walkSpeed: 2
