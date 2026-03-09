@@ -156,7 +156,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAi
   debugFreeze: 0
-  enemyTypeSO: {fileID: 11400000, guid: 0692812cd665616429f65e1d87de38fc, type: 2}
+  enemyTypeSO: {fileID: 11400000, guid: 58cb4d7c4c69d3241909ec88d1fdad57, type: 2}
   targetableMask:
     serializedVersion: 2
     m_Bits: 64

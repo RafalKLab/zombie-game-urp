@@ -5,16 +5,20 @@ using UnityEngine.InputSystem;
 
 public class SelectCharacterStage : MonoBehaviour
 {
+    [Header("Stage Setup")]
     [SerializeField] private Transform characterPreviewContainer;
     [SerializeField] private CharacterPreviewSlot characterPreviewSlotPrefab;
     [SerializeField] private int maxPreviewSlots = 10;
-
     [SerializeField] private float slotSpacing = 1.5f;
     [SerializeField] private Vector3 basePosition = new Vector3(0f, 1.5f, 0f);
 
+    [Header("Camera")]
     [SerializeField] private CinemachineCamera stageCinemachineCamera;
     [SerializeField] private Transform cameraLookTarget;
     [SerializeField] private LayerMask stageClickableMask;
+
+    private const int ActiveCameraPriority = 1000;
+    private const int InactiveCameraPriority = 0;
 
     private int currentSelectedNavigationIndex = -1;
     private bool selectCharacterStageIsActive = false;
@@ -29,11 +33,70 @@ public class SelectCharacterStage : MonoBehaviour
     private void Start()
     {
         SyncExistingCharactersToSlots();
+        SubscribeToGameInputEvents();
+    }
+
+    private void OnEnable()
+    {
+        SubscribeToCommunityManagerEvents();
+    }
+
+    private void OnDisable()
+    {
+        UnsubscribeFromCommunityManagerEvents();
+    }
+
+    private void SubscribeToGameInputEvents()
+    {
+        if (GameInput.Instance == null) return;
 
         GameInput.Instance.OnToggleSelectCharacterStage += GameInput_OnToggleSelectCharacterStage;
         GameInput.Instance.OnCycleNextCharacter += GameInput_OnCycleNextCharacter;
         GameInput.Instance.OnCyclePreviousCharacter += GameInput_OnCyclePreviousCharacter;
         GameInput.Instance.OnClickPreviewCharacter += GameInput_OnClickPreviewCharacter;
+        GameInput.Instance.OnSelectCharacter += GameInput_OnSelectCharacter;
+    }
+
+    private void GameInput_OnToggleSelectCharacterStage()
+    {
+        if (selectCharacterStageIsActive)
+        {
+            // toggle off
+            stageCinemachineCamera.Priority = InactiveCameraPriority;
+            selectCharacterStageIsActive = false;
+
+            UiEventsManager.Instance.ShowGameplayUi();
+            UiEventsManager.Instance.HideSelectCharacterStageUI();
+        }
+        else
+        {
+            // toggle on
+            stageCinemachineCamera.Priority = ActiveCameraPriority;
+            selectCharacterStageIsActive = true;
+
+            CharacterPreviewSlot camTarget = GetInitialCameraTargetSlot();
+            if (camTarget != null)
+            {
+                FocusSlot(camTarget);
+            }
+
+            UiEventsManager.Instance.HideGameplayUi();
+            UiEventsManager.Instance.ShowSelectCharacterStageUI();
+        }
+    }
+
+    private void GameInput_OnCycleNextCharacter()
+    {
+        if (!selectCharacterStageIsActive) return;
+
+        CycleNextCharacter();
+    }
+
+    private void GameInput_OnCyclePreviousCharacter()
+    {
+        if (!selectCharacterStageIsActive) return;
+
+        CyclePreviousCharacter();
     }
 
     private void GameInput_OnClickPreviewCharacter()
@@ -48,55 +111,39 @@ public class SelectCharacterStage : MonoBehaviour
             if (clickedSlot == null) return;
             if (!clickedSlot.HasCharacterAssigned()) return;
 
-            currentSelectedNavigationIndex = clickedSlot.NavigationIndex;
-            stageCinemachineCamera.Follow = clickedSlot.transform;
+            FocusSlot(clickedSlot);
         }
     }
 
-    private void GameInput_OnCyclePreviousCharacter()
+    private void GameInput_OnSelectCharacter()
     {
-        if (!selectCharacterStageIsActive) return;
-
-        CyclePreviousCharacter();
+        SelectCharacter();
     }
 
-    private void GameInput_OnCycleNextCharacter()
+    private void SubscribeToCommunityManagerEvents()
     {
-        if (!selectCharacterStageIsActive) return;
+        if (CommunityManager.Instance == null) return;
 
-        CycleNextCharacter();
+        CommunityManager.Instance.OnPlayableCharacterSpawned += CommunityManager_OnPlayableCharacterSpawned;
+        CommunityManager.Instance.OnPlayableCharacterRemoved += CommunityManager_OnPlayableCharacterRemoved;
     }
 
-    private void GameInput_OnToggleSelectCharacterStage()
+    private void UnsubscribeFromCommunityManagerEvents()
     {
-        if (selectCharacterStageIsActive)
-        {
-            // toggle off
-            stageCinemachineCamera.Priority = 0;
-            selectCharacterStageIsActive = false;
-        } else
-        {
-            // toggle on
-            stageCinemachineCamera.Priority = 1000;
-            selectCharacterStageIsActive = true;
+        if (CommunityManager.Instance == null) return;
 
-            CharacterPreviewSlot camTarget = GetInitialCameraTargetSlot();
-            if (camTarget != null)
-            {
-                currentSelectedNavigationIndex = camTarget.NavigationIndex;
-                stageCinemachineCamera.Follow = camTarget.transform;
-            }
-        }
+        CommunityManager.Instance.OnPlayableCharacterSpawned -= CommunityManager_OnPlayableCharacterSpawned;
+        CommunityManager.Instance.OnPlayableCharacterRemoved -= CommunityManager_OnPlayableCharacterRemoved;
     }
 
-    private void OnEnable()
+    private void CommunityManager_OnPlayableCharacterSpawned(object sender, CommunityManager.OnPlayableCharacterSpawnedEventArgs e)
     {
-        SubscribeToEvents();
+        AddCharacterToFirstEmptySlot(e.playableCharacter);
     }
 
-    private void OnDisable()
+    private void CommunityManager_OnPlayableCharacterRemoved(object sender, CommunityManager.OnPlayableCharacterRemovedEventArgs e)
     {
-        UnsubscribeFromEvents();
+        RemoveCharacterFromSlot(e.playableCharacter);
     }
 
     private void GenerateSlots()
@@ -127,59 +174,30 @@ public class SelectCharacterStage : MonoBehaviour
         return offset;
     }
 
-    private void SubscribeToEvents()
+    private void AssignNavigationIndexes()
+    {
+        List<CharacterPreviewSlot> sortedSlots = new List<CharacterPreviewSlot>(previewSlots);
+
+        sortedSlots.Sort((a, b) =>
+            a.transform.localPosition.z.CompareTo(b.transform.localPosition.z));
+
+        for (int i = 0; i < sortedSlots.Count; i++)
+        {
+            sortedSlots[i].SetNavigationIndex(i);
+        }
+    }
+
+    private void SyncExistingCharactersToSlots()
     {
         if (CommunityManager.Instance == null) return;
 
-        CommunityManager.Instance.OnPlayableCharacterSpawned += CommunityManager_OnPlayableCharacterSpawned;
-        CommunityManager.Instance.OnPlayableCharacterRemoved += CommunityManager_OnPlayableCharacterRemoved;
-    }
+        Dictionary<string, PlayableCharacter> spawnedPlayableCharacterDictionary =
+            CommunityManager.Instance.GetSpawnedPlayableCharacterDictionary();
 
-    private void UnsubscribeFromEvents()
-    {
-        if (CommunityManager.Instance == null) return;
-
-        CommunityManager.Instance.OnPlayableCharacterSpawned -= CommunityManager_OnPlayableCharacterSpawned;
-        CommunityManager.Instance.OnPlayableCharacterRemoved -= CommunityManager_OnPlayableCharacterRemoved;
-    }
-
-    private CharacterPreviewSlot FindSlot(bool wantEmpty)
-    {
-        for (int i = 0; i < previewSlots.Count; i++)
+        foreach (PlayableCharacter playableCharacter in spawnedPlayableCharacterDictionary.Values)
         {
-            bool isEmpty = !previewSlots[i].HasCharacterAssigned();
-
-            if (isEmpty == wantEmpty)
-            {
-                return previewSlots[i];
-            }
+            AddCharacterToFirstEmptySlot(playableCharacter);
         }
-
-        return null;
-    }
-
-    private CharacterPreviewSlot FindSlotWithPlayableCharacter(PlayableCharacter playableCharacter)
-    {
-        for (int i = 0; i < previewSlots.Count; i++)
-        {
-            if (previewSlots[i].HasCharacterAssigned() &&
-                previewSlots[i].GetAssignedPlayableCharacter() == playableCharacter)
-            {
-                return previewSlots[i];
-            }
-        }
-
-        return null;
-    }
-
-    private void RemoveCharacterFromSlot(PlayableCharacter playableCharacter)
-    {
-        if (playableCharacter == null) return;
-
-        CharacterPreviewSlot slot = FindSlotWithPlayableCharacter(playableCharacter);
-        if (slot == null) return;
-
-        slot.ClearCharacter();
     }
 
     private void AddCharacterToFirstEmptySlot(PlayableCharacter playableCharacter)
@@ -196,32 +214,17 @@ public class SelectCharacterStage : MonoBehaviour
             return;
         }
 
-
         emptySlot.SetCharacter(playableCharacter, cameraLookTarget);
     }
 
-    private void CommunityManager_OnPlayableCharacterSpawned(object sender, CommunityManager.OnPlayableCharacterSpawnedEventArgs e)
+    private void RemoveCharacterFromSlot(PlayableCharacter playableCharacter)
     {
-        AddCharacterToFirstEmptySlot(e.playableCharacter);
-    }
+        if (playableCharacter == null) return;
 
-    private void CommunityManager_OnPlayableCharacterRemoved(object sender, CommunityManager.OnPlayableCharacterRemovedEventArgs e)
-    {
-        RemoveCharacterFromSlot(e.playableCharacter);
-    }
-    private void SyncExistingCharactersToSlots()
-    {
-        if (CommunityManager.Instance == null) return;
+        CharacterPreviewSlot slot = FindSlotWithPlayableCharacter(playableCharacter);
+        if (slot == null) return;
 
-
-        Dictionary<string, PlayableCharacter> spawnedPlayableCharacterDictionary =
-            CommunityManager.Instance.GetSpawnedPlayableCharacterDictionary();
-
-
-        foreach (PlayableCharacter playableCharacter in spawnedPlayableCharacterDictionary.Values)
-        {
-            AddCharacterToFirstEmptySlot(playableCharacter);
-        }
+        slot.ClearCharacter();
     }
 
     private void CycleNextCharacter()
@@ -265,11 +268,16 @@ public class SelectCharacterStage : MonoBehaviour
 
             if (slot != null && slot.HasCharacterAssigned())
             {
-                currentSelectedNavigationIndex = nextIndex;
-                stageCinemachineCamera.Follow = slot.transform;
+                FocusSlot(slot);
                 return;
             }
         }
+    }
+
+    private void FocusSlot(CharacterPreviewSlot slot)
+    {
+        currentSelectedNavigationIndex = slot.NavigationIndex;
+        stageCinemachineCamera.Follow = slot.transform;
     }
 
     private CharacterPreviewSlot GetInitialCameraTargetSlot()
@@ -287,18 +295,36 @@ public class SelectCharacterStage : MonoBehaviour
 
         return FindSlot(false);
     }
-    private void AssignNavigationIndexes()
+
+    private CharacterPreviewSlot FindSlot(bool wantEmpty)
     {
-        List<CharacterPreviewSlot> sortedSlots = new List<CharacterPreviewSlot>(previewSlots);
-
-        sortedSlots.Sort((a, b) =>
-            a.transform.localPosition.z.CompareTo(b.transform.localPosition.z));
-
-        for (int i = 0; i < sortedSlots.Count; i++)
+        for (int i = 0; i < previewSlots.Count; i++)
         {
-            sortedSlots[i].SetNavigationIndex(i);
+            bool isEmpty = !previewSlots[i].HasCharacterAssigned();
+
+            if (isEmpty == wantEmpty)
+            {
+                return previewSlots[i];
+            }
         }
+
+        return null;
     }
+
+    private CharacterPreviewSlot FindSlotWithPlayableCharacter(PlayableCharacter playableCharacter)
+    {
+        for (int i = 0; i < previewSlots.Count; i++)
+        {
+            if (previewSlots[i].HasCharacterAssigned() &&
+                previewSlots[i].GetAssignedPlayableCharacter() == playableCharacter)
+            {
+                return previewSlots[i];
+            }
+        }
+
+        return null;
+    }
+
     private CharacterPreviewSlot FindSlotByNavigationIndex(int navigationIndex)
     {
         for (int i = 0; i < previewSlots.Count; i++)
@@ -310,5 +336,20 @@ public class SelectCharacterStage : MonoBehaviour
         }
 
         return null;
+    }
+
+    private void SelectCharacter()
+    {
+        if (!selectCharacterStageIsActive) return;
+        if (currentSelectedNavigationIndex < 0) return;
+
+        CharacterPreviewSlot characterPreviewSlot = FindSlotByNavigationIndex(currentSelectedNavigationIndex);
+        if (characterPreviewSlot == null) return;
+
+        PlayableCharacter playableCharacter = characterPreviewSlot.GetAssignedPlayableCharacter();
+        if (playableCharacter == null) return;
+
+        ActiveCharacterManager.Instance.SetActivePlayableCharacter(playableCharacter);
+        GameInput_OnToggleSelectCharacterStage();
     }
 }

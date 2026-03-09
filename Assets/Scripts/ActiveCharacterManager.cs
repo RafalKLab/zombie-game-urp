@@ -59,7 +59,10 @@ public class ActiveCharacterManager : MonoBehaviour
 
     public void SetActivePlayableCharacter(PlayableCharacter playableCharacter)
     {
-        if (activePlayableCharacter != null) return;
+        if (activePlayableCharacter != null)
+        {
+            UnsetActivePlayableCharacter(activePlayableCharacter);
+        }
 
         StopAllCoroutines();
         StartCoroutine(SwitchCameraTargetRoutine(playableCharacter));

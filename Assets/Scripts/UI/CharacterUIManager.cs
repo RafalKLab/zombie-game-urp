@@ -2,12 +2,10 @@ using UnityEngine;
 
 public class CharacterUIManager : MonoBehaviour
 {
-    [SerializeField] private SelectCharacterUI selectCharacter;
     [SerializeField] private SelectedCharacterUI selectedCharacterUI;
 
     private void OnEnable()
     {
-        selectCharacter.Activate();
         selectedCharacterUI.Deactivate();
 
         if (ActiveCharacterManager.Instance != null)
@@ -26,11 +24,9 @@ public class CharacterUIManager : MonoBehaviour
     {
         if (e.playableCharacter == null)
         {
-            selectCharacter.Activate();
             selectedCharacterUI.Deactivate();
         } else
         {
-            selectCharacter.Deactivate();
             selectedCharacterUI.Activate(e.playableCharacter);
         }
     }

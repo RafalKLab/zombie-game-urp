@@ -552,6 +552,15 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SelectCharacter"",
+                    ""type"": ""Button"",
+                    ""id"": ""705622bd-a5d2-454e-a317-33a876b9854f"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -620,6 +629,17 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""action"": ""ClickPreviewCharacter"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5874287c-acd2-45d5-8010-35389efa459c"",
+                    ""path"": ""<Keyboard>/f"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectCharacter"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -646,6 +666,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         m_SelectCharacterStage_CycleNextCharacter = m_SelectCharacterStage.FindAction("CycleNextCharacter", throwIfNotFound: true);
         m_SelectCharacterStage_CyclePreviousCharacter = m_SelectCharacterStage.FindAction("CyclePreviousCharacter", throwIfNotFound: true);
         m_SelectCharacterStage_ClickPreviewCharacter = m_SelectCharacterStage.FindAction("ClickPreviewCharacter", throwIfNotFound: true);
+        m_SelectCharacterStage_SelectCharacter = m_SelectCharacterStage.FindAction("SelectCharacter", throwIfNotFound: true);
     }
 
     ~@InputActions()
@@ -1012,6 +1033,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_SelectCharacterStage_CycleNextCharacter;
     private readonly InputAction m_SelectCharacterStage_CyclePreviousCharacter;
     private readonly InputAction m_SelectCharacterStage_ClickPreviewCharacter;
+    private readonly InputAction m_SelectCharacterStage_SelectCharacter;
     /// <summary>
     /// Provides access to input actions defined in input action map "SelectCharacterStage".
     /// </summary>
@@ -1039,6 +1061,10 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "SelectCharacterStage/ClickPreviewCharacter".
         /// </summary>
         public InputAction @ClickPreviewCharacter => m_Wrapper.m_SelectCharacterStage_ClickPreviewCharacter;
+        /// <summary>
+        /// Provides access to the underlying input action "SelectCharacterStage/SelectCharacter".
+        /// </summary>
+        public InputAction @SelectCharacter => m_Wrapper.m_SelectCharacterStage_SelectCharacter;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -1077,6 +1103,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @ClickPreviewCharacter.started += instance.OnClickPreviewCharacter;
             @ClickPreviewCharacter.performed += instance.OnClickPreviewCharacter;
             @ClickPreviewCharacter.canceled += instance.OnClickPreviewCharacter;
+            @SelectCharacter.started += instance.OnSelectCharacter;
+            @SelectCharacter.performed += instance.OnSelectCharacter;
+            @SelectCharacter.canceled += instance.OnSelectCharacter;
         }
 
         /// <summary>
@@ -1100,6 +1129,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @ClickPreviewCharacter.started -= instance.OnClickPreviewCharacter;
             @ClickPreviewCharacter.performed -= instance.OnClickPreviewCharacter;
             @ClickPreviewCharacter.canceled -= instance.OnClickPreviewCharacter;
+            @SelectCharacter.started -= instance.OnSelectCharacter;
+            @SelectCharacter.performed -= instance.OnSelectCharacter;
+            @SelectCharacter.canceled -= instance.OnSelectCharacter;
         }
 
         /// <summary>
@@ -1254,5 +1286,12 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnClickPreviewCharacter(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "SelectCharacter" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnSelectCharacter(InputAction.CallbackContext context);
     }
 }
