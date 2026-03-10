@@ -514,13 +514,22 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             ]
         },
         {
-            ""name"": ""SelectCharacterStage"",
+            ""name"": ""OverviewUI"",
             ""id"": ""a1770136-5c70-46ce-b677-a990187160dd"",
             ""actions"": [
                 {
-                    ""name"": ""ToggleSelectCharacterStage"",
+                    ""name"": ""ToggleBaseView"",
                     ""type"": ""Button"",
                     ""id"": ""907ffae3-9022-44ba-bbf6-8640a50b31b0"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ToggleSelectCharacterStage"",
+                    ""type"": ""Button"",
+                    ""id"": ""dc5a36b4-ad3f-4834-9b2a-4d3a3507bbb1"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -567,6 +576,17 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""cf3f0981-ab6d-48b9-b730-02fc52160920"",
+                    ""path"": ""<Keyboard>/b"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ToggleBaseView"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""59880665-ee44-4987-91e0-51cf290de938"",
                     ""path"": ""<Keyboard>/tab"",
                     ""interactions"": """",
                     ""processors"": """",
@@ -660,20 +680,21 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         m_Camera_Sprint = m_Camera.FindAction("Sprint", throwIfNotFound: true);
         m_Camera_Rotate = m_Camera.FindAction("Rotate", throwIfNotFound: true);
         m_Camera_Zoom = m_Camera.FindAction("Zoom", throwIfNotFound: true);
-        // SelectCharacterStage
-        m_SelectCharacterStage = asset.FindActionMap("SelectCharacterStage", throwIfNotFound: true);
-        m_SelectCharacterStage_ToggleSelectCharacterStage = m_SelectCharacterStage.FindAction("ToggleSelectCharacterStage", throwIfNotFound: true);
-        m_SelectCharacterStage_CycleNextCharacter = m_SelectCharacterStage.FindAction("CycleNextCharacter", throwIfNotFound: true);
-        m_SelectCharacterStage_CyclePreviousCharacter = m_SelectCharacterStage.FindAction("CyclePreviousCharacter", throwIfNotFound: true);
-        m_SelectCharacterStage_ClickPreviewCharacter = m_SelectCharacterStage.FindAction("ClickPreviewCharacter", throwIfNotFound: true);
-        m_SelectCharacterStage_SelectCharacter = m_SelectCharacterStage.FindAction("SelectCharacter", throwIfNotFound: true);
+        // OverviewUI
+        m_OverviewUI = asset.FindActionMap("OverviewUI", throwIfNotFound: true);
+        m_OverviewUI_ToggleBaseView = m_OverviewUI.FindAction("ToggleBaseView", throwIfNotFound: true);
+        m_OverviewUI_ToggleSelectCharacterStage = m_OverviewUI.FindAction("ToggleSelectCharacterStage", throwIfNotFound: true);
+        m_OverviewUI_CycleNextCharacter = m_OverviewUI.FindAction("CycleNextCharacter", throwIfNotFound: true);
+        m_OverviewUI_CyclePreviousCharacter = m_OverviewUI.FindAction("CyclePreviousCharacter", throwIfNotFound: true);
+        m_OverviewUI_ClickPreviewCharacter = m_OverviewUI.FindAction("ClickPreviewCharacter", throwIfNotFound: true);
+        m_OverviewUI_SelectCharacter = m_OverviewUI.FindAction("SelectCharacter", throwIfNotFound: true);
     }
 
     ~@InputActions()
     {
         UnityEngine.Debug.Assert(!m_Player.enabled, "This will cause a leak and performance issues, InputActions.Player.Disable() has not been called.");
         UnityEngine.Debug.Assert(!m_Camera.enabled, "This will cause a leak and performance issues, InputActions.Camera.Disable() has not been called.");
-        UnityEngine.Debug.Assert(!m_SelectCharacterStage.enabled, "This will cause a leak and performance issues, InputActions.SelectCharacterStage.Disable() has not been called.");
+        UnityEngine.Debug.Assert(!m_OverviewUI.enabled, "This will cause a leak and performance issues, InputActions.OverviewUI.Disable() has not been called.");
     }
 
     /// <summary>
@@ -1026,49 +1047,54 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     /// </summary>
     public CameraActions @Camera => new CameraActions(this);
 
-    // SelectCharacterStage
-    private readonly InputActionMap m_SelectCharacterStage;
-    private List<ISelectCharacterStageActions> m_SelectCharacterStageActionsCallbackInterfaces = new List<ISelectCharacterStageActions>();
-    private readonly InputAction m_SelectCharacterStage_ToggleSelectCharacterStage;
-    private readonly InputAction m_SelectCharacterStage_CycleNextCharacter;
-    private readonly InputAction m_SelectCharacterStage_CyclePreviousCharacter;
-    private readonly InputAction m_SelectCharacterStage_ClickPreviewCharacter;
-    private readonly InputAction m_SelectCharacterStage_SelectCharacter;
+    // OverviewUI
+    private readonly InputActionMap m_OverviewUI;
+    private List<IOverviewUIActions> m_OverviewUIActionsCallbackInterfaces = new List<IOverviewUIActions>();
+    private readonly InputAction m_OverviewUI_ToggleBaseView;
+    private readonly InputAction m_OverviewUI_ToggleSelectCharacterStage;
+    private readonly InputAction m_OverviewUI_CycleNextCharacter;
+    private readonly InputAction m_OverviewUI_CyclePreviousCharacter;
+    private readonly InputAction m_OverviewUI_ClickPreviewCharacter;
+    private readonly InputAction m_OverviewUI_SelectCharacter;
     /// <summary>
-    /// Provides access to input actions defined in input action map "SelectCharacterStage".
+    /// Provides access to input actions defined in input action map "OverviewUI".
     /// </summary>
-    public struct SelectCharacterStageActions
+    public struct OverviewUIActions
     {
         private @InputActions m_Wrapper;
 
         /// <summary>
         /// Construct a new instance of the input action map wrapper class.
         /// </summary>
-        public SelectCharacterStageActions(@InputActions wrapper) { m_Wrapper = wrapper; }
+        public OverviewUIActions(@InputActions wrapper) { m_Wrapper = wrapper; }
         /// <summary>
-        /// Provides access to the underlying input action "SelectCharacterStage/ToggleSelectCharacterStage".
+        /// Provides access to the underlying input action "OverviewUI/ToggleBaseView".
         /// </summary>
-        public InputAction @ToggleSelectCharacterStage => m_Wrapper.m_SelectCharacterStage_ToggleSelectCharacterStage;
+        public InputAction @ToggleBaseView => m_Wrapper.m_OverviewUI_ToggleBaseView;
         /// <summary>
-        /// Provides access to the underlying input action "SelectCharacterStage/CycleNextCharacter".
+        /// Provides access to the underlying input action "OverviewUI/ToggleSelectCharacterStage".
         /// </summary>
-        public InputAction @CycleNextCharacter => m_Wrapper.m_SelectCharacterStage_CycleNextCharacter;
+        public InputAction @ToggleSelectCharacterStage => m_Wrapper.m_OverviewUI_ToggleSelectCharacterStage;
         /// <summary>
-        /// Provides access to the underlying input action "SelectCharacterStage/CyclePreviousCharacter".
+        /// Provides access to the underlying input action "OverviewUI/CycleNextCharacter".
         /// </summary>
-        public InputAction @CyclePreviousCharacter => m_Wrapper.m_SelectCharacterStage_CyclePreviousCharacter;
+        public InputAction @CycleNextCharacter => m_Wrapper.m_OverviewUI_CycleNextCharacter;
         /// <summary>
-        /// Provides access to the underlying input action "SelectCharacterStage/ClickPreviewCharacter".
+        /// Provides access to the underlying input action "OverviewUI/CyclePreviousCharacter".
         /// </summary>
-        public InputAction @ClickPreviewCharacter => m_Wrapper.m_SelectCharacterStage_ClickPreviewCharacter;
+        public InputAction @CyclePreviousCharacter => m_Wrapper.m_OverviewUI_CyclePreviousCharacter;
         /// <summary>
-        /// Provides access to the underlying input action "SelectCharacterStage/SelectCharacter".
+        /// Provides access to the underlying input action "OverviewUI/ClickPreviewCharacter".
         /// </summary>
-        public InputAction @SelectCharacter => m_Wrapper.m_SelectCharacterStage_SelectCharacter;
+        public InputAction @ClickPreviewCharacter => m_Wrapper.m_OverviewUI_ClickPreviewCharacter;
+        /// <summary>
+        /// Provides access to the underlying input action "OverviewUI/SelectCharacter".
+        /// </summary>
+        public InputAction @SelectCharacter => m_Wrapper.m_OverviewUI_SelectCharacter;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
-        public InputActionMap Get() { return m_Wrapper.m_SelectCharacterStage; }
+        public InputActionMap Get() { return m_Wrapper.m_OverviewUI; }
         /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Enable()" />
         public void Enable() { Get().Enable(); }
         /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Disable()" />
@@ -1076,9 +1102,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.enabled" />
         public bool enabled => Get().enabled;
         /// <summary>
-        /// Implicitly converts an <see ref="SelectCharacterStageActions" /> to an <see ref="InputActionMap" /> instance.
+        /// Implicitly converts an <see ref="OverviewUIActions" /> to an <see ref="InputActionMap" /> instance.
         /// </summary>
-        public static implicit operator InputActionMap(SelectCharacterStageActions set) { return set.Get(); }
+        public static implicit operator InputActionMap(OverviewUIActions set) { return set.Get(); }
         /// <summary>
         /// Adds <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
         /// </summary>
@@ -1086,11 +1112,14 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         /// <remarks>
         /// If <paramref name="instance" /> is <c>null</c> or <paramref name="instance"/> have already been added this method does nothing.
         /// </remarks>
-        /// <seealso cref="SelectCharacterStageActions" />
-        public void AddCallbacks(ISelectCharacterStageActions instance)
+        /// <seealso cref="OverviewUIActions" />
+        public void AddCallbacks(IOverviewUIActions instance)
         {
-            if (instance == null || m_Wrapper.m_SelectCharacterStageActionsCallbackInterfaces.Contains(instance)) return;
-            m_Wrapper.m_SelectCharacterStageActionsCallbackInterfaces.Add(instance);
+            if (instance == null || m_Wrapper.m_OverviewUIActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_OverviewUIActionsCallbackInterfaces.Add(instance);
+            @ToggleBaseView.started += instance.OnToggleBaseView;
+            @ToggleBaseView.performed += instance.OnToggleBaseView;
+            @ToggleBaseView.canceled += instance.OnToggleBaseView;
             @ToggleSelectCharacterStage.started += instance.OnToggleSelectCharacterStage;
             @ToggleSelectCharacterStage.performed += instance.OnToggleSelectCharacterStage;
             @ToggleSelectCharacterStage.canceled += instance.OnToggleSelectCharacterStage;
@@ -1114,9 +1143,12 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         /// <remarks>
         /// Calling this method when <paramref name="instance" /> have not previously been registered has no side-effects.
         /// </remarks>
-        /// <seealso cref="SelectCharacterStageActions" />
-        private void UnregisterCallbacks(ISelectCharacterStageActions instance)
+        /// <seealso cref="OverviewUIActions" />
+        private void UnregisterCallbacks(IOverviewUIActions instance)
         {
+            @ToggleBaseView.started -= instance.OnToggleBaseView;
+            @ToggleBaseView.performed -= instance.OnToggleBaseView;
+            @ToggleBaseView.canceled -= instance.OnToggleBaseView;
             @ToggleSelectCharacterStage.started -= instance.OnToggleSelectCharacterStage;
             @ToggleSelectCharacterStage.performed -= instance.OnToggleSelectCharacterStage;
             @ToggleSelectCharacterStage.canceled -= instance.OnToggleSelectCharacterStage;
@@ -1135,12 +1167,12 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         }
 
         /// <summary>
-        /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="SelectCharacterStageActions.UnregisterCallbacks(ISelectCharacterStageActions)" />.
+        /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="OverviewUIActions.UnregisterCallbacks(IOverviewUIActions)" />.
         /// </summary>
-        /// <seealso cref="SelectCharacterStageActions.UnregisterCallbacks(ISelectCharacterStageActions)" />
-        public void RemoveCallbacks(ISelectCharacterStageActions instance)
+        /// <seealso cref="OverviewUIActions.UnregisterCallbacks(IOverviewUIActions)" />
+        public void RemoveCallbacks(IOverviewUIActions instance)
         {
-            if (m_Wrapper.m_SelectCharacterStageActionsCallbackInterfaces.Remove(instance))
+            if (m_Wrapper.m_OverviewUIActionsCallbackInterfaces.Remove(instance))
                 UnregisterCallbacks(instance);
         }
 
@@ -1150,21 +1182,21 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         /// <remarks>
         /// If <paramref name="instance" /> is <c>null</c>, calling this method will only unregister all existing callbacks but not register any new callbacks.
         /// </remarks>
-        /// <seealso cref="SelectCharacterStageActions.AddCallbacks(ISelectCharacterStageActions)" />
-        /// <seealso cref="SelectCharacterStageActions.RemoveCallbacks(ISelectCharacterStageActions)" />
-        /// <seealso cref="SelectCharacterStageActions.UnregisterCallbacks(ISelectCharacterStageActions)" />
-        public void SetCallbacks(ISelectCharacterStageActions instance)
+        /// <seealso cref="OverviewUIActions.AddCallbacks(IOverviewUIActions)" />
+        /// <seealso cref="OverviewUIActions.RemoveCallbacks(IOverviewUIActions)" />
+        /// <seealso cref="OverviewUIActions.UnregisterCallbacks(IOverviewUIActions)" />
+        public void SetCallbacks(IOverviewUIActions instance)
         {
-            foreach (var item in m_Wrapper.m_SelectCharacterStageActionsCallbackInterfaces)
+            foreach (var item in m_Wrapper.m_OverviewUIActionsCallbackInterfaces)
                 UnregisterCallbacks(item);
-            m_Wrapper.m_SelectCharacterStageActionsCallbackInterfaces.Clear();
+            m_Wrapper.m_OverviewUIActionsCallbackInterfaces.Clear();
             AddCallbacks(instance);
         }
     }
     /// <summary>
-    /// Provides a new <see cref="SelectCharacterStageActions" /> instance referencing this action map.
+    /// Provides a new <see cref="OverviewUIActions" /> instance referencing this action map.
     /// </summary>
-    public SelectCharacterStageActions @SelectCharacterStage => new SelectCharacterStageActions(this);
+    public OverviewUIActions @OverviewUI => new OverviewUIActions(this);
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Player" which allows adding and removing callbacks.
     /// </summary>
@@ -1252,12 +1284,19 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         void OnZoom(InputAction.CallbackContext context);
     }
     /// <summary>
-    /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "SelectCharacterStage" which allows adding and removing callbacks.
+    /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "OverviewUI" which allows adding and removing callbacks.
     /// </summary>
-    /// <seealso cref="SelectCharacterStageActions.AddCallbacks(ISelectCharacterStageActions)" />
-    /// <seealso cref="SelectCharacterStageActions.RemoveCallbacks(ISelectCharacterStageActions)" />
-    public interface ISelectCharacterStageActions
+    /// <seealso cref="OverviewUIActions.AddCallbacks(IOverviewUIActions)" />
+    /// <seealso cref="OverviewUIActions.RemoveCallbacks(IOverviewUIActions)" />
+    public interface IOverviewUIActions
     {
+        /// <summary>
+        /// Method invoked when associated input action "ToggleBaseView" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnToggleBaseView(InputAction.CallbackContext context);
         /// <summary>
         /// Method invoked when associated input action "ToggleSelectCharacterStage" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>

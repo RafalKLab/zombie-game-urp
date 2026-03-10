@@ -18,6 +18,8 @@ public class GameInput : MonoBehaviour
     public event Action OnClickPreviewCharacter;
     public event Action OnSelectCharacter;
 
+    public event Action OnToggleBaseViewUI;
+
     public class OnInteractActionSlotEventArgs : EventArgs
     {
         public int index;
@@ -34,7 +36,7 @@ public class GameInput : MonoBehaviour
 
         inputActions = new InputActions();
         inputActions.Player.Enable();
-        inputActions.SelectCharacterStage.Enable();
+        inputActions.OverviewUI.Enable();
 
         inputActions.Player.RightClick.performed += RightClick_performed;
         inputActions.Player.LeftClick.performed += LeftClick_performed;
@@ -44,11 +46,18 @@ public class GameInput : MonoBehaviour
         inputActions.Player.InventoryOpen.performed += InventoryOpen_performed;
         inputActions.Player.InventoryClose.performed += InventoryClose_performed;
 
-        inputActions.SelectCharacterStage.ToggleSelectCharacterStage.performed += ToggleSelectCharacterStage_performed;
-        inputActions.SelectCharacterStage.CycleNextCharacter.performed += CycleNextCharacter_performed;
-        inputActions.SelectCharacterStage.CyclePreviousCharacter.performed += CyclePreviousCharacter_performed;
-        inputActions.SelectCharacterStage.ClickPreviewCharacter.performed += ClickPreviewCharacter_performed;
-        inputActions.SelectCharacterStage.SelectCharacter.performed += SelectCharacter_performed;
+        inputActions.OverviewUI.ToggleSelectCharacterStage.performed += ToggleSelectCharacterStage_performed;
+        inputActions.OverviewUI.CycleNextCharacter.performed += CycleNextCharacter_performed;
+        inputActions.OverviewUI.CyclePreviousCharacter.performed += CyclePreviousCharacter_performed;
+        inputActions.OverviewUI.ClickPreviewCharacter.performed += ClickPreviewCharacter_performed;
+        inputActions.OverviewUI.SelectCharacter.performed += SelectCharacter_performed;
+
+        inputActions.OverviewUI.ToggleBaseView.performed += ToggleBaseView_performed;
+    }
+
+    private void ToggleBaseView_performed(InputAction.CallbackContext obj)
+    {
+        OnToggleBaseViewUI?.Invoke();
     }
 
     private void SelectCharacter_performed(InputAction.CallbackContext obj)

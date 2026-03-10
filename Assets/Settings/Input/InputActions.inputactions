@@ -428,13 +428,22 @@
             ]
         },
         {
-            "name": "SelectCharacterStage",
+            "name": "OverviewUI",
             "id": "a1770136-5c70-46ce-b677-a990187160dd",
             "actions": [
                 {
-                    "name": "ToggleSelectCharacterStage",
+                    "name": "ToggleBaseView",
                     "type": "Button",
                     "id": "907ffae3-9022-44ba-bbf6-8640a50b31b0",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ToggleSelectCharacterStage",
+                    "type": "Button",
+                    "id": "dc5a36b4-ad3f-4834-9b2a-4d3a3507bbb1",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -481,6 +490,17 @@
                 {
                     "name": "",
                     "id": "cf3f0981-ab6d-48b9-b730-02fc52160920",
+                    "path": "<Keyboard>/b",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleBaseView",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "59880665-ee44-4987-91e0-51cf290de938",
                     "path": "<Keyboard>/tab",
                     "interactions": "",
                     "processors": "",

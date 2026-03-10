@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Cinemachine;
 using UnityEngine;
@@ -16,13 +17,17 @@ public class SelectCharacterStage : MonoBehaviour
     [SerializeField] private CinemachineCamera stageCinemachineCamera;
     [SerializeField] private Transform cameraLookTarget;
     [SerializeField] private LayerMask stageClickableMask;
+    [SerializeField] private CinemachineBrain cinemachineBrain;
 
     private const int ActiveCameraPriority = 1000;
     private const int InactiveCameraPriority = 0;
 
     private int currentSelectedNavigationIndex = -1;
     private bool selectCharacterStageIsActive = false;
+    private CinemachineBlendDefinition cachedBlendDefinition;
     private List<CharacterPreviewSlot> previewSlots = new List<CharacterPreviewSlot>();
+
+    public bool IsActive => selectCharacterStageIsActive;
 
     private void Awake()
     {
@@ -34,6 +39,19 @@ public class SelectCharacterStage : MonoBehaviour
     {
         SyncExistingCharactersToSlots();
         SubscribeToGameInputEvents();
+
+        PrepareStageCamera();
+    }
+
+    private void PrepareStageCamera()
+    {
+        CharacterPreviewSlot cameraTargetSlot = GetInitialCameraTargetSlot();
+        if (cameraTargetSlot != null)
+        {
+            FocusSlot(cameraTargetSlot);
+        }
+
+        stageCinemachineCamera.PreviousStateIsValid = false;
     }
 
     private void OnEnable()
@@ -50,39 +68,42 @@ public class SelectCharacterStage : MonoBehaviour
     {
         if (GameInput.Instance == null) return;
 
-        GameInput.Instance.OnToggleSelectCharacterStage += GameInput_OnToggleSelectCharacterStage;
         GameInput.Instance.OnCycleNextCharacter += GameInput_OnCycleNextCharacter;
         GameInput.Instance.OnCyclePreviousCharacter += GameInput_OnCyclePreviousCharacter;
         GameInput.Instance.OnClickPreviewCharacter += GameInput_OnClickPreviewCharacter;
         GameInput.Instance.OnSelectCharacter += GameInput_OnSelectCharacter;
     }
 
-    private void GameInput_OnToggleSelectCharacterStage()
+    public void Show()
     {
-        if (selectCharacterStageIsActive)
+        cachedBlendDefinition = cinemachineBrain.DefaultBlend;
+        cinemachineBrain.DefaultBlend = new CinemachineBlendDefinition(
+            cachedBlendDefinition.Style,
+            0f
+        );
+
+        CharacterPreviewSlot camTarget = GetInitialCameraTargetSlot();
+        if (camTarget != null)
         {
-            // toggle off
-            stageCinemachineCamera.Priority = InactiveCameraPriority;
-            selectCharacterStageIsActive = false;
-
-            UiEventsManager.Instance.ShowGameplayUi();
-            UiEventsManager.Instance.HideSelectCharacterStageUI();
+            FocusSlot(camTarget);
         }
-        else
-        {
-            // toggle on
-            stageCinemachineCamera.Priority = ActiveCameraPriority;
-            selectCharacterStageIsActive = true;
 
-            CharacterPreviewSlot camTarget = GetInitialCameraTargetSlot();
-            if (camTarget != null)
-            {
-                FocusSlot(camTarget);
-            }
+        stageCinemachineCamera.Priority = ActiveCameraPriority;
+        selectCharacterStageIsActive = true;
 
-            UiEventsManager.Instance.HideGameplayUi();
-            UiEventsManager.Instance.ShowSelectCharacterStageUI();
-        }
+        StartCoroutine(RestoreDefaultBlendNextFrame());
+    }
+
+    public void Hide()
+    {
+        stageCinemachineCamera.Priority = InactiveCameraPriority;
+        selectCharacterStageIsActive = false;
+    }
+
+    private IEnumerator RestoreDefaultBlendNextFrame()
+    {
+        yield return null;
+        cinemachineBrain.DefaultBlend = cachedBlendDefinition;
     }
 
     private void GameInput_OnCycleNextCharacter()
@@ -350,6 +371,6 @@ public class SelectCharacterStage : MonoBehaviour
         if (playableCharacter == null) return;
 
         ActiveCharacterManager.Instance.SetActivePlayableCharacter(playableCharacter);
-        GameInput_OnToggleSelectCharacterStage();
+        UiEventsManager.Instance.GameInput_OnToggleSelectCharacterStage();
     }
 }
