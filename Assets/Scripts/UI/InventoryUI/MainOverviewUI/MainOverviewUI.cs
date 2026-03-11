@@ -72,6 +72,7 @@ public class MainOverviewUI : MonoBehaviour
         selectCharacterStage.Show();
         selectCharacterStageUI.gameObject.SetActive(true);
         navigation.gameObject.SetActive(true);
+        resourcesUI.gameObject.SetActive(false);
 
         SelectNavigationButton(UiOverviewType.Characters);
     }
@@ -83,6 +84,7 @@ public class MainOverviewUI : MonoBehaviour
 
         baseViewUI.Show();
         navigation.gameObject.SetActive(true);
+        resourcesUI.gameObject.SetActive(true);
 
         SelectNavigationButton(UiOverviewType.BaseView);
     }
@@ -107,7 +109,6 @@ public class MainOverviewUI : MonoBehaviour
 
     public void HideGameplayUi()
     {
-        resourcesUI.gameObject.SetActive(false);
         defenseBaseUI.gameObject.SetActive(false);
 
         inventoryUI.HideAll();
@@ -118,8 +119,8 @@ public class MainOverviewUI : MonoBehaviour
     public void ShowGameplayUi()
     {
         navigation.gameObject.SetActive(false);
+        resourcesUI.gameObject.SetActive(false);
 
-        resourcesUI.gameObject.SetActive(true);
         defenseBaseUI.gameObject.SetActive(true);
 
         PlayableCharacter activePlayableCharacter = ActiveCharacterManager.Instance.GetActivePlayableCharacter();
