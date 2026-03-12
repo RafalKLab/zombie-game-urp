@@ -55,7 +55,7 @@ public class CharacterPreviewSlot : MonoBehaviour
 
     public void ClearCharacter()
     {
-        Destroy(characterVisual);
+        Destroy(characterVisual.gameObject);
         characterVisual = null;
         playableCharacter = null;
     }
