@@ -70,7 +70,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BaseRadarSensor
   antenna: {fileID: 940009540024472157}
-  radius: 20
+  radius: 200
 --- !u!1 &3756367821742250170
 GameObject:
   m_ObjectHideFlags: 0

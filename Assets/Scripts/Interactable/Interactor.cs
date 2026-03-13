@@ -70,37 +70,48 @@ public class Interactor : MonoBehaviour
 
         foreach (var hit in hits)
         {
+            if (hit.transform.root == transform.root) continue;
+
             var interactable = hit.GetComponentInParent<IInteractable>();
             if (interactable == null) continue;
-
             if (!interactable.CanInteract(this)) continue;
 
-            float distance = Vector3.Distance(origin, hit.transform.position);
+            float distance = Vector3.Distance(origin, hit.ClosestPoint(origin));
+            int priority = interactable.Priority;
+
+            //Debug.Log($"[Interactor] Candidate: {interactable} | Priority: {priority} | Distance: {distance:F2}");
 
             if (best == null)
             {
                 best = interactable;
                 bestDistance = distance;
-                bestPriority = interactable.Priority;
+                bestPriority = priority;
+
+                //Debug.Log($"[Interactor] -> FIRST BEST: {best} | Priority: {bestPriority} | Distance: {bestDistance:F2}");
                 continue;
             }
 
-            if (distance < bestDistance - 0.01f)
+            if (priority > bestPriority)
             {
                 best = interactable;
                 bestDistance = distance;
-                bestPriority = interactable.Priority;
+                bestPriority = priority;
+
+                //Debug.Log($"[Interactor] -> REPLACED BY PRIORITY: {best} | Priority: {bestPriority} | Distance: {bestDistance:F2}");
+                continue;
             }
-            else if (Mathf.Abs(distance - bestDistance) < 0.2f)
+
+            if (priority == bestPriority && distance < bestDistance)
             {
-                if (interactable.Priority > bestPriority)
-                {
-                    best = interactable;
-                    bestDistance = distance;
-                    bestPriority = interactable.Priority;
-                }
+                best = interactable;
+                bestDistance = distance;
+                bestPriority = priority;
+
+                //Debug.Log($"[Interactor] -> REPLACED BY DISTANCE: {best} | Priority: {bestPriority} | Distance: {bestDistance:F2}");
             }
         }
+
+        //Debug.Log($"[Interactor] FINAL BEST: {best} | Priority: {bestPriority} | Distance: {bestDistance:F2}");
 
         SetCurrentInteractable(best);
     }

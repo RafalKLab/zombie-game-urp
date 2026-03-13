@@ -6,6 +6,8 @@ public class BaseSlotData
     public BaseBuildingType BuildingType { get; private set; }
     public bool IsPredefined { get; private set; }
 
+    public float BuildRemainingTime { get; private set; }
+
     public BaseSlotData(
         string slotId,
         BaseSlotType slotType,
@@ -18,6 +20,7 @@ public class BaseSlotData
         SlotState = slotState;
         BuildingType = buildingType;
         IsPredefined = isPredefined;
+        BuildRemainingTime = 0f;
     }
 
     public void SetSlotState(BaseSlotState newState)
@@ -30,8 +33,31 @@ public class BaseSlotData
         BuildingType = newBuildingType;
     }
 
-    public bool IsEmpty() => SlotState == BaseSlotState.Empty;
-    public bool IsRuined() => SlotState == BaseSlotState.Ruined;
-    public bool IsUnderConstruction() => SlotState == BaseSlotState.UnderConstruction;
-    public bool IsActive() => SlotState == BaseSlotState.Active;
+    public void StartConstruction(float buildTime)
+    {
+        SlotState = BaseSlotState.UnderConstruction;
+        BuildRemainingTime = buildTime;
+    }
+
+    public void TickConstruction(float deltaTime)
+    {
+        if (SlotState != BaseSlotState.UnderConstruction) return;
+
+        BuildRemainingTime -= deltaTime;
+        if (BuildRemainingTime < 0f)
+        {
+            BuildRemainingTime = 0f;
+        }
+    }
+
+    public bool IsConstructionFinished()
+    {
+        return SlotState == BaseSlotState.UnderConstruction && BuildRemainingTime <= 0f;
+    }
+
+    public void FinishConstruction()
+    {
+        SlotState = BaseSlotState.Active;
+        BuildRemainingTime = 0f;
+    }
 }

@@ -5,9 +5,35 @@ public class InteractableActionDepositResources : MonoBehaviour, IInteractableAc
     [SerializeField] private int priority = 0;
     [SerializeField] private string executePrompt = "Deposit resources";
     [SerializeField] private ResourceManager resourceManager;
+    [SerializeField] private Faction faction;
     public bool IsDepleted => false;
 
     public int Priority => priority;
+
+    private void Start()
+    {
+        if (FactionBaseRegistry.Instance == null)
+        {
+            Debug.LogError("[InteractableActionDepositResources] FactionBaseRegistry.Instance is null", this);
+            return;
+        }
+
+        BaseManager baseManager = FactionBaseRegistry.Instance.GetBaseManagerByFaction(faction);
+
+        if (baseManager == null)
+        {
+            Debug.LogError($"[InteractableActionDepositResources] BaseManager not found for faction: {faction}", this);
+            return;
+        }
+
+        resourceManager = baseManager.GetResourceManager();
+
+        if (resourceManager == null)
+        {
+            Debug.LogError($"[InteractableActionDepositResources] ResourceManager missing for faction: {faction}", this);
+            return;
+        }
+    }
 
     public bool CanExecute(Interactor interactor)
     {

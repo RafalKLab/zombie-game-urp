@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 759b4356c23d04b47b238aedda5f4a99, type: 3}
+  m_Name: DefaultWarehouse
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingDefinitionSO
+  canBeBuilt: 0
+  canBeDemolished: 0
+  canBeRepaired: 1
+  buildingType: 2
+  displayName: DefaultWarehouse
+  ruinedPrefab: {fileID: 2890744308345901564, guid: bb695cf374826c34586d0ef3398ab1f8, type: 3}
+  finishedBuildingPrefab: {fileID: 2890744308345901564, guid: a60882c959c662b4580c7a08b310be20, type: 3}
+  icon: {fileID: 0}
+  buildTime: 0
+  buildConstructionPrefab: {fileID: 2890744308345901564, guid: c04497d531384af4187f58d97d190153, type: 3}
+  repairTime: 10
+  repairConstructionPrefab: {fileID: 2890744308345901564, guid: bb695cf374826c34586d0ef3398ab1f8, type: 3}

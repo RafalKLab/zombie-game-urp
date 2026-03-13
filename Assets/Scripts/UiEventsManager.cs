@@ -40,4 +40,9 @@ public class UiEventsManager : MonoBehaviour
 
         OnOpenStorageRequested?.Invoke(this, new OnOpenStorageRequestedEventArgs { inventory = inventory });
     }
+
+    public bool IsGameplayUi()
+    {
+        return mainOverviewUI.IsGameplayUi;
+    }
 }

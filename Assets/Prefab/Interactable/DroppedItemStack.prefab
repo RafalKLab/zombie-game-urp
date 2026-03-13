@@ -112,7 +112,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a42cb2efad167248b80eebf3e4fab30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Interactable
-  priority: 0
+  priority: 999
   uiAnchor: {fileID: 9158283040115660729}
   defaultPromt: F - interact
   useShortcutWhenOnlyOneExecutableAction: 1
@@ -130,7 +130,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82df396864cdae841989f38e0adaf9f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractableActionPickUpStack
-  priority: 0
+  priority: 999
   promt: Pick up
   itemStack:
     definition: {fileID: 0}

@@ -126,6 +126,10 @@ public class InventoryUI : MonoBehaviour
 
     private void GameInput_OnInventoryOpen()
     {
+        // refactor maybe
+        // open only when gameplay ui active
+        if (UiEventsManager.Instance.IsGameplayUi() != true) return;
+
         playableCharacter = ActiveCharacterManager.Instance.GetActivePlayableCharacter();
         if (playableCharacter == null) return;
 

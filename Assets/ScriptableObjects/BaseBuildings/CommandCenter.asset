@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 759b4356c23d04b47b238aedda5f4a99, type: 3}
+  m_Name: CommandCenter
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingDefinitionSO
+  canBeBuilt: 0
+  canBeDemolished: 0
+  canBeRepaired: 1
+  buildingType: 1
+  displayName: CommandCenter
+  ruinedPrefab: {fileID: 4430473141951018199, guid: 8b0241d4c2412c2499919b6709582986, type: 3}
+  finishedBuildingPrefab: {fileID: 4430473141951018199, guid: 575c5cd5fa0adda49bcc9114e08bc9cb, type: 3}
+  icon: {fileID: 0}
+  buildTime: 0
+  buildConstructionPrefab: {fileID: 4430473141951018199, guid: e59873c70ffac0e43bf0ea6ed48237d7, type: 3}
+  repairTime: 10
+  repairConstructionPrefab: {fileID: 4430473141951018199, guid: e59873c70ffac0e43bf0ea6ed48237d7, type: 3}

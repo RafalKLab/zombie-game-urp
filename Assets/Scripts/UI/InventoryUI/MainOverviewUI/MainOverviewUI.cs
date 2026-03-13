@@ -21,6 +21,7 @@ public class MainOverviewUI : MonoBehaviour
     [SerializeField] private NavButtonUI charactersNavButtonUI;
     [SerializeField] private NavButtonUI baseViewNavButtonUI;
 
+    public bool IsGameplayUi { get; private set; }
 
     private void Start()
     {
@@ -109,6 +110,8 @@ public class MainOverviewUI : MonoBehaviour
 
     public void HideGameplayUi()
     {
+        IsGameplayUi = false;
+
         defenseBaseUI.gameObject.SetActive(false);
 
         inventoryUI.HideAll();
@@ -118,6 +121,8 @@ public class MainOverviewUI : MonoBehaviour
 
     public void ShowGameplayUi()
     {
+        IsGameplayUi = true;
+
         navigation.gameObject.SetActive(false);
         resourcesUI.gameObject.SetActive(false);
 

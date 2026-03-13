@@ -20,29 +20,29 @@ public class BaseSlotService
         return baseSlotData.SlotState == BaseSlotState.Active;
     }
 
-    public bool TryStartBuild(BaseSlotData baseSlotData, BaseBuildingType buildingType)
+    public bool TryStartBuild(BaseSlotData baseSlotData, BaseBuildingType buildingType, float buildTime)
     {
         if (!CanBuildOnSlot(baseSlotData)) return false;
 
         baseSlotData.SetBuildingType(buildingType);
-        baseSlotData.SetSlotState(BaseSlotState.UnderConstruction);
+        baseSlotData.StartConstruction(buildTime);
         return true;
     }
 
-    public bool TryStartRepair(BaseSlotData baseSlotData)
+    public bool TryStartRepair(BaseSlotData baseSlotData, float repairTime)
     {
         if (!CanRepairSlot(baseSlotData)) return false;
 
-        baseSlotData.SetSlotState(BaseSlotState.UnderConstruction);
+        baseSlotData.StartConstruction(repairTime);
         return true;
     }
 
     public bool TryFinishConstruction(BaseSlotData baseSlotData)
     {
         if (baseSlotData == null) return false;
-        if (baseSlotData.SlotState != BaseSlotState.UnderConstruction) return false;
+        if (!baseSlotData.IsConstructionFinished()) return false;
 
-        baseSlotData.SetSlotState(BaseSlotState.Active);
+        baseSlotData.FinishConstruction();
         return true;
     }
 
