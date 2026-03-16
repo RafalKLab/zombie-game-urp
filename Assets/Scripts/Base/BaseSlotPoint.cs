@@ -1,5 +1,6 @@
 using System.Collections;
 using Unity.AI.Navigation;
+using Unity.Cinemachine;
 using UnityEngine;
 
 public class BaseSlotPoint : MonoBehaviour
@@ -11,6 +12,10 @@ public class BaseSlotPoint : MonoBehaviour
     [SerializeField] private bool isPredefined;
     [SerializeField] private BuildingDefinitionSO startBuildingDefinition;
     [SerializeField] private NavMeshSurface globalSurface;
+
+    [SerializeField] private CinemachineCamera slotViewCamera;
+
+    public CinemachineCamera GetSlotViewCamera() => slotViewCamera;
 
     private GameObject spawnedBuilding;
     private BuildingDefinitionSO currentBuildingDefinition;

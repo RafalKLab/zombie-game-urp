@@ -21,6 +21,9 @@ public class MainOverviewUI : MonoBehaviour
     [SerializeField] private NavButtonUI charactersNavButtonUI;
     [SerializeField] private NavButtonUI baseViewNavButtonUI;
 
+    [Header("Base view Cameras")]
+    [SerializeField] private BaseViewUiCameraController baseViewUiCameraController;
+
     public bool IsGameplayUi { get; private set; }
 
     private void Start()
@@ -84,6 +87,7 @@ public class MainOverviewUI : MonoBehaviour
         HideGameplayUi();
 
         baseViewUI.Show();
+        baseViewUiCameraController.ShowDefaultCamera();
         navigation.gameObject.SetActive(true);
         resourcesUI.gameObject.SetActive(true);
 
@@ -104,6 +108,7 @@ public class MainOverviewUI : MonoBehaviour
         selectCharacterStageUI.gameObject.SetActive(false);
 
         baseViewUI.Hide();
+        baseViewUiCameraController.DisableAllCameras();
 
         navigation.gameObject.SetActive(false);
     }

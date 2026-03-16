@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuildingDefinitionSO
   canBeBuilt: 0
   canBeDemolished: 0
-  canBeRepaired: 1
+  canBeRepaired: 0
   buildingType: 1
   displayName: CommandCenter
-  ruinedPrefab: {fileID: 4430473141951018199, guid: 8b0241d4c2412c2499919b6709582986, type: 3}
-  finishedBuildingPrefab: {fileID: 4430473141951018199, guid: 575c5cd5fa0adda49bcc9114e08bc9cb, type: 3}
-  icon: {fileID: 0}
+  ruinedPrefab: {fileID: 6866483121426598215, guid: 575c5cd5fa0adda49bcc9114e08bc9cb, type: 3}
+  finishedBuildingPrefab: {fileID: 6866483121426598215, guid: 575c5cd5fa0adda49bcc9114e08bc9cb, type: 3}
+  icon: {fileID: 21300000, guid: 590aa0ae19adc4a4c915bd943eadba91, type: 3}
   buildTime: 0
-  buildConstructionPrefab: {fileID: 4430473141951018199, guid: e59873c70ffac0e43bf0ea6ed48237d7, type: 3}
-  repairTime: 10
-  repairConstructionPrefab: {fileID: 4430473141951018199, guid: e59873c70ffac0e43bf0ea6ed48237d7, type: 3}
+  buildConstructionPrefab: {fileID: 6866483121426598215, guid: 575c5cd5fa0adda49bcc9114e08bc9cb, type: 3}
+  repairTime: 0
+  repairConstructionPrefab: {fileID: 6866483121426598215, guid: 575c5cd5fa0adda49bcc9114e08bc9cb, type: 3}

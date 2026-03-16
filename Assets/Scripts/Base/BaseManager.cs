@@ -11,6 +11,7 @@ public class BaseManager : MonoBehaviour
     [Header("Base slots")]
     [SerializeField] private List<BaseSlotPoint> baseSlotPointList = new List<BaseSlotPoint>();
     private List<BaseSlotData> baseSlotDataList = new List<BaseSlotData>();
+    private Dictionary<string, BaseSlotPoint> baseSlotPointById = new();
 
     [Header("Debug")]
     //[SerializeField] private BuildingDefinitionSO buildingDefinitionSO;
@@ -40,13 +41,23 @@ public class BaseManager : MonoBehaviour
     private void InitializeSlots()
     {
         baseSlotDataList.Clear();
+        baseSlotPointById.Clear();
 
         foreach (BaseSlotPoint slotPoint in baseSlotPointList)
         {
             BaseSlotData data = slotPoint.CreateSlotData();
             baseSlotDataList.Add(data);
 
-            BuildingDefinitionSO buildingDefinitionSO = slotPoint.GetStartBuildingDefinition();
+            string slotId = slotPoint.GetSlotId();
+
+            if (baseSlotPointById.ContainsKey(slotId))
+            {
+                Debug.LogError($"Duplicate slotId detected: {slotId}", this);
+                continue;
+            }
+
+            baseSlotPointById.Add(slotId, slotPoint);
+
             slotPoint.SyncVisual(data);
         }
     }
@@ -129,5 +140,10 @@ public class BaseManager : MonoBehaviour
         baseSlotPoint.SyncVisual(baseSlotData);
 
         Debug.Log($"Construction finalized on slot: {baseSlotData.SlotId}", this);
+    }
+
+    public bool TryGetSlotById(string targetSlotId, out BaseSlotPoint targetBaseSlotPoint)
+    {
+        return baseSlotPointById.TryGetValue(targetSlotId, out targetBaseSlotPoint);
     }
 }

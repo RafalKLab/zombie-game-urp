@@ -19,7 +19,7 @@ MonoBehaviour:
   displayName: DefaultWarehouse
   ruinedPrefab: {fileID: 2890744308345901564, guid: bb695cf374826c34586d0ef3398ab1f8, type: 3}
   finishedBuildingPrefab: {fileID: 2890744308345901564, guid: a60882c959c662b4580c7a08b310be20, type: 3}
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 2b80f3f62c5c45f4cbf0ebbe6265be4c, type: 3}
   buildTime: 0
   buildConstructionPrefab: {fileID: 2890744308345901564, guid: c04497d531384af4187f58d97d190153, type: 3}
   repairTime: 10
