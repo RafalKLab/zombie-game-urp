@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -5,7 +6,9 @@ using UnityEngine.UI;
 public class BaseViewSlotUI : MonoBehaviour
 {
     [SerializeField] private string mapSlotId;
-    [SerializeField] private Image icon;
+    [SerializeField] private Button button;
+    [SerializeField] private TextMeshProUGUI mainText;
+    [SerializeField] private TextMeshProUGUI secText;
 
     private BaseManager baseManager;
 
@@ -17,6 +20,8 @@ public class BaseViewSlotUI : MonoBehaviour
     public void UpdateVisual()
     {
         if (baseManager == null) return;
+        if (mainText == null) return;
+        if (secText == null) return;
 
         if (baseManager.TryGetSlotById(mapSlotId, out BaseSlotPoint baseSlotPoint))
         {
@@ -24,8 +29,30 @@ public class BaseViewSlotUI : MonoBehaviour
 
             if (buildingDefinitionSO != null)
             {
-                icon.sprite = buildingDefinitionSO.icon;
+                mainText.text = buildingDefinitionSO.displayName;
             }
+            else
+            {
+                mainText.text = "Empty slot";
+            }
+        }
+    }
+
+    public void InitButton(Action<BaseSlotPoint> enablePreviewAction)
+    {
+        if (button == null) return;
+
+        // get slot point
+        if (baseManager == null) return;
+
+        if (baseManager.TryGetSlotById(mapSlotId, out BaseSlotPoint baseSlotPoint))
+        {
+            button.onClick.RemoveAllListeners();
+
+            button.onClick.AddListener(() => enablePreviewAction(baseSlotPoint));
+        } else
+        {
+            return;
         }
     }
 }

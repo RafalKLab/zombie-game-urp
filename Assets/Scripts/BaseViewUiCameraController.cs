@@ -5,18 +5,14 @@ using UnityEngine;
 public class BaseViewUiCameraController : MonoBehaviour
 {
     [SerializeField] private CinemachineCamera defaultCamera;
-
-    // Only for debug
-    [SerializeField] private List<BaseSlotPoint> baseSlotPointList = new List<BaseSlotPoint>();
-
     [SerializeField] private int activePriority = 100;
     [SerializeField] private int inactivePriority = 0;
 
-    private int debugIndex = -1;
-
     private void SetAllSlotCamerasInactive()
     {
-        foreach (BaseSlotPoint baseSlotPoint in baseSlotPointList)
+        BaseManager baseManager = FactionBaseRegistry.Instance.GetBaseManagerByFaction(Faction.Player);
+
+        foreach (BaseSlotPoint baseSlotPoint in baseManager.GetBaseSlotPointList())
         {
             if (baseSlotPoint == null) continue;
 
@@ -69,36 +65,11 @@ public class BaseViewUiCameraController : MonoBehaviour
         Debug.Log($"[BaseViewUiCameraController] Slot camera enabled: '{slotCamera.name}' for slot '{baseSlotPoint.name}'", this);
     }
 
-    [ContextMenu("Debug / Swap To Next Slot Camera")]
-    private void SwapToNext()
-    {
-        if (baseSlotPointList.Count == 0)
-        {
-            Debug.LogWarning("[BaseViewUiCameraController] baseSlotPointList is empty", this);
-            return;
-        }
-
-        debugIndex++;
-
-        if (debugIndex >= baseSlotPointList.Count)
-        {
-            debugIndex = 0;
-        }
-
-        BaseSlotPoint nextSlot = baseSlotPointList[debugIndex];
-        ShowSlotCamera(nextSlot);
-    }
-
-    [ContextMenu("Debug / Back To Default Camera")]
-    private void BackToDefault()
-    {
-        ShowDefaultCamera();
-    }
-
     public void DisableAllCameras()
     {
         // disable slot cameras
-        foreach (BaseSlotPoint baseSlotPoint in baseSlotPointList)
+        BaseManager baseManager = FactionBaseRegistry.Instance.GetBaseManagerByFaction(Faction.Player);
+        foreach (BaseSlotPoint baseSlotPoint in baseManager.GetBaseSlotPointList())
         {
             if (baseSlotPoint == null) continue;
 
