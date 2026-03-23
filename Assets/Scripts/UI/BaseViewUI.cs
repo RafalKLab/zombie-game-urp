@@ -123,22 +123,22 @@ public class BaseViewUI : MonoBehaviour
 
     #region Slot Preview
 
-    private void PreviewBaseSlotAction(BaseSlotPoint baseSlotPoint)
+    private void PreviewBaseSlotAction(BaseSlotRef baseSlotRef)
     {
         HideLabels();
-        baseViewUiCameraController.ShowSlotCamera(baseSlotPoint);
-        ShowBaseDetailSlotViewUI(baseSlotPoint);
+        baseViewUiCameraController.ShowSlotCamera(baseSlotRef.Point);
+        ShowBaseDetailSlotViewUI(baseSlotRef);
     }
 
     #endregion
 
     #region Base Detail Slot View
 
-    private void ShowBaseDetailSlotViewUI(BaseSlotPoint baseSlotPoint)
+    private void ShowBaseDetailSlotViewUI(BaseSlotRef baseSlotRef)
     {
         if (baseDetailSlotViewUI == null) return;
 
-        baseDetailSlotViewUI.Show(baseSlotPoint, HideBaseDetailSlotViewUI);
+        baseDetailSlotViewUI.Show(baseSlotRef, HideBaseDetailSlotViewUI);
     }
 
     private void HideBaseDetailSlotViewUI()

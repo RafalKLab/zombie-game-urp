@@ -23,9 +23,9 @@ public class BaseViewSlotUI : MonoBehaviour
         if (mainText == null) return;
         if (secText == null) return;
 
-        if (baseManager.TryGetSlotById(mapSlotId, out BaseSlotPoint baseSlotPoint))
+        if (baseManager.TryGetSlotById(mapSlotId, out BaseSlotRef baseSlotRef))
         {
-            BuildingDefinitionSO buildingDefinitionSO = baseSlotPoint.GetAttachBuildingDefinition();
+            BuildingDefinitionSO buildingDefinitionSO = baseSlotRef.Point.GetAttachBuildingDefinition();
 
             if (buildingDefinitionSO != null)
             {
@@ -38,18 +38,18 @@ public class BaseViewSlotUI : MonoBehaviour
         }
     }
 
-    public void InitButton(Action<BaseSlotPoint> enablePreviewAction)
+    public void InitButton(Action<BaseSlotRef> enablePreviewAction)
     {
         if (button == null) return;
 
         // get slot point
         if (baseManager == null) return;
 
-        if (baseManager.TryGetSlotById(mapSlotId, out BaseSlotPoint baseSlotPoint))
+        if (baseManager.TryGetSlotById(mapSlotId, out BaseSlotRef baseSlotRef))
         {
             button.onClick.RemoveAllListeners();
 
-            button.onClick.AddListener(() => enablePreviewAction(baseSlotPoint));
+            button.onClick.AddListener(() => enablePreviewAction(baseSlotRef));
         } else
         {
             return;

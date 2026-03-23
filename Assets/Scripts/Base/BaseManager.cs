@@ -12,6 +12,7 @@ public class BaseManager : MonoBehaviour
     [SerializeField] private List<BaseSlotPoint> baseSlotPointList = new List<BaseSlotPoint>();
     private List<BaseSlotData> baseSlotDataList = new List<BaseSlotData>();
     private Dictionary<string, BaseSlotPoint> baseSlotPointById = new();
+    private Dictionary<string, BaseSlotData> baseSlotDataById = new();
 
     [Header("Debug")]
     //[SerializeField] private BuildingDefinitionSO buildingDefinitionSO;
@@ -42,12 +43,10 @@ public class BaseManager : MonoBehaviour
     {
         baseSlotDataList.Clear();
         baseSlotPointById.Clear();
+        baseSlotDataById.Clear();
 
         foreach (BaseSlotPoint slotPoint in baseSlotPointList)
         {
-            BaseSlotData data = slotPoint.CreateSlotData();
-            baseSlotDataList.Add(data);
-
             string slotId = slotPoint.GetSlotId();
 
             if (baseSlotPointById.ContainsKey(slotId))
@@ -56,7 +55,11 @@ public class BaseManager : MonoBehaviour
                 continue;
             }
 
+            BaseSlotData data = slotPoint.CreateSlotData();
+
+            baseSlotDataList.Add(data);
             baseSlotPointById.Add(slotId, slotPoint);
+            baseSlotDataById.Add(slotId, data);
 
             slotPoint.SyncVisual(data);
         }
@@ -76,7 +79,6 @@ public class BaseManager : MonoBehaviour
     public bool CanRepairSlot(BaseSlotData baseSlotData) => baseSlotService.CanRepairSlot(baseSlotData);
     public bool CanDemolishSlot(BaseSlotData baseSlotData) => baseSlotService.CanDemolishSlot(baseSlotData);
 
-    //public bool TryStartRepair(BaseSlotData baseSlotData) => baseSlotService.TryStartRepair(baseSlotData);
     public bool TryFinishConstruction(BaseSlotData baseSlotData) => baseSlotService.TryFinishConstruction(baseSlotData);
     public bool TryDemolish(BaseSlotData baseSlotData) => baseSlotService.TryDemolish(baseSlotData);
 
@@ -96,7 +98,8 @@ public class BaseManager : MonoBehaviour
             slotBuilding.repairTime
         );
 
-        if (success) {
+        if (success)
+        {
             baseSlotPoint.SyncVisual(slotData);
         }
 
@@ -128,22 +131,40 @@ public class BaseManager : MonoBehaviour
             return;
         }
 
-        int slotIndex = baseSlotDataList.IndexOf(baseSlotData);
-        if (slotIndex < 0 || slotIndex >= baseSlotPointList.Count)
+        if (!baseSlotPointById.TryGetValue(baseSlotData.SlotId, out BaseSlotPoint baseSlotPoint))
         {
             Debug.LogWarning($"Could not find matching BaseSlotPoint for slot: {baseSlotData.SlotId}", this);
             return;
         }
-
-        BaseSlotPoint baseSlotPoint = baseSlotPointList[slotIndex];
 
         baseSlotPoint.SyncVisual(baseSlotData);
 
         Debug.Log($"Construction finalized on slot: {baseSlotData.SlotId}", this);
     }
 
-    public bool TryGetSlotById(string targetSlotId, out BaseSlotPoint targetBaseSlotPoint)
+    public bool TryGetSlotById(string targetSlotId, out BaseSlotRef slotRef)
     {
-        return baseSlotPointById.TryGetValue(targetSlotId, out targetBaseSlotPoint);
+        slotRef = default;
+
+        if (!baseSlotPointById.TryGetValue(targetSlotId, out var point))
+            return false;
+
+        if (!baseSlotDataById.TryGetValue(targetSlotId, out var data))
+            return false;
+
+        slotRef = new BaseSlotRef(point, data);
+        return true;
+    }
+}
+
+public readonly struct BaseSlotRef
+{
+    public BaseSlotPoint Point { get; }
+    public BaseSlotData Data { get; }
+
+    public BaseSlotRef(BaseSlotPoint point, BaseSlotData data)
+    {
+        Point = point;
+        Data = data;
     }
 }
